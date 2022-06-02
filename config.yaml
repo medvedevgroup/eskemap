@@ -1,3 +1,4 @@
+simMeasure: ["intersec", "algnWoutOffs"]
 randomSeed: 20620220951
 nbSimSeqs: 100
 simSeqLen: 10008

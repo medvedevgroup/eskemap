@@ -1,3 +1,6 @@
+#include <vector>
+#include <algorithm>
+
 #include "Measures.h"
 #include "Sketch.h"
 
@@ -31,4 +34,61 @@ const int32_t calcIntersecScore(Sketch& skA, Sketch& skB){
 
 	//shared - uniqA - uniqB = 2 * shared - uniqA - size(B)
 	return 2 * nbShared - nbUniqA - skB.size();
+}
+
+//This function calculates the "maximum aligned hashes" similarity score
+const int32_t calcAlgnHshsScore(const Sketch& skA, const Sketch& skB, const bool& consOffs){
+	//The matrix rows
+	vector<int32_t> lst, cur;
+	//Sketch iterators
+	Sketch::const_iterator ia, ib = skB.begin();
+
+	//Initialize first row
+	for(int32_t j = 0; j <= skA.size(); ++j) lst.push_back(-j);
+
+	//Calculate all remaining values
+	for(int32_t i = 1; i <= skB.size(); ++i){
+		//Initialize iterator of sketch A
+		ia = skA.begin();
+
+		//Calculate current row
+		for(int32_t j = 0; j <= skA.size(); ++j){
+			//Check if the current element is the first in a row
+			if(j == 0){
+				//For the first element we do not need to compare anything
+				cur.push_back(-i);
+			} else{
+				//Testing
+				// if(ia->second == ib->second){
+				// 	cout << "1 option 1" << endl;
+
+				// 	if(lst[j-1] + 1 >= max(lst[j] - 1, cur[j-1] - 1)){
+				// 		cout << "2 option 1" << endl;
+				// 	}
+				// } else{
+				// 	cout << "1 option 2" << endl;
+
+				// 	if(lst[j-1] - 1 >= max(lst[j] - 1, cur[j-1] - 1)){
+				// 		cout << "2 option 2" << endl;
+				// 	}
+				// }
+				// if(lst[j] - 1 > lst[j-1] + (ia->second == ib->second ? 1 : -1) && lst[j] - 1 >= cur[j-1] - 1) cout << "3 option 1" << endl;
+				// if(cur[j-1] - 1 > max(lst[j-1] + (ia->second == ib->second ? 1 : -1), lst[j] - 1)) cout << "3 option 2" << endl;
+
+				//Calculate the current element
+				cur.push_back(max(lst[j-1] + (ia->second == ib->second ? 1 : -1), max(lst[j] - 1, cur[j-1] - 1)));
+				//Increment iterator
+				++ia;
+			}
+		}
+
+		//Make current row the last one
+		lst = cur;
+		//Reset current row
+		cur.clear();
+		//Increment iterator
+		++ib;
+	}
+
+	return lst.back();
 }

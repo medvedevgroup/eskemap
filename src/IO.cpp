@@ -11,11 +11,12 @@ const bool prsArgs(int& nArgs, char** argList, string& seqa, string& seqb, Measu
 	if(nArgs < MIN_PARAM_NB) return false;
 
 	static struct option long_options[] = {
-        {"seqa",     required_argument,  0, 'a'},
-        {"seqb",     required_argument,  0, 'b'},
-        {"intersim", no_argument,        0, 'i'},
-        {"help",     no_argument,        0, 'h'},
-        {0,          0,                  0,  0 }
+        {"seqa",        required_argument,  0, 'a'},
+        {"seqb",        required_argument,  0, 'b'},
+        {"intersim",    no_argument,        0, 'i'},
+        {"algnHshsSim", no_argument,        0, 'l'},
+        {"help",        no_argument,        0, 'h'},
+        {0,             0,                  0,  0 }
     };
 
     //Parse all parameters given
@@ -35,7 +36,24 @@ const bool prsArgs(int& nArgs, char** argList, string& seqa, string& seqb, Measu
 				seqbGvn = true;
 				break;
 			case 'i':
+				//Check if another measure was also given as a parameter
+				if(msr != none && msr != intersec){
+					cerr << "ERROR: Only one measure can be calculated at a time!" << endl;
+
+					return false;
+				}
+
 				msr = intersec;
+				break;
+			case 'l':
+				//Check if another measure was also given as a parameter
+				if(msr != none && msr != algnWoutOffs){
+					cerr << "ERROR: Only one measure can be calculated at a time!" << endl;
+
+					return false;
+				}
+
+				msr = algnWoutOffs;
 				break;
 			case 'h':
 				return false;
@@ -44,5 +62,5 @@ const bool prsArgs(int& nArgs, char** argList, string& seqa, string& seqb, Measu
 		}
 	}
 
-	return seqaGvn && seqbGvn && msr == intersec;
+	return seqaGvn && seqbGvn && msr != none;
 }

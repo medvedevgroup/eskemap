@@ -22,7 +22,11 @@ int main(int argc, char **argv){
 	skB = buildSketch(seqB);
 
 	//Calculate sketches' similarity
-	cout << "Intersection similarity: " << calcIntersecScore(skA, skB) << endl;
+	if(msr == intersec){
+		cout << calcIntersecScore(skA, skB) << endl;
+	} else{
+		cout << calcAlgnHshsScore(skA, skB, false) << endl;
+	}
 
 	return 0;
 }
