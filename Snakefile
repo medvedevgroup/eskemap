@@ -2,7 +2,7 @@ configfile: 'config.yaml'
 
 rule all:
 	input:
-		expand("simulations/simSeqs_s{s}_n{n}_l{l}_m{m}_i{i}_d{d}.ssv", s=config['randomSeed'], n=config['nbSimSeqs'], l=config['simSeqLen'], m=\
+		expand("simulations/simSeqs_s{s}_n{n}_l{l}_m{m}_i{m}_d{m}.ssv", s=config['randomSeed'], n=config['nbSimSeqs'], l=config['simSeqLen'], m=\
 			config['mutationRates'])
 
 rule simSeqs:
