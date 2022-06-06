@@ -102,7 +102,6 @@ if __name__ == '__main__':
 											break
 										
 										results.remove(r)
-										print("results:", results)
 
 								if addRes:
 									results.append((score, s, e, u, f))
