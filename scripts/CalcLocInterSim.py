@@ -29,7 +29,7 @@ def calcSketch(seq, k, thres):
 	sketch = []
 
 	#Calculate mask
-	mask = (4 ** arguments.k) - 1
+	mask = (4 ** k) - 1
 
 	#Iterate of all k-mers in sequence
 	for i in range(len(seq) - k + 1):
@@ -74,6 +74,37 @@ if __name__ == '__main__':
 
 	#Calculate maximum similarities
 	results = []
+
+	##Attempt to prune the search space##
+
+	#We start with the largest intervals possible
+	intCandidates = [(0, 0, len(skA) - 1, 0, len(skB) - 1)]
+
+	#Iterate over interval canditates as long as there are any
+	while len(intCandidates) > 0:
+		#Get next candidate
+		candidate = intCandidates.pop(0)
+		#Score the candidate
+		candidate[0] = calcSim(skA, candidate[1], candidate[2], skB, candidate[3], candidate[4])
+
+		#If score is positive try to add it to results
+		if candidate[0] > 0:
+			addRes(results, candidate)
+
+		#Get interval sizes
+		lIntSize = candidate[2] - candidate[1] + 1
+		rIntSize = candidate[4] - candidate[3] + 1
+
+		#Generate new candidates from old candidate except if we have found the maximum possible score already
+		if candidate[0] < min(lIntSize, rIntSize) and max(lIntSize, rIntSize) > 1:
+			if lIntSize == rIntSize:
+				intCandidates.append((0, candidate[1], candidate[2], candidate[3] + 1, candidate[4]))
+				intCandidates.append((0, candidate[1], candidate[2], candidate[3], candidate[4] - 1))
+			else:
+				intCandidates.append((0, candidate[1] + 1, candidate[2], candidate[3], candidate[4]))
+				intCandidates.append((0, candidate[1], candidate[2] - 1, candidate[3], candidate[4]))
+
+	##Most naive approach##
 
 	#Iterate over all possible intervals in seqA
 	for s in range(len(skA)):
