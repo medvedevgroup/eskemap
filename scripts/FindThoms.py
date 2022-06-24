@@ -36,11 +36,6 @@ if __name__ == '__main__':
 	#Calculate sketches from sequences
 	pattern = calcSketch(arguments.p, arguments.k, ht)
 	text = calcSketch(arguments.s, arguments.k, ht)
-
-	#Testing
-	print("pattern:", pattern)
-	print("text:", text)
-
 	#Define the score matrix
 	scores = []
 	#Define occ_p map
@@ -67,11 +62,11 @@ if __name__ == '__main__':
 			seenHashes[text[i]] = i
 
 	#Fill score matrix
-	for i in range(len(text)):
+	for j in range(len(text)):
 		#Add a new list to store all scores of this column
 		scores.append([])
 
-		for j in range(len(text)):
+		for i in range(len(text)):
 			if j < i:
 				continue
 			elif i == j:
@@ -82,44 +77,43 @@ if __name__ == '__main__':
 					scores[j].append([i, -1 - len(pattern)])
 			else:
 				#Update score
-				scores[j].append(scores[j - 1][i])
+				scores[j].append(list(scores[j - 1][i]))
 
 				if not text[j] in occp:
-					scores[j][-1] -= 1
+					scores[j][-1][1] -= 1
 				elif lastPos[j] >= i:
-					scores[j][-1] += 1
+					scores[j][-1][1] += 1
 				else:
-					scores[j][-1] += occp[text[j]] + 2
-
-	#Testing
-	print("scores:", scores)
+					scores[j][-1][1] += occp[text[j]] + 2
 
 	#Walk through score matrix and find maximal t-homologies
 	maxScores = {}
 
-	for i in range(len(text)):
-		for j in range(len(text) - 1, -1, -1):
+	for j in range(len(text) - 1, -1, -1):
+		for i in range(len(text)):
 			#We only have values for the upper half of the matrix
 			if i > j:
 				continue
 
 			#Check if we are in the first row
 			if i == 0:
-				#Check if we have already seen a relevant maximum
-				if i in maxScores:
-					#Check if we have found a maximal t-homology
-					if scores[i][j][1] > maxScores[i]:
-						#Update max
-						maxScores[i] = scores[i][j][1]
-						#Output t-homology
-						reportThomology(i, j, scores[i][j][1], pattern, text)
-				else:
-					#Check if we have found a t-homology
-					if scores[i][j][1] >= THRES:
-						#Save new max
-						maxScores[i] = scores[i][j][1]
-						#Output t-homology
-						reportThomology(i, j, scores[i][j][1], pattern, text)
+				#First and last hash in substring need to be shared
+				if text[i] in occp and text[j] in occp:
+					#Check if we have already seen a relevant maximum
+					if i in maxScores:
+						#Check if we have found a maximal t-homology
+						if scores[j][i][1] > maxScores[i]:
+							#Update max
+							maxScores[i] = scores[j][i][1]
+							#Output t-homology
+							reportThomology(i, j, scores[j][i][1], pattern, text)
+					else:
+						#Check if we have found a t-homology
+						if scores[j][i][1] >= THRES:
+							#Save new max
+							maxScores[i] = scores[j][i][1]
+							#Output t-homology
+							reportThomology(i, j, scores[j][i][1], pattern, text)
 			else:
 				if i - 1 in maxScores and i in maxScores:
 					#Take over maximum
@@ -130,16 +124,19 @@ if __name__ == '__main__':
 					maxScores[i] = maxScores[i - 1]
 
 				#Check if we have found a t-homology
-				if i in maxScores and scores[i][j][1] > maxScores[i]:
-					#Update max
-					maxScores[i] = scores[i][j][1]
-					#Output t-homology
-					reportThomology(i, j, scores[i][j][1], pattern, text)
-				elif scores[i][j][1] >= THRES:
-					#Update max
-					maxScores[i] = scores[i][j][1]
-					#Output t-homology
-					reportThomology(i, j, scores[i][j][1], pattern, text)
+				if  text[i] in occp and text[j] in occp:
+					if i in maxScores:
+						if scores[j][i][1] > maxScores[i]:
+							#Update max
+							maxScores[i] = scores[j][i][1]
+							#Output t-homology
+							reportThomology(i, j, scores[j][i][1], pattern, text)
+					else:
+						if scores[j][i][1] >= THRES:
+							#Update max
+							maxScores[i] = scores[j][i][1]
+							#Output t-homology
+							reportThomology(i, j, scores[j][i][1], pattern, text)
 
 			''' This is (hopefully) only a more complicated version of the above
 			#Check if we are dealing with the last column
