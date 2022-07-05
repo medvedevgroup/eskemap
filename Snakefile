@@ -4,8 +4,10 @@ NB_RANDSEQS=(config['nbCpys'] + 1) * config['nbSimSeqs']
 
 rule all:
 	input:
-		expand("../simulations/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}.txt", gn=config['nbSimSeqs'], rn=NB_RANDSEQS, gl=\
-			config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=config['mutationRates'] + [0])#,
+		expand("../simulations/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_c1_u1.txt", gn=config['nbSimSeqs'], \
+			rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=config['mutationRates'] + [0]),
+		expand("../simulations/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_c1_u3.txt", gn=config['nbSimSeqs'], \
+			rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=config['mutationRates'] + [0])
 		#expand("../simulations/scores_mes{mes}_n{n}_l{l}_m{m}_i{m}_d{m}.txt", mes=config['simMeasure'], n=\
 		#	config['nbSimSeqs'], l=config['simSeqLen'], m=config['mutationRates'])
 
@@ -71,8 +73,11 @@ rule constructSearchPairs:
 rule searchHomologies:
 	input:
 		"../simulations/searchPairs_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}.txt"
+	params:
+		c = "{c}",
+		u = "{u}"
 	output:
-		"../simulations/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}.txt"
+		"../simulations/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_c{c}_u{u}.txt"
 	run:
 		i = 0
 		for l in open(input[0], 'r'):
@@ -80,4 +85,4 @@ rule searchHomologies:
 			shell("echo Pair {i} >> {output}")
 			l = l.strip()
 			pattern, text = l.split(' ')
-			shell("python3 scripts/FindThoms.py -p {pattern} -s {text} >> {output}")
+			shell("python3 scripts/FindThoms.py -p {pattern} -s {text} -c {params.c} -u {params.u} >> {output}")
