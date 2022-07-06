@@ -1,13 +1,24 @@
 configfile: 'config.yaml'
 
+from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
+from Bio.Seq import Seq
+
 NB_RANDSEQS=(config['nbCpys'] + 1) * config['nbSimSeqs']
+
+def genOutput(wcs):
+	return "test.txt"
 
 rule all:
 	input:
 		expand("../simulations/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_c1_u1.txt", gn=config['nbSimSeqs'], \
-			rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=config['mutationRates'] + [0]),
+			rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=config['mutationRates']),
 		expand("../simulations/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_c1_u3.txt", gn=config['nbSimSeqs'], \
-			rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=config['mutationRates'] + [0])
+			rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=config['mutationRates']),
+		expand("../simulations/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_c1_u1.txt", gn=config['nbSimSeqs'], gl=\
+			config['geneLen'], m=config['mutationRates']),
+		expand("../simulations/searchPairs_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_ref{i}.fasta", gn=config['nbSimSeqs'], gl=\
+			config['geneLen'], m=config['mutationRates'], i=range(config['nbSimSeqs']))
 		#expand("../simulations/scores_mes{mes}_n{n}_l{l}_m{m}_i{m}_d{m}.txt", mes=config['simMeasure'], n=\
 		#	config['nbSimSeqs'], l=config['simSeqLen'], m=config['mutationRates'])
 
@@ -86,3 +97,34 @@ rule searchHomologies:
 			l = l.strip()
 			pattern, text = l.split(' ')
 			shell("python3 scripts/FindThoms.py -p {pattern} -s {text} -c {params.c} -u {params.u} >> {output}")
+
+rule createFASTApairs:
+	input:
+		"../simulations/searchPairs_{desc}.txt"
+	params:
+		"{i}"
+	output:
+		ref = "../simulations/searchPairs_{desc}_ref{i}.fasta",
+		qry = "../simulations/searchPairs_{desc}_qry{i}.fasta"
+	run:
+		c = 0
+		for l in open(input[0], 'r'):
+			if c == int(params[0]):
+				pattern, text = l.strip().split(' ')
+				SeqIO.write([SeqRecord(Seq(text), id=f"SearchPair_{params[0]}_ref")], output[0], "fasta")
+				SeqIO.write([SeqRecord(Seq(pattern), id=f"SearchPair_{params[0]}_qry")], output[1], "fasta")
+
+			c += 1
+
+rule runNucmer:
+	input:
+		ref = "../simulations/searchPairs_{desc}_ref{i}.fasta",
+		qry = "../simulations/searchPairs_{desc}_qry{i}.fasta"
+	output:
+		"../simulations/nucmerAlignments_{desc}_p{i}.delta"
+	shell:
+		"/homes/tischulz/usr/local/bin/nucmer --prefix ../simulations/nucmerAlignments_{wildcards.desc}_p{wildcards.i} " + \
+		"{input.ref} {input.qry}"
+
+rule getAlignmentCoords:
+	input:
