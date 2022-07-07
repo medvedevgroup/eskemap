@@ -17,8 +17,14 @@ rule all:
 			rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=config['mutationRates']),
 		expand("../simulations/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_c1_u1.txt", gn=config['nbSimSeqs'], gl=\
 			config['geneLen'], m=config['mutationRates']),
-		expand("../simulations/searchPairs_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_ref{i}.fasta", gn=config['nbSimSeqs'], gl=\
-			config['geneLen'], m=config['mutationRates'], i=range(config['nbSimSeqs']))
+		expand("../simulations/nucmerAlignments_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_p{i}.coords", gn=config['nbSimSeqs'],\
+			gl=config['geneLen'], m=config['mutationRates'], i=range(config['nbSimSeqs'])),
+		expand("../simulations/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_p{i}.coords", gn=\
+			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
+			config['mutationRates'], i=range(config['nbSimSeqs'])),
+		expand("../simulations/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_maxmatch_p{i}.coords", gn=\
+			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
+			config['mutationRates'], i=range(config['nbSimSeqs']))
 		#expand("../simulations/scores_mes{mes}_n{n}_l{l}_m{m}_i{m}_d{m}.txt", mes=config['simMeasure'], n=\
 		#	config['nbSimSeqs'], l=config['simSeqLen'], m=config['mutationRates'])
 
@@ -118,13 +124,28 @@ rule createFASTApairs:
 
 rule runNucmer:
 	input:
-		ref = "../simulations/searchPairs_{desc}_ref{i}.fasta",
-		qry = "../simulations/searchPairs_{desc}_qry{i}.fasta"
+		ref = "../simulations/searchPairs_{desc}_d{d}_ref{i}.fasta",
+		qry = "../simulations/searchPairs_{desc}_d{d}_qry{i}.fasta"
 	output:
-		"../simulations/nucmerAlignments_{desc}_p{i}.delta"
+		"../simulations/nucmerAlignments_{desc}_d{d, [0,1].[0-9]+}_p{i}.delta"
 	shell:
 		"/homes/tischulz/usr/local/bin/nucmer --prefix ../simulations/nucmerAlignments_{wildcards.desc}_p{wildcards.i} " + \
 		"{input.ref} {input.qry}"
 
+rule runMaxmatchNucmer:
+	input:
+		ref = "../simulations/searchPairs_{desc}_ref{i}.fasta",
+		qry = "../simulations/searchPairs_{desc}_qry{i}.fasta"
+	output:
+		"../simulations/nucmerAlignments_{desc}_maxmatch_p{i}.delta"
+	shell:
+		"/homes/tischulz/usr/local/bin/nucmer --prefix ../simulations/nucmerAlignments_{wildcards.desc}_maxmatch_p{wildcards.i} " + \
+		"--maxmatch {input.ref} {input.qry}"
+
 rule getAlignmentCoords:
 	input:
+		"../simulations/nucmerAlignments_{desc}.delta"
+	output:
+		"../simulations/nucmerAlignments_{desc}.coords"
+	shell:
+		"/homes/tischulz/usr/local/bin/show-coords {input} > {output}"
