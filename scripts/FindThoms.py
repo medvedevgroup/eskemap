@@ -5,14 +5,15 @@ from math import inf, floor
 from CalcLocInterSim import calcSketch
 from sys import stdout
 
-#This script outputs all t-homologies between two given sequences considering the intersection similarity measure (as defined on June 16 2022) and 
-#using a dynamic programming algorithm 
+#This script outputs all t-homologies between two given sequences considering the intersection similarity measure (as defined on June 16 2022 with 
+# a modification to treat duplications from July 11 2022) and using a dynamic programming algorithm 
 
 #This function reports a t-homology
 def reportThomology(intStart, intEnd, score, pattern, text):
 	print(f"[{intStart},{intEnd}]:", score)
-	print("p:", pattern)
-	print("t[i,j]:", text[intStart:intEnd + 1])
+
+	# print("p:", pattern)
+	# print("t[i,j]:", text[intStart:intEnd + 1])
 
 if __name__ == '__main__':
 	#Setting up the argument parser
@@ -43,8 +44,9 @@ if __name__ == '__main__':
 	scores = []
 	#Define occ_p map
 	occp = {}
-	#Define last position array in order to answer queries on u(s[i,j])
-	lastPos = []
+
+	# #Define last position array in order to answer queries on u(s[i,j])
+	# lastPos = []
 
 	#Set threshold correctly
 	if not arguments.t:
@@ -55,24 +57,35 @@ if __name__ == '__main__':
 	#Fill occ_p map
 	for h in pattern:
 		if h in occp:
-			occp[h] += 1
-		else:
-			occp[h] = 1
+			#Testing
+			# print("Duplicate found in pattern")
 
-	#Fill lastPos array
-	seenHashes = {}
-
-	for i in range(len(text)):
-		if text[i] in seenHashes:
-			lastPos.append(seenHashes[text[i]])
-			seenHashes[text[i]] = i
+			occp[h][0] += 1
 		else:
-			lastPos.append(-1)
-			seenHashes[text[i]] = i
+			#Testing
+			# print("First occurrence found in pattern")
+
+			occp[h] = [1]
 
 	#Testing
-	print("Pattern:",  pattern)
-	print("Text:", text)
+	# print("pattern:", pattern)
+	# print("occp:", occp)
+	# exit(0)
+
+	# #Fill lastPos array
+	# seenHashes = {}
+
+	# for i in range(len(text)):
+	# 	if text[i] in seenHashes:
+	# 		lastPos.append(seenHashes[text[i]])
+	# 		seenHashes[text[i]] = i
+	# 	else:
+	# 		lastPos.append(-1)
+	# 		seenHashes[text[i]] = i
+
+	#Testing
+	# print("Pattern:",  pattern)
+	# print("Text:", text)
 
 	#Fill score matrix
 	for j in range(len(text)):
@@ -86,36 +99,49 @@ if __name__ == '__main__':
 				#Calculate initial score
 				if text[j] in occp:
 					#Testing
-					#print("Option 1/5")
+					# print("Option 1/4")
 
-					scores[j].append([i, arguments.c * (occp[text[j]] + 1) - arguments.u * (len(pattern) - occp[text[j]])])
+					occp[text[j]].append(occp[text[j]][0] - 1)
+					scores[j].append([i, 2 * arguments.c - (len(pattern) - 1) * arguments.u])
 				else:
 					#Testing
-					#print("Option 2/5")
+					# print("Option 2/4")
 
 					scores[j].append([i, arguments.u * (-1 - len(pattern))])
 			else:
 				#Update score
 				scores[j].append(list(scores[j - 1][i]))
 
-				if not text[j] in occp:
+				if text[j] in occp and len(occp[text[j]]) < i + 2:
+					occp[text[j]].append(occp[text[j]][0] - 1)
+				elif text[j] in occp:
 					#Testing
-					#print("Option 3/5")
+					# print("Duplication found")
+
+					occp[text[j]][i + 1] -= 1
+
+				if not text[j] in occp or occp[text[j]][i + 1] < 0:
+					#Testing
+					# print("Option 3/4")
+					# print("text[j] in occp:", text[j] in occp)
+					# if text[j] in occp:
+					# 	print("occp[text[j]][i + 1] < 0", occp[text[j]][i + 1] < 0)
 
 					scores[j][-1][1] -= arguments.u
-				elif lastPos[j] >= i:
-					#Testing
-					#print("Option 4/5")
+				# elif lastPos[j] >= i:
+				# 	#Testing
+				# 	#print("Option 4/5")
 
-					scores[j][-1][1] += arguments.c
+				# 	scores[j][-1][1] += arguments.c
 				else:
 					#Testing
-					#print("Option 5/5")
+					# print("Option 4/4")
 
-					scores[j][-1][1] += arguments.c * 2 + arguments.u * occp[text[j]]
+					scores[j][-1][1] += arguments.c * 2 + arguments.u
 
 	#Testing
 	# print("scores:", scores)
+	# print("occp:", occp)
 	# exit(0)
 
 	#Walk through score matrix and find maximal t-homologies
@@ -126,11 +152,18 @@ if __name__ == '__main__':
 			#We only have values for the upper half of the matrix
 			if i > j:
 				continue
+			
+			#Update occp
+			if text[j] in occp:
+				occp[text[j]][i + 1] += 1
 
 			#Check if we are in the first row
 			if i == 0:
 				#First and last hash in substring need to be shared
-				if text[i] in occp and text[j] in occp:
+				if text[i] in occp and text[j] in occp and occp[text[j]][i + 1] > 0:
+					#Testing
+					# print("Potential t-homology starting at position 0 detected")
+
 					#Check if we have already seen a relevant maximum
 					if i in maxScores:
 						#Check if we have found a maximal t-homology
@@ -156,7 +189,10 @@ if __name__ == '__main__':
 					maxScores[i] = maxScores[i - 1]
 
 				#Check if we have found a t-homology
-				if  text[i] in occp and text[j] in occp:
+				if  text[i] in occp and text[j] in occp and occp[text[j]][i + 1] > 0:
+					#Testing
+					# print("Potential t-homology starting at position i>0 detected")
+					
 					if i in maxScores:
 						if scores[j][i][1] > maxScores[i]:
 							#Update max
@@ -170,71 +206,5 @@ if __name__ == '__main__':
 							#Output t-homology
 							reportThomology(i, j, scores[j][i][1], pattern, text)
 
-			''' This is (hopefully) only a more complicated version of the above
-			#Check if we are dealing with the last column
-			if j == len(text) - 1:
-				#The upper, right corner is an exceptional case
-				if i == 0:
-					#Check if we are dealing with a t-homology
-					if scores[i][j] >= THRES:
-						#Save new max
-						maxScores[i] = scores[i][j]
-						#Output t-homology
-						reportThomology(i, j, scores[i][j], pattern, text)
-				else:
-					#Check if we have already found a maximum
-					if i - 1 in maxScores:
-						#In the last column a max for the last row is also a max for the current row
-						maxScores[i] = maxScores[i - 1]
-				
-						#Check if we are dealing with a maximum t-homology
-						if scores[i][j] > maxScores[i]:
-							#Save new max
-							maxScores[i] = scores[i][j]
-							#Output t-homology
-							reportThomology(i, j, scores[i][j], pattern, text)
-					#Check if we have found the first t-homology
-					elif scores[i][j] >= THRES:
-						maxScores[i] = scores[i][j]
-						#Output t-homology
-						reportThomology(i, j, scores[i][j], pattern, text)
-			else:
-				#Check if we are dealing with the first row
-				if i == 0:
-					#Check if we have already seen a relevant maximum
-					if i in maxScores:
-						#Check if we have found a maximal t-homology
-						if scores[i][j] > maxScores[i]:
-							#Update max
-							maxScores[i] = scores[i][j]
-							#Output t-homology
-							reportThomology(i, j, scores[i][j], pattern, text)
-					else:
-						#Check if we have found a t-homology
-						if scores[i][j] >= THRES:
-							#Save new max
-							maxScores[i] = scores[i][j]
-							#Output t-homology
-							reportThomology(i, j, scores[i][j], pattern, text)
-				#Check if we have already found a maximum in preceding rows and the last column
-				else:
-					if i - 1 in maxScores and i in maxScores:
-						#Take over maximum
-						maxScores[i] = max(maxScores[i - 1], maxScores[i])
-					#Check if we have only found a maximum in a preceding row
-					elif i - 1 in maxScores:
-						#Take over maximum
-						maxScores[i] = maxScores[i - 1]
-
-					#Check if we have found a t-homology
-					if i in maxScores and scores[i][j] > maxScores[i]:
-						#Update max
-						maxScores[i] = scores[i][j]
-						#Output t-homology
-						reportThomology(i, j, scores[i][j], pattern, text)
-					elif scores[i][j] >= THRES:
-						#Update max
-						maxScores[i] = scores[i][j]
-						#Output t-homology
-						reportThomology(i, j, scores[i][j], pattern, text)
-		'''
+#Testing
+# print("occp:", occp)
