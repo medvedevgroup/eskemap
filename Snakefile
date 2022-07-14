@@ -24,9 +24,33 @@ rule all:
 			config['mutationRates'], i=range(config['nbSimSeqs'])),
 		expand("../simulations/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_maxmatch_p{i}.coords", gn=\
 			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
-			config['mutationRates'], i=range(config['nbSimSeqs']))
+			config['mutationRates'], i=range(config['nbSimSeqs'])),
+		"../simulations/minimap2Res/SAL_GB9998AA_AS_cR103_ep23:31:46_0001.sam"
 		#expand("../simulations/scores_mes{mes}_n{n}_l{l}_m{m}_i{m}_d{m}.txt", mes=config['simMeasure'], n=\
 		#	config['nbSimSeqs'], l=config['simSeqLen'], m=config['mutationRates'])
+
+rule runMinimap2:
+	input:
+		ref = "../simulations/genomes/{genome}.fasta",
+		qry = "../simulations/reads/{genome}_c{chem}_ep{dRat}_0001.fastq"
+	output:
+		"../simulations/minimap2Res/{genome}_c{chem}_ep{dRat}_0001.sam"
+	shell:
+		"minimap2 -ax map-ont {input.ref} {input.qry} > {output}"
+
+rule simReads:
+	input:
+		ref = "../simulations/genomes/{genome}.fasta",
+		model = "../software/pbsim2/data/{chem}.model"
+	params:
+		"{dRat}"
+	output:
+		rds = expand("../simulations/reads/{g}_c{c}_ep{d}_0001.{s}", g="{genome}", c="{chem}", d="{dRat}", \
+			s=config['pbsimOutFlSufs']),
+		log = "../simulations/reads/{genome}_c{chem}_ep{dRat}_0001.log"
+	shell:
+		"pbsim --hmm_model {input.model} --difference-ratio {params} --prefix $(echo {output.log} | sed 's/_0001.log//g') " + \
+		"{input.ref} 2> {output.log}"
 
 rule simSeqs:
 	output:
@@ -52,7 +76,7 @@ rule measureSimilarity:
 
 rule simGeneSeqs:
 	output:
-		"../simulations/simGeneSeqs_n{n}_l{l}_o{o}_m{m}_i{i}_d{d}.ssv"
+		"../simulations/geneSeqs/simGeneSeqs_n{n}_l{l}_o{o}_m{m}_i{i}_d{d}.ssv"
 	shell:
 		"python3 scripts/SimSeqPairs.py -n {wildcards.n} -l {wildcards.l} -o {wildcards.o} -m {wildcards.m} -i {wildcards.i} -d " + \
 		"{wildcards.d} > {output}"
@@ -65,10 +89,10 @@ rule genRandSeqs:
 
 rule constructSearchPairs:
 	input:
-		"../simulations/simGeneSeqs_n{gn}_l{gl}_o{o}_m{m}_i{i}_d{d}.ssv",
+		"../simulations/geneSeqs/simGeneSeqs_n{gn}_l{gl}_o{o}_m{m}_i{i}_d{d}.ssv",
 		"../simulations/randSeqs_n{rn}_l{rl}_m{m}_i{i}_d{d}.ssv"
 	output:
-		"../simulations/searchPairs_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}.txt"
+		"../simulations/searchPairs/searchPairs_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}.txt"
 	run:
 		randSeqFile = open(input[1], 'r')
 		randSeqFile.readline()
@@ -89,7 +113,7 @@ rule constructSearchPairs:
 
 rule searchHomologies:
 	input:
-		"../simulations/searchPairs_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}.txt"
+		"../simulations/searchPairs/searchPairs_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}.txt"
 	params:
 		c = "{c}",
 		u = "{u}"
@@ -106,12 +130,12 @@ rule searchHomologies:
 
 rule createFASTApairs:
 	input:
-		"../simulations/searchPairs_{desc}.txt"
+		"../simulations/searchPairs/searchPairs_{desc}.txt"
 	params:
 		"{i}"
 	output:
-		ref = "../simulations/searchPairs_{desc}_ref{i}.fasta",
-		qry = "../simulations/searchPairs_{desc}_qry{i}.fasta"
+		ref = "../simulations/searchPairs/searchPairs_{desc}_ref{i}.fasta",
+		qry = "../simulations/searchPairs/searchPairs_{desc}_qry{i}.fasta"
 	run:
 		c = 0
 		for l in open(input[0], 'r'):
@@ -124,8 +148,8 @@ rule createFASTApairs:
 
 rule runNucmer:
 	input:
-		ref = "../simulations/searchPairs_{desc}_d{d}_ref{i}.fasta",
-		qry = "../simulations/searchPairs_{desc}_d{d}_qry{i}.fasta"
+		ref = "../simulations/searchPairs/searchPairs_{desc}_d{d}_ref{i}.fasta",
+		qry = "../simulations/searchPairs/searchPairs_{desc}_d{d}_qry{i}.fasta"
 	output:
 		"../simulations/nucmerAlignments_{desc}_d{d, [0,1].[0-9]+}_p{i}.delta"
 	shell:
@@ -134,8 +158,8 @@ rule runNucmer:
 
 rule runMaxmatchNucmer:
 	input:
-		ref = "../simulations/searchPairs_{desc}_ref{i}.fasta",
-		qry = "../simulations/searchPairs_{desc}_qry{i}.fasta"
+		ref = "../simulations/searchPairs/searchPairs_{desc}_ref{i}.fasta",
+		qry = "../simulations/searchPairs/searchPairs_{desc}_qry{i}.fasta"
 	output:
 		"../simulations/nucmerAlignments_{desc}_maxmatch_p{i}.delta"
 	shell:

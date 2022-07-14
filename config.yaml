@@ -6,3 +6,4 @@ geneLen: 1000
 nbCpys: 3
 randSeqLen: 500
 nbRandSeqs: 400
+pbsimOutFlSufs: ["ref", "fastq", "maf"]
