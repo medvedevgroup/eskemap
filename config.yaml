@@ -7,3 +7,5 @@ nbCpys: 3
 randSeqLen: 500
 nbRandSeqs: 400
 pbsimOutFlSufs: ["ref", "fastq", "maf"]
+errorPatterns: ["23:31:46", "46:62:92", "92:124:184"]
+genomes: ["SAL_GB9998AA_AS", "GCF_000001405.40_GRCh38.p14_genomic"]

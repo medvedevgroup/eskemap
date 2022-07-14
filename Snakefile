@@ -25,7 +25,7 @@ rule all:
 		expand("../simulations/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_maxmatch_p{i}.coords", gn=\
 			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
 			config['mutationRates'], i=range(config['nbSimSeqs'])),
-		"../simulations/minimap2Res/SAL_GB9998AA_AS_cR103_ep23:31:46_0001.sam"
+		expand("../simulations/minimap2Res/SAL_GB9998AA_AS_cR103_ep{ep}_0001.sam", ep=config['errorPatterns'])
 		#expand("../simulations/scores_mes{mes}_n{n}_l{l}_m{m}_i{m}_d{m}.txt", mes=config['simMeasure'], n=\
 		#	config['nbSimSeqs'], l=config['simSeqLen'], m=config['mutationRates'])
 
