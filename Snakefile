@@ -4,10 +4,7 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 
-NB_RANDSEQS=(config['nbCpys'] + 1) * config['nbSimSeqs']
-
-def genOutput(wcs):
-	return "test.txt"
+NB_RANDSEQS = (config['nbCpys'] + 1) * config['nbSimSeqs']
 
 rule all:
 	input:
@@ -17,24 +14,45 @@ rule all:
 			rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=config['mutationRates']),
 		expand("../simulations/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_c1_u1.txt", gn=config['nbSimSeqs'], gl=\
 			config['geneLen'], m=config['mutationRates']),
-		expand("../simulations/nucmerAlignments_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_p{i}.coords", gn=config['nbSimSeqs'],\
-			gl=config['geneLen'], m=config['mutationRates'], i=range(config['nbSimSeqs'])),
-		expand("../simulations/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_p{i}.coords", gn=\
+		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_p{i}.coords", \
+			gn=config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], i=range(config['nbSimSeqs'])),
+		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_p{i}.coords", gn=\
 			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
 			config['mutationRates'], i=range(config['nbSimSeqs'])),
-		expand("../simulations/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_maxmatch_p{i}.coords", gn=\
+		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_maxmatch_p{i}.coords", gn=\
 			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
 			config['mutationRates'], i=range(config['nbSimSeqs'])),
-		expand("../simulations/minimap2Res/SAL_GB9998AA_AS_cR103_ep{ep}_0001.sam", ep=config['errorPatterns'])
+		expand("../simulations/{p}Res/{g}_cR103_ep{ep}.sam", p=config['prog'], g=config['genomes'], ep=config['errorPatterns'])
 		#expand("../simulations/scores_mes{mes}_n{n}_l{l}_m{m}_i{m}_d{m}.txt", mes=config['simMeasure'], n=\
 		#	config['nbSimSeqs'], l=config['simSeqLen'], m=config['mutationRates'])
+
+# rule reproduceSimulation:
+# 	input:
+		
+rule buildBWAindex:
+	input:
+		"../simulations/genomes/{genome}.fasta"
+	output:
+		temp(expand("../simulations/genomes/{g}.fasta.{s}", g="{genome}", s=config['bwaIdxFileSufs']))
+	shell:
+		"bwa index {input}"
+
+rule runBWAmem:
+	input:
+		ref = "../simulations/genomes/{genome}.fasta",
+		idx = expand("../simulations/genomes/{g}.fasta.{s}", g="{genome}", s=config['bwaIdxFileSufs']),
+		rds = "../simulations/reads/{genome}_c{chem}_ep{dRat}.fastq"
+	output:
+		"../simulations/bwamemRes/{genome}_c{chem}_ep{dRat}.sam"
+	shell:
+		"bwa mem {input.ref} {input.rds} > {output}"
 
 rule runMinimap2:
 	input:
 		ref = "../simulations/genomes/{genome}.fasta",
-		qry = "../simulations/reads/{genome}_c{chem}_ep{dRat}_0001.fastq"
+		qry = "../simulations/reads/{genome}_c{chem}_ep{dRat}.fastq"
 	output:
-		"../simulations/minimap2Res/{genome}_c{chem}_ep{dRat}_0001.sam"
+		"../simulations/minimap2Res/{genome}_c{chem}_ep{dRat}.sam"
 	shell:
 		"minimap2 -ax map-ont {input.ref} {input.qry} > {output}"
 
@@ -45,12 +63,11 @@ rule simReads:
 	params:
 		"{dRat}"
 	output:
-		rds = expand("../simulations/reads/{g}_c{c}_ep{d}_0001.{s}", g="{genome}", c="{chem}", d="{dRat}", \
-			s=config['pbsimOutFlSufs']),
-		log = "../simulations/reads/{genome}_c{chem}_ep{dRat}_0001.log"
+		rds = "../simulations/reads/{genome}_c{chem}_ep{dRat}.fastq",
+		log = "../simulations/reads/{genome}_c{chem}_ep{dRat}.log"
 	shell:
-		"pbsim --hmm_model {input.model} --difference-ratio {params} --prefix $(echo {output.log} | sed 's/_0001.log//g') " + \
-		"{input.ref} 2> {output.log}"
+		"pbsim --hmm_model {input.model} --difference-ratio {params} --prefix $(echo {output.log} | sed 's/.log//g')" + \
+		" {input.ref} 2> {output.log}; cat $(echo {output.log} | sed 's/.log//g')_*.fastq > {output.rds}; rm $(echo {output.log} | sed 's/.log//g')_*.fastq"
 
 rule simSeqs:
 	output:
@@ -151,9 +168,9 @@ rule runNucmer:
 		ref = "../simulations/searchPairs/searchPairs_{desc}_d{d}_ref{i}.fasta",
 		qry = "../simulations/searchPairs/searchPairs_{desc}_d{d}_qry{i}.fasta"
 	output:
-		"../simulations/nucmerAlignments_{desc}_d{d, [0,1].[0-9]+}_p{i}.delta"
+		"../simulations/nucmer/nucmerAlignments_{desc}_d{d, [0,1].[0-9]+}_p{i}.delta"
 	shell:
-		"/homes/tischulz/usr/local/bin/nucmer --prefix ../simulations/nucmerAlignments_{wildcards.desc}_p{wildcards.i} " + \
+		"/homes/tischulz/usr/local/bin/nucmer --prefix ../simulations/nucmer/nucmerAlignments_{wildcards.desc}_p{wildcards.i} " + \
 		"{input.ref} {input.qry}"
 
 rule runMaxmatchNucmer:
@@ -161,15 +178,15 @@ rule runMaxmatchNucmer:
 		ref = "../simulations/searchPairs/searchPairs_{desc}_ref{i}.fasta",
 		qry = "../simulations/searchPairs/searchPairs_{desc}_qry{i}.fasta"
 	output:
-		"../simulations/nucmerAlignments_{desc}_maxmatch_p{i}.delta"
+		"../simulations/nucmer/nucmerAlignments_{desc}_maxmatch_p{i}.delta"
 	shell:
-		"/homes/tischulz/usr/local/bin/nucmer --prefix ../simulations/nucmerAlignments_{wildcards.desc}_maxmatch_p{wildcards.i} " + \
-		"--maxmatch {input.ref} {input.qry}"
+		"/homes/tischulz/usr/local/bin/nucmer --prefix ../simulations/nucmer/nucmerAlignments_{wildcards.desc}_maxmatch_p" + \
+		"{wildcards.i} --maxmatch {input.ref} {input.qry}"
 
 rule getAlignmentCoords:
 	input:
-		"../simulations/nucmerAlignments_{desc}.delta"
+		"../simulations/nucmer/nucmerAlignments_{desc}.delta"
 	output:
-		"../simulations/nucmerAlignments_{desc}.coords"
+		"../simulations/nucmer/nucmerAlignments_{desc}.coords"
 	shell:
 		"/homes/tischulz/usr/local/bin/show-coords {input} > {output}"
