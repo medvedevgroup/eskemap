@@ -8,6 +8,7 @@ randSeqLen: 500
 nbRandSeqs: 400
 pbsimOutFlSufs: ["ref", "fastq", "maf"]
 errorPatterns: ["23:31:46", "46:62:92", "92:124:184", "184:248:368", "368:496:736"]
-genomes: ["SAL_GB9998AA_AS", "humanChr20"] #, "GCF_000001405.40_GRCh38.p14_genomic"
+genomes: ["SAL_GB9998AA_AS", "humanChr20", "wheetChr1A-D"] #, "GCF_000001405.40_GRCh38.p14_genomic" 
 bwaIdxFileSufs: ["amb", "ann", "bwt", "pac", "sa"]
 prog: ["minimap2", "bwamem"]
+scoringPatterns: ["c1_u1", "c1_u3", "c9_u1"]

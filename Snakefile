@@ -3,17 +3,44 @@ configfile: 'config.yaml'
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
+from os.path import exists
+from random import randrange
+from sys import maxsize
 
 NB_RANDSEQS = (config['nbCpys'] + 1) * config['nbSimSeqs']
 
+def matchProgCallToSeed(wcs):
+	samFiles = []
+	sdToCall = {}
+
+	for g in config['genomes']:
+		for e in config['errorPatterns']:
+			readSimLogFile = f"../simulations/reads/{g}_cR103_ep{e}.log"
+
+			if exists(readSimLogFile):
+				for l in open(readSimLogFile, 'r'):
+					if l.startswith("seed"):
+						seed = l.strip().split(' ')[2]
+						break
+			else:
+				seed = str(randrange(maxsize))
+
+			sdToCall[g, e] = seed
+
+	for p in config['prog']:
+		for g in config['genomes']:
+			for e in config['errorPatterns']:
+				samFiles.append(f"../simulations/{p}Res/{g}_cR103_ep{e}_s{sdToCall[g, e]}.sam.gz")
+
+	return samFiles
+
 rule all:
 	input:
-		expand("../simulations/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_c1_u1.txt", gn=config['nbSimSeqs'], \
-			rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=config['mutationRates']),
-		expand("../simulations/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_c1_u3.txt", gn=config['nbSimSeqs'], \
-			rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=config['mutationRates']),
-		expand("../simulations/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_c1_u1.txt", gn=config['nbSimSeqs'], gl=\
-			config['geneLen'], m=config['mutationRates']),
+		expand("../simulations/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}.txt", gn=config['nbSimSeqs'], \
+			rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=config['mutationRates'], sp=\
+			config['scoringPatterns']),
+		expand("../simulations/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}.txt", gn=config['nbSimSeqs'], gl=\
+			config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns']),
 		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_p{i}.coords", \
 			gn=config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], i=range(config['nbSimSeqs'])),
 		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_p{i}.coords", gn=\
@@ -22,12 +49,9 @@ rule all:
 		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_maxmatch_p{i}.coords", gn=\
 			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
 			config['mutationRates'], i=range(config['nbSimSeqs'])),
-		expand("../simulations/{p}Res/{g}_cR103_ep{ep}.sam", p=config['prog'], g=config['genomes'], ep=config['errorPatterns'])
+		matchProgCallToSeed
 		#expand("../simulations/scores_mes{mes}_n{n}_l{l}_m{m}_i{m}_d{m}.txt", mes=config['simMeasure'], n=\
 		#	config['nbSimSeqs'], l=config['simSeqLen'], m=config['mutationRates'])
-
-# rule reproduceSimulation:
-# 	input:
 		
 rule buildBWAindex:
 	input:
@@ -41,20 +65,37 @@ rule runBWAmem:
 	input:
 		ref = "../simulations/genomes/{genome}.fasta",
 		idx = expand("../simulations/genomes/{g}.fasta.{s}", g="{genome}", s=config['bwaIdxFileSufs']),
-		rds = "../simulations/reads/{genome}_c{chem}_ep{dRat}.fastq"
+		rds = "../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}.fastq.gz"
 	output:
-		"../simulations/bwamemRes/{genome}_c{chem}_ep{dRat}.sam"
+		"../simulations/bwamemRes/{genome}_c{chem}_ep{dRat}_s{seed}.sam.gz"
 	shell:
-		"bwa mem {input.ref} {input.rds} > {output}"
+		"bwa mem {input.ref} {input.rds} | gzip -3 > {output}"
 
 rule runMinimap2:
 	input:
 		ref = "../simulations/genomes/{genome}.fasta",
-		qry = "../simulations/reads/{genome}_c{chem}_ep{dRat}.fastq"
+		qry = "../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}.fastq.gz"
 	output:
-		"../simulations/minimap2Res/{genome}_c{chem}_ep{dRat}.sam"
+		"../simulations/minimap2Res/{genome}_c{chem}_ep{dRat}_s{seed}.sam.gz"
 	shell:
-		"minimap2 -ax map-ont {input.ref} {input.qry} > {output}"
+		"minimap2 -ax map-ont {input.ref} {input.qry} | gzip -3 > {output}"
+
+rule reproduceSimulation:
+	input:
+		ref = "../simulations/genomes/{genome}.fasta",
+		model = "../software/pbsim2/data/{chem}.model"
+	params:
+		dr = "{dRat}",
+		sd = "{seed}"
+	output:
+		rds = temp("../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}.fastq.gz"),
+		maf = temp("../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}.maf.gz"),
+		log = "../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}.log"
+	shell:
+		"pbsim --hmm_model {input.model} --difference-ratio {params.dr} --prefix $(echo {output.log} | sed 's/.log//g') --seed " + \
+		"{params.sd} {input.ref} 2> {output.log}; cat $(echo {output.log} | sed 's/.log//g')_*.fastq | gzip -3 > {output.rds}; " + \
+		"cat $(echo {output.log} | sed 's/.log//g')_*.maf | gzip -3 > {output.maf}; rm $(echo {output.log} | sed " + \
+		"'s/.log//g')_*.{{maf,ref,fastq}}"
 
 rule simReads:
 	input:
@@ -63,11 +104,12 @@ rule simReads:
 	params:
 		"{dRat}"
 	output:
-		rds = "../simulations/reads/{genome}_c{chem}_ep{dRat}.fastq",
+		rds = temp("../simulations/reads/{genome}_c{chem}_ep{dRat}.fastq"),
 		log = "../simulations/reads/{genome}_c{chem}_ep{dRat}.log"
 	shell:
 		"pbsim --hmm_model {input.model} --difference-ratio {params} --prefix $(echo {output.log} | sed 's/.log//g')" + \
-		" {input.ref} 2> {output.log}; cat $(echo {output.log} | sed 's/.log//g')_*.fastq > {output.rds}; rm $(echo {output.log} | sed 's/.log//g')_*.fastq"
+		" {input.ref} 2> {output.log}; cat $(echo {output.log} | sed 's/.log//g')_*.fastq > {output.rds}; rm $(echo " + \
+		"{output.log} | sed 's/.log//g')_*.{{ref,fastq}}"
 
 rule simSeqs:
 	output:

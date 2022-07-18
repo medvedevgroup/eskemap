@@ -14,6 +14,7 @@ def reportThomology(intStart, intEnd, score, pattern, text):
 
 	# print("p:", pattern)
 	# print("t[i,j]:", text[intStart:intEnd + 1])
+	print("maxNbSketches(pattern,text):", max(len(pattern), j - i + 1))
 
 if __name__ == '__main__':
 	#Setting up the argument parser
