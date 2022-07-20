@@ -92,9 +92,9 @@ rule reproduceSimulation:
 		maf = temp("../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}.maf.gz"),
 		log = "../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}.log"
 	shell:
-		"pbsim --hmm_model {input.model} --difference-ratio {params.dr} --prefix $(echo {output.log} | sed 's/.log//g') --seed " + \
-		"{params.sd} {input.ref} 2> {output.log}; cat $(echo {output.log} | sed 's/.log//g')_*.fastq | gzip -3 > {output.rds}; " + \
-		"cat $(echo {output.log} | sed 's/.log//g')_*.maf | gzip -3 > {output.maf}; rm $(echo {output.log} | sed " + \
+		"pbsim --hmm_model {input.model} --difference-ratio {params.dr} --prefix $(echo {output.log} | sed 's/.log//g') --depth" + \
+		" 10.0 --seed {params.sd} {input.ref} 2> {output.log}; cat $(echo {output.log} | sed 's/.log//g')_*.fastq | gzip -3 > " + \
+		"{output.rds}; cat $(echo {output.log} | sed 's/.log//g')_*.maf | gzip -3 > {output.maf}; rm $(echo {output.log} | sed " + \
 		"'s/.log//g')_*.{{maf,ref,fastq}}"
 
 rule simReads:
@@ -107,8 +107,8 @@ rule simReads:
 		rds = temp("../simulations/reads/{genome}_c{chem}_ep{dRat}.fastq"),
 		log = "../simulations/reads/{genome}_c{chem}_ep{dRat}.log"
 	shell:
-		"pbsim --hmm_model {input.model} --difference-ratio {params} --prefix $(echo {output.log} | sed 's/.log//g')" + \
-		" {input.ref} 2> {output.log}; cat $(echo {output.log} | sed 's/.log//g')_*.fastq > {output.rds}; rm $(echo " + \
+		"pbsim --hmm_model {input.model} --difference-ratio {params} --prefix $(echo {output.log} | sed 's/.log//g') --depth " + \
+		"10.0 {input.ref} 2> {output.log}; cat $(echo {output.log} | sed 's/.log//g')_*.fastq > {output.rds}; rm $(echo " + \
 		"{output.log} | sed 's/.log//g')_*.{{ref,fastq}}"
 
 rule simSeqs:
