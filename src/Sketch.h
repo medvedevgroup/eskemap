@@ -11,6 +11,8 @@
 #define K 9
 //The hash value threshold
 #define MAX_HASH 26214
+//The FracMinHash ratio
+#define HASH_RATIO 0.1
 
 using namespace std;
 //A Sketch is a list of offset hash pairs

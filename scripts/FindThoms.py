@@ -4,6 +4,8 @@ import argparse as args
 from math import inf, floor
 from CalcLocInterSim import calcSketch
 from sys import stdout
+from os.path import exists
+from Bio import SeqIO
 
 #This script outputs all t-homologies between two given sequences considering the intersection similarity measure (as defined on June 16 2022 with 
 # a modification to treat duplications from July 11 2022) and using a dynamic programming algorithm 
@@ -19,8 +21,8 @@ def reportThomology(intStart, intEnd, score, pattern, text):
 if __name__ == '__main__':
 	#Setting up the argument parser
 	parser = args.ArgumentParser(description="This script searches for t-homologies between two sequences.")
-	parser.add_argument('-p', metavar='Pattern', type=str, required=True, help="The pattern sequence")
-	parser.add_argument('-s', metavar='Text', type=str, required=True, help="The text sequence")
+	parser.add_argument('-p', metavar='Pattern', type=str, required=True, help="The pattern sequence (plain sequence or FASTA file)")
+	parser.add_argument('-s', metavar='Text', type=str, required=True, help="The text sequence (plain sequence or FASTA file)")
 	parser.add_argument('-t', metavar='Tthres', type=int, help="The t-homology threshold. Default is negative length of pattern " + \
 		"sketch times weight for unique hashes")
 	parser.add_argument('-k', metavar='KmerLen', type=int, default=9, help="The k-mer length to use")
@@ -38,9 +40,21 @@ if __name__ == '__main__':
 
 	#Calculate hash threshold
 	ht = floor(((4 ** arguments.k) - 1) * arguments.r)
+
 	#Calculate sketches from sequences
-	pattern = calcSketch(arguments.p, arguments.k, ht)
-	text = calcSketch(arguments.s, arguments.k, ht)
+	if exists(arguments.p):
+		patternSeq = [str(r.seq) for r in SeqIO.parse(open(arguments.p, 'r'), "fasta")][0]
+	else:
+		patternSeq = arguments.p
+
+	pattern = calcSketch(patternSeq, arguments.k, ht)
+
+	if exists(arguments.s):
+		textSeq = [str(r.seq) for r in SeqIO.parse(open(arguments.s, 'r'), "fasta")][0]
+	else:
+		textSeq = arguments.s
+
+	text = calcSketch(textSeq, arguments.k, ht)
 	#Define the score matrix
 	scores = []
 	#Define occ_p map

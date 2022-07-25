@@ -29,7 +29,7 @@ rule combineSearchPatterns:
 		textLen = "{textLen}",
 		patternLen = "{patternLen}"
 	output:
-		"../simulations/searchPairs/SearchPair_pl{patternLen}_tl{textLen}_m{m}_{id}.ssv"
+		temp("../simulations/searchPairs/SearchPair_pl{patternLen}_tl{textLen}_m{m}_{id}.ssv")
 	run:
 		for l in open(input[0], 'r'):
 			if not l.startswith("Random"):
@@ -44,18 +44,9 @@ rule combineSearchPatterns:
 
 		print(pattern, f"{rSeqs[0]}{gene}{rSeqs[1]}", file=open(output[0], 'w'))
 
-rule genGeneSeq:
-	output:
-		"../simulations/randSeqs_n{n}_l{l}_m{m}_{id}.ssv"
-	params:
-		"{id}",
-		"{m}"
-	shell:
-		"python3 scripts/SimSeqPairs.py -n {wildcards.n} -l {wildcards.l} > {output}"
-
 rule genPattern:
 	output:
-		"../simulations/geneSeqs/simGeneSeqs_n{n}_l{l}_o{o}_m{m}_{id}.ssv"
+		temp("../simulations/geneSeqs/simGeneSeqs_n{n}_l{l}_o{o}_m{m}_{id}.ssv")
 	params:
 		"{id}"
 	shell:
