@@ -1,0 +1,84 @@
+from random import choice
+
+NUCL_ALPHABET = "ACGT"
+
+rule all:
+	input:
+		expand("../benchmarks/benchmark_{p}_pl{pl}_tl{tl}_{t}_{i}.txt", p=["FindThoms", "FindThoms_old"], pl=[10000], tl=[100000], \
+			t=["rand"], i=range(5)),
+		expand("../benchmarks/benchmark_{p}_pl10000_tl100000_cons{m}_{i}.txt", p=["FindThoms", "FindThoms_old"], m=[i / 100 for i \
+			in range(1, 11)], i=range(5))
+
+rule benchmarkConsSeqs:
+	input:
+		"../simulations/searchPairs/SearchPair_pl{patternLen}_tl{textLen}_m{m}_{id}.ssv"
+	params:
+		prog = "{prog}",
+		i = "{id}"
+	output:
+		"../benchmarks/benchmark_{prog}_pl{patternLen}_tl{textLen}_cons{m}_{id}.txt"
+	run:
+		pattern, text = open(input[0], 'r').readline().split(' ')
+
+		shell("/usr/bin/time -v -o {output} python3 scripts/{params.prog}.py -p {pattern} -s {text}")
+
+rule combineSearchPatterns:
+	input:
+		"../simulations/geneSeqs/simGeneSeqs_n1_l{patternLen}_o1_m{m}_{id}.ssv"
+	params:
+		textLen = "{textLen}",
+		patternLen = "{patternLen}"
+	output:
+		"../simulations/searchPairs/SearchPair_pl{patternLen}_tl{textLen}_m{m}_{id}.ssv"
+	run:
+		for l in open(input[0], 'r'):
+			if not l.startswith("Random"):
+				pattern, gene = l.strip().split(' ')
+				break
+
+		rSeqs = ["", ""]
+
+		for i in range(len(rSeqs)):
+			for j in range(int((int(params[0]) - int(params[1])) / 2)):
+				rSeqs[i] += choice(NUCL_ALPHABET)
+
+		print(pattern, f"{rSeqs[0]}{gene}{rSeqs[1]}", file=open(output[0], 'w'))
+
+rule genGeneSeq:
+	output:
+		"../simulations/randSeqs_n{n}_l{l}_m{m}_{id}.ssv"
+	params:
+		"{id}",
+		"{m}"
+	shell:
+		"python3 scripts/SimSeqPairs.py -n {wildcards.n} -l {wildcards.l} > {output}"
+
+rule genPattern:
+	output:
+		"../simulations/geneSeqs/simGeneSeqs_n{n}_l{l}_o{o}_m{m}_{id}.ssv"
+	params:
+		"{id}"
+	shell:
+		"python3 scripts/SimSeqPairs.py -n {wildcards.n} -l {wildcards.l} -o {wildcards.o} -m {wildcards.m} -i {wildcards.m} -d" + \
+		" {wildcards.m} > {output}"
+
+rule benchmarkRandSeqs:
+	params:
+		prog = "{prog}",
+		patternLen = "{patternLen}",
+		textLen = "{textLen}",
+		i = "{i}"
+	output:
+		"../benchmarks/benchmark_{prog}_pl{patternLen}_tl{textLen}_rand_{i}.txt"
+	run:
+		pattern = ""
+
+		for i in range(int(params[1])):
+			pattern += choice(NUCL_ALPHABET)
+
+		text = ""
+
+		for i in range(int(params[2])):
+			text += choice(NUCL_ALPHABET)
+
+		shell("/usr/bin/time -v python3 scripts/{params.prog}.py -p {pattern} -s {text} 2> {output}")
