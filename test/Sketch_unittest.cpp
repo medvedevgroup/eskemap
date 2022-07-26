@@ -55,7 +55,7 @@ TEST(GetHashTest, SmTst){
 	EXPECT_EQ(getHash(27756, 262143), 197108);
 }
 
-//Tests for function Sketch buildSketch(const string&)//
+//Tests for function PairSketch buildSketch(const string&)//
 //	1. The input sequence length is smaller/equal/larger than/to k DONE
 //	2. A hash value is (not) too large to be put into the sketch DONE
 
@@ -100,7 +100,7 @@ TEST_F(SmHshsFrstTest, FrstLrg){
 	EXPECT_FALSE(smHshsFrst(b, a));
 }
 
-//Tests for function void remDuplHshs(Sketch&)//
+//Tests for function void remDuplHshs(PairSketch&)//
 //	1. Sketch does (not) consist of more than 1 element DONE
 //	2. An element can(not) be erased DONE
 
@@ -127,4 +127,27 @@ TEST_F(RemDuplHshsTest, snglElm){
 	EXPECT_EQ(s.size(), 1);
 	EXPECT_EQ(s.front().first, 0);
 	EXPECT_EQ(s.front().second, 0);
+}
+
+//Tests for function const Sketch buildSketch(const string&, const uint32_t&, const double&)//
+//	1. Sequence is (not) smaller than k DONE
+//	2. A hash is (not) larger than the threshold DONE
+
+//Tests for function buildSketch under the following conditions
+//	1. Sequence is smaller than k
+TEST_F(BuildSketch1Test, shrtSeq){
+	s = buildSketch("A", k, r);
+
+	EXPECT_TRUE(s.empty());
+}
+
+//Tests for function buildSketch under the following conditions
+//	1. Sequence is not smaller than k
+//	2. A hash is (not) larger than the threshold
+TEST_F(BuildSketch1Test, lngSeq){
+	s = buildSketch("ACGTACGTACG", k, r);
+
+	ASSERT_FALSE(s.empty());
+	EXPECT_EQ(s.size(), 1);
+	EXPECT_EQ(s.front(), getHash(calcKmerNb("CGTACGTAC"), pow(4, K) - 1));
 }

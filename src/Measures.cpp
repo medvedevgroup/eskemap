@@ -5,7 +5,7 @@
 #include "Sketch.h"
 
 //This function calculates the "set intersection" similarity score
-const int32_t calcIntersecScore(Sketch& skA, Sketch& skB){
+const int32_t calcIntersecScore(PairSketch& skA, PairSketch& skB){
 	bool found;
 	uint32_t nbShared = 0, nbUniqA = 0;
 
@@ -14,12 +14,12 @@ const int32_t calcIntersecScore(Sketch& skA, Sketch& skB){
 	remDuplHshs(skB);
 
 	//Iterate over first sketch
-	for(Sketch::const_iterator i = skA.begin(); i != skA.end(); ++i){
+	for(PairSketch::const_iterator i = skA.begin(); i != skA.end(); ++i){
 		//Reset flag
 		found = false;
 
 		//Iterate over second sketch
-		for(Sketch::const_iterator j = skB.begin(); j != skB.end(); ++j){
+		for(PairSketch::const_iterator j = skB.begin(); j != skB.end(); ++j){
 			//Check if both current elements share the same hash value
 			if(i->second == j->second){
 				++nbShared;
@@ -37,11 +37,11 @@ const int32_t calcIntersecScore(Sketch& skA, Sketch& skB){
 }
 
 //This function calculates the "maximum aligned hashes" similarity score
-const int32_t calcAlgnHshsScore(const Sketch& skA, const Sketch& skB, const bool& consOffs){
+const int32_t calcAlgnHshsScore(const PairSketch& skA, const PairSketch& skB, const bool& consOffs){
 	//The matrix rows
 	vector<int32_t> lst, cur;
 	//Sketch iterators
-	Sketch::const_iterator ia, ib = skB.begin();
+	PairSketch::const_iterator ia, ib = skB.begin();
 
 	//Initialize first row
 	for(int32_t j = 0; j <= skA.size(); ++j) lst.push_back(-j);

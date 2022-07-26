@@ -6,6 +6,7 @@
 #include <list>
 #include <string>
 #include <iostream>
+#include <vector>
 
 //The k-mer size
 #define K 9
@@ -13,10 +14,14 @@
 #define MAX_HASH 26214
 //The FracMinHash ratio
 #define HASH_RATIO 0.1
+//Size of the considered alphabet
+#define ALPHABET_SIZE 4
 
 using namespace std;
-//A Sketch is a list of offset hash pairs
-using Sketch = list<pair<uint32_t, uint64_t>>;
+//A PairSketch is a list of offset hash pairs
+using PairSketch = list<pair<uint32_t, uint64_t>>;
+//A Sketch is a list of hashes
+using Sketch = vector<uint64_t>;
 
 //A compare function to sort hashes in a sketch
 inline const bool smHshsFrst(const pair<uint32_t, uint64_t>& left, const pair<uint32_t, uint64_t>& right){ return left.second < right.second; }
@@ -80,10 +85,13 @@ static inline uint64_t getHash(uint64_t kmer, uint64_t mask){
 uint64_t calcKmerNb(const string& kmer);
 
 //This function builds the sketch of a sequence using a given hash threshold
-Sketch buildSketch(const string& s, const uint64_t& ht);
+PairSketch buildSketch(const string& s, const uint64_t& ht);
+
+//This function builds a FracMinHash sketch of a sequence using a given hash threshold
+const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFrac);
 
 //This function dereplicates elements from sketches sharing the same hash value (only the first one is kept). WARNING: It does not preserve elements'
 //initial ordering
-void remDuplHshs(Sketch& sk);
+void remDuplHshs(PairSketch& sk);
 
 #endif

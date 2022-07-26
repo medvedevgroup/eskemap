@@ -225,3 +225,331 @@ TEST_F(PrsArgsTest, dupOmes){
 	EXPECT_EQ(sb, "ACGT");
 	EXPECT_EQ(algnWoutOffs, m);
 }
+
+//Tests for function const bool prsArgs(int&, char**, string&, string&, uint32_t&, double&, uint32_t&, uint32_t&, int32_t&, bool&)//
+//	1. Pattern sequence is (not) given DONE
+//	2. Text sequence is (not) given DONE
+//	3. K-mer length is (not) given DONE
+//	4. K-mer length is given and is (not) positive DONE
+//	5. Hash ratio is (not) given DONE
+//	6. Hash ratio is given and is (not) positive DONE
+//	7. Hash ratio is given and is (not) larger than MAX_RATIO DONE
+//	8. Common hash weight is (not) given DONE
+//	9. Common hash weight is given and is (not) positive DONE
+//	10. Unique hash weight is (not) given DONE
+//	11. Unique hash weight is given and is (not) positive DONE
+//	12. t-homology threshold is (not) given DONE
+//	13. Normalization flag is (not) given DONE
+//	14. Help flag is (not) given DONE
+
+//Tests the function prsArgs under the following conditions
+//	1. Pattern sequence is given
+//	2. Text sequence is given
+//	3. K-mer length is given
+//	4. K-mer length is given and is positive
+//	5. Hash ratio is given
+//	6. Hash ratio is given and is positive
+//	7. Hash ratio is given and is not larger than MAX_RATIO
+//	8. Common hash weight is given
+//	9. Common hash weight is given and is positive
+//	10. Unique hash weight is given
+//	11. Unique hash weight is given and is positive
+//	12. t-homology threshold is given
+//	13. Normalization flag is given
+//	14. Help flag is not given
+TEST_F(PrsArgs1Test, pttnGvn){
+	nbArgs = 57;
+	argv = (char**) malloc(nbArgs * sizeof(char*));
+	argv[41] = strdup("FindThoms");
+	argv[42] = strdup("-p");
+	argv[43] = strdup("A");
+	argv[44] = strdup("-s");
+	argv[45] = strdup("ACGT");
+	argv[46] = strdup("-r");
+	argv[47] = strdup("0.2");
+	argv[48] = strdup("-c");
+	argv[49] = strdup("2");
+	argv[50] = strdup("-u");
+	argv[51] = strdup("2");
+	argv[52] = strdup("-t");
+	argv[53] = strdup("-1");
+	argv[54] = strdup("-n");
+	argv[55] = strdup("-k");
+	argv[56] = strdup("2147483647");
+
+	EXPECT_TRUE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_EQ(nbArgs, 57);
+	EXPECT_EQ(p, "A");
+	EXPECT_EQ(s, "ACGT");
+	EXPECT_EQ(k, 2147483647);
+	EXPECT_EQ(h, 0.2);
+	EXPECT_EQ(c, 2);
+	EXPECT_EQ(u, 2);
+	EXPECT_EQ(t, -1);
+	EXPECT_TRUE(n);
+}
+
+//Tests the function prsArgs under the following conditions
+//	1. Pattern sequence is not given
+//	2. Text sequence is given
+//	3. K-mer length is not given
+//	5. Hash ratio is not given
+//	8. Common hash weight is not given
+//	10. Unique hash weight is not given
+//	12. t-homology threshold is not given
+//	13. Normalization flag is not given
+//	14. Help flag is not given
+TEST_F(PrsArgs1Test, noPttn){
+	nbArgs = 59;
+	argv = (char**) malloc(nbArgs * sizeof(char*));
+	argv[56] = strdup("FindThoms");
+	argv[57] = strdup("-s");
+	argv[58] = strdup("A");
+
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_EQ(nbArgs, 59);
+	EXPECT_EQ(p, "");
+	EXPECT_EQ(s, "A");
+	EXPECT_EQ(k, K);
+	EXPECT_EQ(h, HASH_RATIO);
+	EXPECT_EQ(c, DEFAULT_WEIGHT);
+	EXPECT_EQ(u, DEFAULT_WEIGHT);
+	EXPECT_EQ(t, T);
+	EXPECT_FALSE(n);
+}
+
+//Tests the function prsArgs under the following conditions
+//	1. Pattern sequence is given
+//	2. Text sequence is not given
+//	3. K-mer length is not given
+//	5. Hash ratio is not given
+//	8. Common hash weight is not given
+//	10. Unique hash weight is not given
+//	12. t-homology threshold is not given
+//	13. Normalization flag is not given
+//	14. Help flag is not given
+TEST_F(PrsArgs1Test, noTxt){
+	nbArgs = 61;
+	argv = (char**) malloc(nbArgs * sizeof(char*));
+	argv[58] = strdup("FindThoms");
+	argv[59] = strdup("-p");
+	argv[60] = strdup("A");
+
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_EQ(nbArgs, 61);
+	EXPECT_EQ(p, "A");
+	EXPECT_EQ(s, "");
+	EXPECT_EQ(k, K);
+	EXPECT_EQ(h, HASH_RATIO);
+	EXPECT_EQ(c, DEFAULT_WEIGHT);
+	EXPECT_EQ(u, DEFAULT_WEIGHT);
+	EXPECT_EQ(t, T);
+	EXPECT_FALSE(n);
+}
+
+//Tests the function prsArgs under the following conditions
+//	1. Pattern sequence is not given
+//	2. Text sequence is not given
+//	3. K-mer length is not given
+//	5. Hash ratio is not given
+//	8. Common hash weight is not given
+//	10. Unique hash weight is not given
+//	12. t-homology threshold is not given
+//	13. Normalization flag is not given
+//	14. Help flag is not given
+TEST_F(PrsArgs1Test, noSeqs){
+	nbArgs = 61;
+	argv = (char**) malloc(nbArgs * sizeof(char*));
+	argv[60] = strdup("FindThoms");
+
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_EQ(nbArgs, 61);
+	EXPECT_EQ(p, "");
+	EXPECT_EQ(s, "");
+	EXPECT_EQ(k, K);
+	EXPECT_EQ(h, HASH_RATIO);
+	EXPECT_EQ(c, DEFAULT_WEIGHT);
+	EXPECT_EQ(u, DEFAULT_WEIGHT);
+	EXPECT_EQ(t, T);
+	EXPECT_FALSE(n);
+}
+
+//Tests the function prsArgs under the following conditions
+//	1. Pattern sequence is not given
+//	2. Text sequence is not given
+//	3. K-mer length is given
+//	4. K-mer length is given and is not positive
+//	5. Hash ratio is not given
+//	8. Common hash weight is not given
+//	10. Unique hash weight is not given
+//	12. t-homology threshold is not given
+//	13. Normalization flag is not given
+//	14. Help flag is not given
+TEST_F(PrsArgs1Test, negK){
+	nbArgs = 63;
+	argv = (char**) malloc(nbArgs * sizeof(char*));
+	argv[60] = strdup("FindThoms");
+	argv[61] = strdup("-k");
+	argv[62] = strdup("-1");
+
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_EQ(nbArgs, 63);
+	EXPECT_EQ(p, "");
+	EXPECT_EQ(s, "");
+	EXPECT_EQ(k, K);
+	EXPECT_EQ(h, HASH_RATIO);
+	EXPECT_EQ(c, DEFAULT_WEIGHT);
+	EXPECT_EQ(u, DEFAULT_WEIGHT);
+	EXPECT_EQ(t, T);
+	EXPECT_FALSE(n);
+}
+
+//Tests the function prsArgs under the following conditions
+//	1. Pattern sequence is not given
+//	2. Text sequence is not given
+//	3. K-mer length is not given
+//	5. Hash ratio is given
+//	6. Hash ratio is given and is not positive
+//	7. Hash ratio is given and is not larger than MAX_RATIO
+//	8. Common hash weight is not given
+//	10. Unique hash weight is not given
+//	12. t-homology threshold is not given
+//	13. Normalization flag is not given
+//	14. Help flag is not given
+TEST_F(PrsArgs1Test, negR){
+	nbArgs = 65;
+	argv = (char**) malloc(nbArgs * sizeof(char*));
+	argv[62] = strdup("FindThoms");
+	argv[63] = strdup("-r");
+	argv[64] = strdup("-1");
+
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_EQ(nbArgs, 65);
+	EXPECT_EQ(p, "");
+	EXPECT_EQ(s, "");
+	EXPECT_EQ(k, K);
+	EXPECT_EQ(h, HASH_RATIO);
+	EXPECT_EQ(c, DEFAULT_WEIGHT);
+	EXPECT_EQ(u, DEFAULT_WEIGHT);
+	EXPECT_EQ(t, T);
+	EXPECT_FALSE(n);
+}
+
+//Tests the function prsArgs under the following conditions
+//	1. Pattern sequence is not given
+//	2. Text sequence is not given
+//	3. K-mer length is not given
+//	5. Hash ratio is given
+//	6. Hash ratio is given and is positive
+//	7. Hash ratio is given and is larger than MAX_RATIO
+//	8. Common hash weight is not given
+//	10. Unique hash weight is not given
+//	12. t-homology threshold is not given
+//	13. Normalization flag is not given
+//	14. Help flag is not given
+TEST_F(PrsArgs1Test, lrgR){
+	nbArgs = 67;
+	argv = (char**) malloc(nbArgs * sizeof(char*));
+	argv[64] = strdup("FindThoms");
+	argv[65] = strdup("-r");
+	argv[66] = strdup("1.1");
+
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_EQ(nbArgs, 67);
+	EXPECT_EQ(p, "");
+	EXPECT_EQ(s, "");
+	EXPECT_EQ(k, K);
+	EXPECT_EQ(h, HASH_RATIO);
+	EXPECT_EQ(c, DEFAULT_WEIGHT);
+	EXPECT_EQ(u, DEFAULT_WEIGHT);
+	EXPECT_EQ(t, T);
+	EXPECT_FALSE(n);
+}
+
+//Tests the function prsArgs under the following conditions
+//	1. Pattern sequence is not given
+//	2. Text sequence is not given
+//	3. K-mer length is not given
+//	5. Hash ratio is not given
+//	8. Common hash weight is given
+//	9. Common hash weight is given and is not positive
+//	10. Unique hash weight is not given
+//	12. t-homology threshold is not given
+//	13. Normalization flag is not given
+//	14. Help flag is not given
+TEST_F(PrsArgs1Test, negC){
+	nbArgs = 69;
+	argv = (char**) malloc(nbArgs * sizeof(char*));
+	argv[66] = strdup("FindThoms");
+	argv[67] = strdup("-c");
+	argv[68] = strdup("-1");
+
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_EQ(nbArgs, 69);
+	EXPECT_EQ(p, "");
+	EXPECT_EQ(s, "");
+	EXPECT_EQ(k, K);
+	EXPECT_EQ(h, HASH_RATIO);
+	EXPECT_EQ(c, DEFAULT_WEIGHT);
+	EXPECT_EQ(u, DEFAULT_WEIGHT);
+	EXPECT_EQ(t, T);
+	EXPECT_FALSE(n);
+}
+
+//Tests the function prsArgs under the following conditions
+//	1. Pattern sequence is not given
+//	2. Text sequence is not given
+//	3. K-mer length is not given
+//	5. Hash ratio is not given
+//	8. Common hash weight is not given
+//	10. Unique hash weight is given
+//	11. Unique hash weight is given and is not positive
+//	12. t-homology threshold is not given
+//	13. Normalization flag is not given
+//	14. Help flag is not given
+TEST_F(PrsArgs1Test, negU){
+	nbArgs = 71;
+	argv = (char**) malloc(nbArgs * sizeof(char*));
+	argv[68] = strdup("FindThoms");
+	argv[69] = strdup("-u");
+	argv[70] = strdup("-1");
+
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_EQ(nbArgs, 71);
+	EXPECT_EQ(p, "");
+	EXPECT_EQ(s, "");
+	EXPECT_EQ(k, K);
+	EXPECT_EQ(h, HASH_RATIO);
+	EXPECT_EQ(c, DEFAULT_WEIGHT);
+	EXPECT_EQ(u, DEFAULT_WEIGHT);
+	EXPECT_EQ(t, T);
+	EXPECT_FALSE(n);
+}
+
+//Tests the function prsArgs under the following conditions
+//	1. Pattern sequence is not given
+//	2. Text sequence is not given
+//	3. K-mer length is not given
+//	5. Hash ratio is not given
+//	8. Common hash weight is not given
+//	10. Unique hash weight is not given
+//	12. t-homology threshold is not given
+//	13. Normalization flag is not given
+//	14. Help flag is given
+TEST_F(PrsArgs1Test, help){
+	nbArgs = 72;
+	argv = (char**) malloc(nbArgs * sizeof(char*));
+	argv[70] = strdup("FindThoms");
+	argv[71] = strdup("-h");
+
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_EQ(nbArgs, 72);
+	EXPECT_EQ(p, "");
+	EXPECT_EQ(s, "");
+	EXPECT_EQ(k, K);
+	EXPECT_EQ(h, HASH_RATIO);
+	EXPECT_EQ(c, DEFAULT_WEIGHT);
+	EXPECT_EQ(u, DEFAULT_WEIGHT);
+	EXPECT_EQ(t, T);
+	EXPECT_FALSE(n);
+}

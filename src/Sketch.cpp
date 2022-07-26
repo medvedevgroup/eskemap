@@ -11,10 +11,10 @@ uint64_t calcKmerNb(const string& kmer){
 }
 
 //This function builds the sketch of a sequence
-Sketch buildSketch(const string& s){
+PairSketch buildSketch(const string& s){
 	const uint64_t mask = pow(4, K) - 1;
 	uint64_t kmerHash;
-	list<pair<uint32_t, uint64_t>> sk;
+	PairSketch sk;
 
 	//If the sequence is smaller than k we are done
 	if(s.length() < K){
@@ -35,10 +35,43 @@ Sketch buildSketch(const string& s){
 	return sk;
 }
 
+//This function builds a FracMinHash sketch of a sequence using a given hash threshold
+const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFrac){
+	const uint64_t mask = pow(ALPHABET_SIZE, k) - 1;
+	//Calculate maximum hash value in sketch
+	const uint64_t maxHash = hFrac * mask;
+	uint64_t kmerHash;
+	Sketch sk;
+
+	//If the sequence is smaller than k we are done
+	if(seq.length() < k){
+		cerr << "WARNING: Length of input sequence " << seq << " is smaller than k (k=" << k << ")" << endl;
+
+		return sk;
+	}
+
+	//Reserve as much space as is approximately needed to store the sketch (which hopefully saves some time)
+	sk.reserve(seq.length() * hFrac);
+
+	//Iterate over k-mer starting positions in sequence
+	for(uint32_t i = 0; i < seq.length() - k + 1; ++i){
+		//Calculate numerical k-mer representation and its hash
+		kmerHash = getHash(calcKmerNb(seq.substr(i, k)), mask);
+
+		//Check if hash value is small enough to be kept
+		if(kmerHash <= maxHash) sk.push_back(kmerHash);
+	}
+
+	//Resize sketch (just for case we have allocated way too much memory)
+	sk.shrink_to_fit();
+
+	return sk;
+}
+
 //This function dereplicates elements from sketches sharing the same hash value (only the first one is kept). WARNING: It does not preserve elements'
 //initial ordering
-void remDuplHshs(Sketch& sk){
-	Sketch::iterator i, j;
+void remDuplHshs(PairSketch& sk){
+	PairSketch::iterator i, j;
 
 	//If the sketch consists of only one element we are done
 	if(sk.size() < 2) return;

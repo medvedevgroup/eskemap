@@ -8,7 +8,7 @@ int main(int argc, char **argv){
 	//The input sequences
 	string seqA, seqB;
 	//The input sequences' sketches
-	Sketch skA, skB;
+	PairSketch skA, skB;
 
 	//Parse arguments
 	if(!prsArgs(argc, argv, seqA, seqB, msr)){
