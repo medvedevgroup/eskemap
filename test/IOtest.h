@@ -57,4 +57,14 @@ class PrsArgs1Test : public ::testing::Test {
 		string s;
 };
 
+class ReadFASTAtest : public ::testing::Test {
+
+	protected:
+
+		ReadFASTAtest() {}
+
+		//The sequence to load
+		string s;
+};
+
 #endif

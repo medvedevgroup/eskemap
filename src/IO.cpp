@@ -67,8 +67,8 @@ const bool prsArgs(int& nArgs, char** argList, string& seqa, string& seqb, Measu
 }
 
 //This function parses the program parameters. Returns false if given arguments are not valid
-const bool prsArgs(int& nArgs, char** argList, string& pat, string& txt, uint32_t& k, double& hFrac, uint32_t& cw, uint32_t& uw, int32_t& tThres, 
-	bool& norm){
+const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, double& hFrac, uint32_t& cw, uint32_t& uw, 
+	int32_t& tThres, bool& norm){
 	int option_index = 0, a;
 
 	static struct option long_options[] = {
@@ -90,11 +90,11 @@ const bool prsArgs(int& nArgs, char** argList, string& pat, string& txt, uint32_
 		switch(a){
 			case 'p':
 				//Save input sequence
-				pat = optarg;
+				pFl = optarg;
 				break;
 			case 's':
 				//Save input sequence
-				txt = optarg;
+				tFl = optarg;
 				break;
 			case 'k':
 				//A k-mer length should be positive
@@ -148,13 +148,19 @@ const bool prsArgs(int& nArgs, char** argList, string& pat, string& txt, uint32_
 		}
 	}
 
-	return !pat.empty() && !txt.empty();
+	return !pFl.empty() && !tFl.empty();
 }
 
 //This function reads a file in FASTA format and returns true on success
+//NOTE: Using this function, we first read in a complete sequence before calculating a sketch from it. Calculating a sketch could
+//		also be done on the fly while reading the file. This possibility would be more memory saving most likely, because we would
+//		not have to store the whole sequence in memory first. However, we had no chance to estimate the sketch size. Thus, the vec-
+//		tor to store the sketch would have to be elongated several times which might be time consuming. On the other hand, it might
+//		also be time consuming to handle the complete sequence in memory first. Eventually, it will depend on a try to find out
+//		what is the better alternative. Could also be that it does not matter at all!
 const bool readFASTA(const string& filePath, string& seq){
-	bool headerRead = false;
-	string line;
+	bool headerRead = false, lnBrkDiscvd = false;
+	char c;
 
 	//Open the file
 	ifstream fStr(filePath);
@@ -162,19 +168,30 @@ const bool readFASTA(const string& filePath, string& seq){
 	//Check if the file is open
 	if(!fStr.is_open()) return false;
 
-	//Read in queries (one per line)
-	while(getline(fStr, line)){
+	//Read in file character by character
+	while(fStr.get(c)){
 		//We are done if we find a second header in the file
-		if(line.front() == '>' && headerRead) break;
+		if(c == '>' && headerRead) break;
 
 		//Header lines are skipped
-		if(line.front() == '>'){
+		if(c == '>'){
 			headerRead = true;
 			continue;
 		}
 
-		
+		//The first line break indicates that we have left the header line
+		if(c == '\n'){
+			lnBrkDiscvd = true;
+			continue;
+		}
+
+		//There is no sequence to load in the header line
+		if(headerRead && !lnBrkDiscvd) continue;
+
+		//We are only interested in unambigous, unmasked nucleotides
+		if(c == 'A' || c == 'C' || c == 'G' || c == 'T') seq += c;
 	}
+
 	//Close file
 	fStr.close();
 

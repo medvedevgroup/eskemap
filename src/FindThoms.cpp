@@ -14,21 +14,41 @@ int main(int argc, char **argv){
 	int32_t tThres = T;
 	//The FracMinHash ratio
 	double frac = HASH_RATIO;
-	//The input sequences
-	string seqP, seqT;
+	//Input file names
+	string pFile, tFile;
+	//An input sequence
+	string seq;
 	//The input sequences' sketches
 	Sketch skP, skT;
 
 	//Parse arguments
-	if(!prsArgs(argc, argv, seqP, seqT, kmerLen, frac, comWght, uniWght, tThres, normalize)){
+	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, frac, comWght, uniWght, tThres, normalize)){
 		//Display help message
 		dsHlp();
 		return 1;
 	}
 
-	//Calculate sketches
-	skP = buildSketch(seqP, kmerLen, frac);
-	skT = buildSketch(seqT, kmerLen, frac);
+	//Try to load pattern sequence
+	if(!readFASTA(pFile, seq)){
+		cerr << "ERROR: Pattern sequence file could not be read" << endl;
+		return -1;
+	}
+
+	//Calculate pattern sketch
+	skP = buildSketch(seq, kmerLen, frac);
+	//We do not need the pattern sequence anymore
+	seq.clear();
+
+	//Try to load text sequence
+	if(!readFASTA(tFile, seq)){
+		cerr << "ERROR: Text sequence file could not be read" << endl;
+		return -1;
+	}
+
+	//Calculate text sketch
+	skT = buildSketch(seq, kmerLen, frac);
+	//Find t-homologies and output them
+	outputHoms(findThoms(skP, skT, comWght, uniWght, tThres, normalize)); //TODO: Implement this functions!
 
 	return 0;
 }

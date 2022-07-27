@@ -26,11 +26,12 @@ inline void dspHlp(){
 
 //This function prints usage infos
 inline void dsHlp(){
-	cerr << "FindThoms [-hn] [-p PATTERN] [-s TEXT] [-k KMER_LEN] [-r HASH_RATIO] [-c COM_HASH_WGHT] [-u UNI_HASH_WGHT] [-t HOM_THRES]" << endl << endl;
+	cerr << "FindThoms [-hn] [-p PATTERN_FILE] [-s TEXT_FILE] [-k KMER_LEN] [-r HASH_RATIO] [-c COM_HASH_WGHT] [-u UNI_HASH_WGHT] \
+[-t HOM_THRES]" << endl << endl;
 	cerr << "Find sketch-based pattern homology in text." << endl << endl;
 	cerr << "Required parameters:" << endl;
-	cerr << "   -p   --pattern  Pattern sequence" << endl;
-	cerr << "   -s   --text     Text sequence" << endl << endl;
+	cerr << "   -p   --pattern  Pattern sequence file (FASTA format)" << endl;
+	cerr << "   -s   --text     Text sequence file (FASTA format)" << endl << endl;
 	cerr << "Optional parameters with required argument:" << endl;
 	cerr << "   -k   --ksize             K-mer length to be used for sketches" << endl;
 	cerr << "   -r   --hashratio         FracMin hash ratio to be used for sketches" << endl;
@@ -42,12 +43,19 @@ inline void dsHlp(){
 	cerr << "   -h   --help       Display this help message" << endl;
 }
 
+//This function outputs all given t-homologies
+inline void outputHoms(const vector<Thomology>& homs){
+	//Iterate over t-homologies
+	for(vector<Thomology>::const_iterator h = homs.begin(); h != homs.end(); ++h)
+		cout << "i: " << get<0>(h) << " j: " << get<1>(h) << " score: " << get<2>(h) << endl;
+}
+
 //This function parses the program parameters. Returns false if given arguments are not valid
 const bool prsArgs(int& nArgs, char** argList, string& seqa, string& seqb, Measure& msr);
 
 //This function parses the program parameters. Returns false if given arguments are not valid
-const bool prsArgs(int& nArgs, char** argList, string& pat, string& txt, uint32_t& k, double& hFrac, uint32_t& cw, uint32_t& uw, int32_t& tThres, 
-	bool& norm);
+const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, double& hFrac, uint32_t& cw, uint32_t& uw, 
+	int32_t& tThres, bool& norm);
 
 //This function reads a file in FASTA format and returns true on success
 const bool readFASTA(const string& filePath, string& seq);

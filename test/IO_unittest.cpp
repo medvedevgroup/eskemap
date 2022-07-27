@@ -553,3 +553,30 @@ TEST_F(PrsArgs1Test, help){
 	EXPECT_EQ(t, T);
 	EXPECT_FALSE(n);
 }
+
+//Tests for function const bool readFASTA(const string&, string&)//
+//	1. We can(not) open the file DONE
+//	2. We have (not) found a second header line DONE
+//	3. We have (not) found the beginning of a header line DONE
+//	4. We have (not) found a line break DONE
+//	5. We are (not) inside a header line DONE
+//	6. We have (not) read a valid DNA nucleotide DONE
+
+//Tests the function readFASTA under the following conditions
+//	1. We can open the file
+//	2. We have (not) found a second header line
+//	3. We have (not) found the beginning of a header line
+//	4. We have (not) found a line break
+//	5. We are (not) inside a header line
+//	6. We have (not) read a valid DNA nucleotide
+TEST_F(ReadFASTAtest, valFl){
+	EXPECT_TRUE(readFASTA("TestFASTA.fasta", s));
+	EXPECT_EQ(s, "AGT");
+}
+
+//Tests the function readFASTA under the following conditions
+//	1. We cannot open the file
+TEST_F(ReadFASTAtest, invFl){
+	EXPECT_FALSE(readFASTA("A", s));
+	EXPECT_EQ(s, "");
+}
