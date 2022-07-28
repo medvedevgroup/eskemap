@@ -168,16 +168,20 @@ if __name__ == '__main__':
 			if i > j:
 				continue
 			
-			#Update occp
-			if text[j] in occp:
-				occp[text[j]][i + 1] += 1
+			# #Update occp
+			# if text[j] in occp:
+			# 	occp[text[j]][i + 1] += 1
 
 			#Check if we are in the first row
 			if i == 0:
 				#First and last hash in substring need to be shared
-				if text[i] in occp and text[j] in occp and occp[text[j]][i + 1] > 0:
+				if text[i] in occp and text[j] in occp:
 					#Testing
 					# print("Potential t-homology starting at position 0 detected")
+
+					#If first and last hash are the same and it only occurs once inside the pattern this cannot be a t-homology
+					if text[i] == text[j] and occp[text[j]][0] <= 1:
+						continue
 
 					#Check if we have already seen a relevant maximum
 					if i in maxScores:
@@ -204,9 +208,13 @@ if __name__ == '__main__':
 					maxScores[i] = maxScores[i - 1]
 
 				#Check if we have found a t-homology
-				if  text[i] in occp and text[j] in occp and occp[text[j]][i + 1] > 0:
+				if  text[i] in occp and text[j] in occp:
 					#Testing
 					# print("Potential t-homology starting at position i>0 detected")
+
+					#If first and last hash are the same and it only occurs once inside the pattern this cannot be a t-homology
+					if text[i] == text[j] and occp[text[j]][0] <= 1:
+						continue
 					
 					if i in maxScores:
 						if scores[j][i][1] > maxScores[i]:
