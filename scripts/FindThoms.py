@@ -191,13 +191,11 @@ if __name__ == '__main__':
 							maxScores[i] = scores[j][i][1]
 							#Output t-homology
 							reportThomology(i, j, scores[j][i][1], pattern, text)
-					else:
-						#Check if we have found a t-homology
-						if scores[j][i][1] >= THRES:
-							#Save new max
-							maxScores[i] = scores[j][i][1]
-							#Output t-homology
-							reportThomology(i, j, scores[j][i][1], pattern, text)
+					elif scores[j][i][1] >= THRES: #Check if we have found a t-homology
+						#Save new max
+						maxScores[i] = scores[j][i][1]
+						#Output t-homology
+						reportThomology(i, j, scores[j][i][1], pattern, text)
 			else:
 				if i - 1 in maxScores and i in maxScores:
 					#Take over maximum
@@ -222,12 +220,11 @@ if __name__ == '__main__':
 							maxScores[i] = scores[j][i][1]
 							#Output t-homology
 							reportThomology(i, j, scores[j][i][1], pattern, text)
-					else:
-						if scores[j][i][1] >= THRES:
-							#Update max
-							maxScores[i] = scores[j][i][1]
-							#Output t-homology
-							reportThomology(i, j, scores[j][i][1], pattern, text)
+					elif scores[j][i][1] >= THRES:
+						#Update max
+						maxScores[i] = scores[j][i][1]
+						#Output t-homology
+						reportThomology(i, j, scores[j][i][1], pattern, text)
 
 #Testing
 # print("occp:", occp)

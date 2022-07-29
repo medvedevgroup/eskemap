@@ -1,6 +1,6 @@
 #include "Sketch.cpp"
 #include "IO.cpp"
-#include "Thomology.h"
+#include "Thomology.cpp"
 
 int main(int argc, char **argv){
 	//Flag to save that scores are to be normalized
@@ -48,7 +48,7 @@ int main(int argc, char **argv){
 	//Calculate text sketch
 	skT = buildSketch(seq, kmerLen, frac);
 	//Find t-homologies and output them
-	outputHoms(findThoms(skP, skT, comWght, uniWght, tThres, normalize)); //TODO: Implement this functions!
+	outputHoms(findThoms(skP, skT, comWght, uniWght, tThres), normalize, skP.size()); //TODO: Implement this functions!
 
 	return 0;
 }

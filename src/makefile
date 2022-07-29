@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -std=c++20 -O3
+CFLAGS = -std=c++2a -O3
 
 all:
 	$(CC) FindThoms.cpp $(CFLAGS) -o FindThoms
