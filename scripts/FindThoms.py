@@ -117,12 +117,12 @@ if __name__ == '__main__':
 					# print("Option 1/4")
 
 					occp[text[j]].append(occp[text[j]][0] - 1)
-					scores[j].append([i, 2 * arguments.c - (len(pattern) - 1) * arguments.u])
+					scores[j].append([i, arguments.c - (len(pattern) - 1) * arguments.u])
 				else:
 					#Testing
 					# print("Option 2/4")
 
-					scores[j].append([i, arguments.u * (-1 - len(pattern))])
+					scores[j].append([i, -arguments.u * (1 + len(pattern))])
 			else:
 				#Update score
 				scores[j].append(list(scores[j - 1][i]))
@@ -152,7 +152,7 @@ if __name__ == '__main__':
 					#Testing
 					# print("Option 4/4")
 
-					scores[j][-1][1] += arguments.c * 2 + arguments.u
+					scores[j][-1][1] += arguments.c + arguments.u
 
 	#Testing
 	# print("scores:", scores)
