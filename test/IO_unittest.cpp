@@ -580,3 +580,118 @@ TEST_F(ReadFASTAtest, invFl){
 	EXPECT_FALSE(readFASTA("A", s));
 	EXPECT_EQ(s, "");
 }
+
+//Tests for function inline void outputHoms(const vector<Thomology>&, const bool&, const uint32_t&)//
+//	1. Scores are (not) normalized DONE
+//	2. Scores are normalized and substring is (not) longer than pattern DONE
+
+//Tests the function outputHoms under the following conditions
+//	1. Scores are normalized
+//	2. Scores are normalized and substring is (not) longer than pattern
+TEST_F(OutputHomsTest, nScrs){
+	r.push_back(make_tuple(1, 4, 2));
+	r.push_back(make_tuple(1, 2, 2));
+	r.push_back(make_tuple(7, 9, 3));
+
+	coutPtr = cout.rdbuf();
+	cout.rdbuf(stream.rdbuf());
+
+	outputHoms(r, true, 3);
+
+	stream >> res;
+	EXPECT_EQ("i:", res);
+	stream >> res;
+	EXPECT_EQ("1", res);
+	stream >> res;
+	EXPECT_EQ("j:", res);
+	stream >> res;
+	EXPECT_EQ("4", res);
+	stream >> res;
+	EXPECT_EQ("score:", res);
+	stream >> res;
+	EXPECT_EQ("0.5", res);
+	stream >> res;
+	EXPECT_EQ("i:", res);
+	stream >> res;
+	EXPECT_EQ("1", res);
+	stream >> res;
+	EXPECT_EQ("j:", res);
+	stream >> res;
+	EXPECT_EQ("2", res);
+	stream >> res;
+	EXPECT_EQ("score:", res);
+	stream >> res;
+	EXPECT_EQ("0.666667", res);
+	stream >> res;
+	EXPECT_EQ("i:", res);
+	stream >> res;
+	EXPECT_EQ("7", res);
+	stream >> res;
+	EXPECT_EQ("j:", res);
+	stream >> res;
+	EXPECT_EQ("9", res);
+	stream >> res;
+	EXPECT_EQ("score:", res);
+	stream >> res;
+	EXPECT_EQ("1", res);
+	stream >> res;
+	EXPECT_EQ("1", res);
+	EXPECT_TRUE(stream.eof());
+
+	cout.rdbuf(coutPtr);
+}
+
+//Tests the function outputHoms under the following conditions
+//	1. Scores are not normalized
+TEST_F(OutputHomsTest, nnScrs){
+	r.push_back(make_tuple(1, 4, 2));
+	r.push_back(make_tuple(1, 2, 2));
+	r.push_back(make_tuple(7, 9, 3));
+
+	coutPtr = cout.rdbuf();
+	cout.rdbuf(stream.rdbuf());
+
+	outputHoms(r, false, 3);
+
+	stream >> res;
+	EXPECT_EQ("i:", res);
+	stream >> res;
+	EXPECT_EQ("1", res);
+	stream >> res;
+	EXPECT_EQ("j:", res);
+	stream >> res;
+	EXPECT_EQ("4", res);
+	stream >> res;
+	EXPECT_EQ("score:", res);
+	stream >> res;
+	EXPECT_EQ("2", res);
+	stream >> res;
+	EXPECT_EQ("i:", res);
+	stream >> res;
+	EXPECT_EQ("1", res);
+	stream >> res;
+	EXPECT_EQ("j:", res);
+	stream >> res;
+	EXPECT_EQ("2", res);
+	stream >> res;
+	EXPECT_EQ("score:", res);
+	stream >> res;
+	EXPECT_EQ("2", res);
+	stream >> res;
+	EXPECT_EQ("i:", res);
+	stream >> res;
+	EXPECT_EQ("7", res);
+	stream >> res;
+	EXPECT_EQ("j:", res);
+	stream >> res;
+	EXPECT_EQ("9", res);
+	stream >> res;
+	EXPECT_EQ("score:", res);
+	stream >> res;
+	EXPECT_EQ("3", res);
+	stream >> res;
+	EXPECT_EQ("3", res);
+	EXPECT_TRUE(stream.eof());
+
+	cout.rdbuf(coutPtr);
+}

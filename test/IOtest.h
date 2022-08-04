@@ -67,4 +67,20 @@ class ReadFASTAtest : public ::testing::Test {
 		string s;
 };
 
+class OutputHomsTest : public ::testing::Test {
+
+protected:
+
+		OutputHomsTest() {}
+
+		//A string for storing the output
+		string res;
+		//A string stream to redirect output
+		stringstream stream;
+		//A stream buffer pointer to save cout's pointer
+		streambuf *coutPtr;
+		//The results
+		vector<Thomology> r;
+};
+
 #endif

@@ -49,7 +49,8 @@ inline void outputHoms(const vector<Thomology>& homs, const bool& norm, const ui
 	for(vector<Thomology>::const_iterator h = homs.begin(); h != homs.end(); ++h){
 		//Normalize score before reporting if requested
 		if(norm){
-			cout << "i: " << get<0>(*h) << " j: " << get<1>(*h) << " score: " << get<2>(*h) / max(pLen, get<1>(*h) - get<0>(*h) + 1) << endl;
+			cout << "i: " << get<0>(*h) << " j: " << get<1>(*h) << " score: " << (double) get<2>(*h) / max(pLen, get<1>(*h) - 
+				get<0>(*h) + 1) << endl;
 		} else{
 			cout << "i: " << get<0>(*h) << " j: " << get<1>(*h) << " score: " << get<2>(*h) << endl;
 		}

@@ -36,10 +36,10 @@ def matchProgCallToSeed(wcs):
 
 rule all:
 	input:
-		expand("../simulations/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}.txt", gn=config['nbSimSeqs'], \
+		expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}.txt", gn=config['nbSimSeqs'], \
 			rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=config['mutationRates'], sp=\
 			config['scoringPatterns']),
-		expand("../simulations/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}.txt", gn=config['nbSimSeqs'], gl=\
+		expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}.txt", gn=config['nbSimSeqs'], gl=\
 			config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns']),
 		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_p{i}.coords", \
 			gn=config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], i=range(config['nbSimSeqs'])),
@@ -49,9 +49,7 @@ rule all:
 		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_maxmatch_p{i}.coords", gn=\
 			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
 			config['mutationRates'], i=range(config['nbSimSeqs'])),
-		matchProgCallToSeed
-		#expand("../simulations/scores_mes{mes}_n{n}_l{l}_m{m}_i{m}_d{m}.txt", mes=config['simMeasure'], n=\
-		#	config['nbSimSeqs'], l=config['simSeqLen'], m=config['mutationRates'])
+		# matchProgCallToSeed
 		
 rule buildBWAindex:
 	input:
@@ -177,7 +175,7 @@ rule searchHomologies:
 		c = "{c}",
 		u = "{u}"
 	output:
-		"../simulations/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_c{c}_u{u}.txt"
+		"../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_c{c}_u{u}.txt"
 	run:
 		i = 0
 		for l in open(input[0], 'r'):

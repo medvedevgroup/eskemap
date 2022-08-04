@@ -16,6 +16,8 @@
 #define HASH_RATIO 0.1
 //Size of the considered alphabet
 #define ALPHABET_SIZE 4
+//Number of times we expect p to occur in t
+#define P_MULTIPLICITY 2
 
 using namespace std;
 //A PairSketch is a list of offset hash pairs
