@@ -48,7 +48,7 @@ int main(int argc, char **argv){
 	//Calculate text sketch
 	skT = buildSketch(seq, kmerLen, frac);
 	//Find t-homologies and output them
-	outputHoms(findThoms(skP, skT, comWght, uniWght, tThres), normalize, skP.size()); //TODO: Implement this functions!
+	outputHoms(findThoms(skP, skT, comWght, uniWght, tThres), normalize, skP.size());
 
 	return 0;
 }

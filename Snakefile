@@ -6,6 +6,7 @@ from Bio.Seq import Seq
 from os.path import exists
 from random import randrange
 from sys import maxsize
+from glob import glob
 
 NB_RANDSEQS = (config['nbCpys'] + 1) * config['nbSimSeqs']
 
@@ -34,13 +35,17 @@ def matchProgCallToSeed(wcs):
 
 	return samFiles
 
+def listUnifiedRes(wcs):
+	return glob(f"../simulations/homologies/homologies_gn*_p{wcs.prog}.uni")
+
 rule all:
 	input:
-		expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}.txt", gn=config['nbSimSeqs'], \
-			rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=config['mutationRates'], sp=\
-			config['scoringPatterns']),
-		expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}.txt", gn=config['nbSimSeqs'], gl=\
-			config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns']),
+		expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_p{p}.uni", gn=\
+			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
+			config['mutationRates'], sp=config['scoringPatterns'], p=config['implType']),
+		expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}_t0_p{p}.uni", gn=\
+			config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns'], p=\
+			config['implType']),
 		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_p{i}.coords", \
 			gn=config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], i=range(config['nbSimSeqs'])),
 		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_p{i}.coords", gn=\
@@ -51,6 +56,22 @@ rule all:
 			config['mutationRates'], i=range(config['nbSimSeqs'])),
 		# matchProgCallToSeed
 		
+rule calcMd5:
+	input:
+		listUnifiedRes
+	output:
+		"../simulations/allRes_p{prog}.md5"
+	shell:
+		"md5sum {input} > {output}"
+
+rule unifyRes:
+	input:
+		"../simulations/homologies/homologies_gn{desc}.txt"
+	output:
+		"../simulations/homologies/homologies_gn{desc}.uni"
+	shell:
+		"python3 scripts/unifyRes.py {input} > {output}"
+
 rule buildBWAindex:
 	input:
 		"../simulations/genomes/{genome}.fasta"
@@ -173,17 +194,32 @@ rule searchHomologies:
 		"../simulations/searchPairs/searchPairs_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}.txt"
 	params:
 		c = "{c}",
-		u = "{u}"
+		u = "{u}",
+		thres = "{t}"
 	output:
-		"../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_c{c}_u{u}.txt"
+		"../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_c{c}_u{u}_t{t}_pPy.txt"
 	run:
 		i = 0
+
 		for l in open(input[0], 'r'):
 			i += 1
 			shell("echo Pair {i} >> {output}")
 			l = l.strip()
 			pattern, text = l.split(' ')
-			shell("python3 scripts/FindThoms.py -p {pattern} -s {text} -c {params.c} -u {params.u} >> {output}")
+			shell("python3 scripts/FindThoms.py -p {pattern} -s {text} -c {params.c} -u {params.u} -t {params.thres} >> {output}")
+
+rule searchHomologiesWthCppImpl:
+	input:
+		pttn = "../simulations/searchPairs/searchPairs_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_qry{n}.fasta",
+		txt = "../simulations/searchPairs/searchPairs_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_ref{n}.fasta"
+	params:
+		c = "{c}",
+		u = "{u}",
+		thres = "{t}"
+	output:
+		"../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_c{c}_u{u}_t{t}_n{n}_pCpp.txt"
+	shell:
+		"src/FindThoms -p {input.pttn} -s {input.txt} -c {params.c} -u {params.u} -t {params.thres} > {output}"
 
 rule createFASTApairs:
 	input:

@@ -12,3 +12,4 @@ genomes: ["SAL_GB9998AA_AS", "humanChr20", "wheetChr1A-D"] #, "GCF_000001405.40_
 bwaIdxFileSufs: ["amb", "ann", "bwt", "pac", "sa"]
 prog: ["minimap2", "bwamem"]
 scoringPatterns: ["c1_u1", "c1_u3", "c9_u1"]
+implType: ["Py", "Cpp"]

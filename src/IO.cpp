@@ -170,8 +170,8 @@ const bool readFASTA(const string& filePath, string& seq){
 
 	//Read in file character by character
 	while(fStr.get(c)){
-		//We are done if we find a second header in the file
-		if(c == '>' && headerRead) break;
+		//We are done if we find a second header (which can only start after at least one line break) in the file
+		if(c == '>' && headerRead && lnBrkDiscvd) break;
 
 		//Header lines are skipped
 		if(c == '>'){

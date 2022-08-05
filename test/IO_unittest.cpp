@@ -561,6 +561,7 @@ TEST_F(PrsArgs1Test, help){
 //	4. We have (not) found a line break DONE
 //	5. We are (not) inside a header line DONE
 //	6. We have (not) read a valid DNA nucleotide DONE
+//	7. We have found a '>' inside a header DONE
 
 //Tests the function readFASTA under the following conditions
 //	1. We can open the file
@@ -569,6 +570,7 @@ TEST_F(PrsArgs1Test, help){
 //	4. We have (not) found a line break
 //	5. We are (not) inside a header line
 //	6. We have (not) read a valid DNA nucleotide
+//	7. We have found a '>' inside a header
 TEST_F(ReadFASTAtest, valFl){
 	EXPECT_TRUE(readFASTA("TestFASTA.fasta", s));
 	EXPECT_EQ(s, "AGT");

@@ -33,8 +33,8 @@ inline void dsHlp(){
 	cerr << "   -p   --pattern  Pattern sequence file (FASTA format)" << endl;
 	cerr << "   -s   --text     Text sequence file (FASTA format)" << endl << endl;
 	cerr << "Optional parameters with required argument:" << endl;
-	cerr << "   -k   --ksize             K-mer length to be used for sketches" << endl;
-	cerr << "   -r   --hashratio         FracMin hash ratio to be used for sketches" << endl;
+	cerr << "   -k   --ksize             K-mer length to be used for sketches (default " << K << ")" << endl;
+	cerr << "   -r   --hashratio         FracMin hash ratio to be used for sketches (default " << HASH_RATIO << ")" << endl;
 	cerr << "   -c   --commonhashweight  Weight to reward common hashes (default " << DEFAULT_WEIGHT << ")" << endl;
 	cerr << "   -u   --uniquehashweight  Weight to punish unique hashes (default " << DEFAULT_WEIGHT << ")" << endl;
 	cerr << "   -t   --hom_thres         Homology threshold (default " << T << ")" << endl;
