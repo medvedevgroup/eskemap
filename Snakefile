@@ -36,16 +36,20 @@ def matchProgCallToSeed(wcs):
 	return samFiles
 
 def listUnifiedRes(wcs):
-	return glob(f"../simulations/homologies/homologies_gn*_p{wcs.prog}.uni")
+	return glob(f"../simulations/homologies/homologies_gn*_n*_p{wcs.prog}.uni")
+
+def genAggList(wcs):
+	return expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_c{c}_u{u}_t{t}_n{n}_" + \
+		"pCpp.txt",gn=wcs.gn, rn=wcs.rn, gl=wcs.gl, rl=wcs.rl, o=wcs.o, m=wcs.m, i=wcs.i, d=wcs.d, c=wcs.c, u=wcs.u, t=wcs.t, n=\
+		range(int(config['nbSimSeqs'])))
 
 rule all:
 	input:
-		expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_p{p}.uni", gn=\
+		expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_pPy.txt", gn=\
 			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
-			config['mutationRates'], sp=config['scoringPatterns'], p=config['implType']),
-		expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}_t0_p{p}.uni", gn=\
-			config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns'], p=\
-			config['implType']),
+			config['mutationRates'], sp=config['scoringPatterns']),
+		expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}_t0_pPy.txt", gn=\
+			config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns']),
 		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_p{i}.coords", \
 			gn=config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], i=range(config['nbSimSeqs'])),
 		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_p{i}.coords", gn=\
@@ -54,21 +58,30 @@ rule all:
 		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_maxmatch_p{i}.coords", gn=\
 			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
 			config['mutationRates'], i=range(config['nbSimSeqs'])),
+		expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
+			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
+			config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=config['implType']),
+		expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
+			config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=\
+			config['implType']),
+		# expand("../simulations/allRes_p{p}.md5", p=config['implType'])
 		# matchProgCallToSeed
 		
-rule calcMd5:
-	input:
-		listUnifiedRes
-	output:
-		"../simulations/allRes_p{prog}.md5"
-	shell:
-		"md5sum {input} > {output}"
+# rule calcMd5:
+# 	input:
+# 		listUnifiedRes
+# 	output:
+# 		"../simulations/allRes_p{prog}.md5"
+# 	shell:
+# 		"md5sum {input} > {output}"
 
 rule unifyRes:
 	input:
 		"../simulations/homologies/homologies_gn{desc}.txt"
 	output:
 		"../simulations/homologies/homologies_gn{desc}.uni"
+	priority:
+		1
 	shell:
 		"python3 scripts/unifyRes.py {input} > {output}"
 
@@ -198,6 +211,8 @@ rule searchHomologies:
 		thres = "{t}"
 	output:
 		"../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_c{c}_u{u}_t{t}_pPy.txt"
+	wildcard_constraints:
+		t = "[0-9]+"
 	run:
 		i = 0
 
@@ -207,6 +222,19 @@ rule searchHomologies:
 			l = l.strip()
 			pattern, text = l.split(' ')
 			shell("python3 scripts/FindThoms.py -p {pattern} -s {text} -c {params.c} -u {params.u} -t {params.thres} >> {output}")
+
+rule searchHomologiesIndvdlyWthScrptImpl:
+	input:
+		pttn = "../simulations/searchPairs/searchPairs_gn{desc}_qry{n}.fasta",
+		txt = "../simulations/searchPairs/searchPairs_gn{desc}_ref{n}.fasta"
+	params:
+		c = "{c}",
+		u = "{u}",
+		thres = "{t}"
+	output:
+		"../simulations/homologies/homologies_gn{desc}_c{c}_u{u}_t{t}_n{n}_pPy.txt"
+	shell:
+		"python3 scripts/FindThoms.py -p {input.pttn} -s {input.txt} -c {params.c} -u {params.u} -t {params.thres} > {output}"
 
 rule searchHomologiesWthCppImpl:
 	input:
@@ -220,6 +248,16 @@ rule searchHomologiesWthCppImpl:
 		"../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_c{c}_u{u}_t{t}_n{n}_pCpp.txt"
 	shell:
 		"src/FindThoms -p {input.pttn} -s {input.txt} -c {params.c} -u {params.u} -t {params.thres} > {output}"
+
+# rule aggregateResults:
+# 	input:
+# 		genAggList
+# 	output:
+# 		"../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_c{c}_u{u}_t{t}_pCpp.txt"
+# 	run:
+# 		files2Agg = sorted(glob('../simulations/searchPairs/searchPairs_gn100_rn400_gl1000_rl500_o3_m0_i0_d0_ref*.fasta'), key=\
+# 			lambda n: int(n.split("ref")[1].split('.')[0]))
+# 		shell("cat {' '.join(files2Agg)} > {output}")
 
 rule createFASTApairs:
 	input:

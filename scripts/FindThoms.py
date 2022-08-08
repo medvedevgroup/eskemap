@@ -64,7 +64,7 @@ if __name__ == '__main__':
 	# lastPos = []
 
 	#Set threshold correctly
-	if not arguments.t:
+	if arguments.t == None:
 		THRES = -arguments.u * len(pattern)
 	else:
 		THRES = arguments.t
