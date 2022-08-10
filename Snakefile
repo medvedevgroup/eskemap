@@ -43,37 +43,78 @@ def genAggList(wcs):
 		"pCpp.txt",gn=wcs.gn, rn=wcs.rn, gl=wcs.gl, rl=wcs.rl, o=wcs.o, m=wcs.m, i=wcs.i, d=wcs.d, c=wcs.c, u=wcs.u, t=wcs.t, n=\
 		range(int(config['nbSimSeqs'])))
 
+def genTempCopyNames(wcs):
+	divRates = config['divergenceRates']
+	subIndelRats = config['substitutionIndelRates']
+	copyNames = []
+
+	for d in divRates:
+		for s in subIndelRats:
+			dsCombi = f"m{(d * s):.2f}_d{(d * (1 / s)):.2f}_i{(d * (1 / s)):.2f}"
+			copyNames += expand("../simulations/randSeqCopy_l50000_rid{i}_" + dsCombi + "_cn{C}.fasta", i=range(100), C=range(\
+				int(config['copyNumber'])))
+
+	return copyNames
+
 rule all:
 	input:
-		expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_pPy.txt", gn=\
-			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
-			config['mutationRates'], sp=config['scoringPatterns']),
-		expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}_t0_pPy.txt", gn=\
-			config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns']),
-		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_p{i}.coords", \
-			gn=config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], i=range(config['nbSimSeqs'])),
-		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_p{i}.coords", gn=\
-			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
-			config['mutationRates'], i=range(config['nbSimSeqs'])),
-		expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_maxmatch_p{i}.coords", gn=\
-			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
-			config['mutationRates'], i=range(config['nbSimSeqs'])),
-		expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
-			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
-			config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=config['implType']),
-		expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
-			config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=\
-			config['implType']),
+		#Tests for DP script
+		# expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_pPy.txt", gn=\
+		# 	config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
+		# 	config['mutationRates'], sp=config['scoringPatterns']),
+		# expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}_t0_pPy.txt", gn=\
+		# 	config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns']),
+		#Nucmer runs
+		# expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_p{i}.coords", \
+		# 	gn=config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], i=range(config['nbSimSeqs'])),
+		# expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_p{i}.coords", gn=\
+		# 	config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
+		# 	config['mutationRates'], i=range(config['nbSimSeqs'])),
+		# expand("../simulations/nucmer/nucmerAlignments_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_maxmatch_p{i}.coords", gn=\
+		# 	config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
+		# 	config['mutationRates'], i=range(config['nbSimSeqs'])),
+		#Tests for DP C++ implementation
+		# expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
+		# 	config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
+		# 	config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=config['implType']),
+		# expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
+		# 	config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=\
+		# 	config['implType']),
+		genTempCopyNames
 		# expand("../simulations/allRes_p{p}.md5", p=config['implType'])
 		# matchProgCallToSeed
-		
-# rule calcMd5:
-# 	input:
-# 		listUnifiedRes
-# 	output:
-# 		"../simulations/allRes_p{prog}.md5"
-# 	shell:
-# 		"md5sum {input} > {output}"
+
+rule assembleText:
+	input:
+		randSeq = "../simulations/randSeq_l{rl}_rid{i}.fasta"
+		cpys = expand("../simulations/randSeqCopy_l{rl}_rid{i}_m{m}_d{d}_i{l}_cn{c}.fasta", rl="{rl}", i="{i}", m="{m}", d="{d}", \
+			l="{l}", cn=range(int(config['copyNumber'])))
+	output:
+		"../simulations/text_rl{rl}_rid{i}_m{m}_d{d}_i{l}_cn{c}.fasta"
+	shell:
+		"python3 scripts/assembleText.py "
+
+rule mutateTemplate:
+	input:
+		"../simulations/randSeq_{desc}.fasta"
+	params:
+		subR = "{m}",
+		delR = "{d}",
+		iLen = "{l}",
+		rid = "{i}"
+	output:
+		"../simulations/randSeqCopy_{desc}_m{m}_d{d}_i{l}_cn{i}.fasta"
+	shell:
+		"python3 scripts/MutateSeq.py -m {params.subR} -d {params.delR} -i {params.iLen} -t {input} -o {output}"
+
+rule genRandTemplate:
+	params:
+		length = "{l}",
+		repId = "{i}"
+	output:
+		"../simulations/randSeq_l{l}_rid{i}.fasta"
+	shell:
+		"python3 scripts/GenRandSeq.py -l {params.length} -o {output}"
 
 rule unifyRes:
 	input:

@@ -13,3 +13,6 @@ bwaIdxFileSufs: ["amb", "ann", "bwt", "pac", "sa"]
 prog: ["minimap2", "bwamem"]
 scoringPatterns: ["c1_u1", "c1_u3", "c9_u1"]
 implType: ["Py", "Cpp"]
+divergenceRates: [0.01, 0.05]
+substitutionIndelRates: [0.5, 1, 2]
+copyNumber: 3
