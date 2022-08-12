@@ -17,3 +17,7 @@ divergenceRates: [0.01, 0.05]
 substitutionIndelRates: [0.5, 1, 2]
 copyNumber: 3
 templLen: 50000
+k: 15 #default of minimap2 and Winnowmap2
+PacBioPolymerase: "P6C4"
+readCoverage: 2
+readLength: 20000

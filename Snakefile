@@ -43,19 +43,6 @@ def genAggList(wcs):
 		"pCpp.txt",gn=wcs.gn, rn=wcs.rn, gl=wcs.gl, rl=wcs.rl, o=wcs.o, m=wcs.m, i=wcs.i, d=wcs.d, c=wcs.c, u=wcs.u, t=wcs.t, n=\
 		range(int(config['nbSimSeqs'])))
 
-def genTempCopyNames(wcs):
-	divRates = config['divergenceRates']
-	subIndelRats = config['substitutionIndelRates']
-	copyNames = []
-
-	for d in divRates:
-		for s in subIndelRats:
-			dsCombi = f"m{(d * s):.2f}_d{(d * (1 / s)):.2f}_i{(d * (1 / s)):.2f}"
-			copyNames += expand("../simulations/randSeqCopy_l{l}_rid{i}_" + dsCombi + "_cn{C}.fasta", l=config['templLen'], i=\
-				range(100), C=range(int(config['copyNumber'])))
-
-	return copyNames
-
 def genTextNames(wcs):
 	divRates = config['divergenceRates']
 	subIndelRats = config['substitutionIndelRates']
@@ -69,6 +56,51 @@ def genTextNames(wcs):
 				config['copyNumber'])
 
 	return textNames
+
+def genHomFiles(wcs):
+	divRates = config['divergenceRates']
+	subIndelRats = config['substitutionIndelRates']
+	homFileNames = []
+	rl = 2 * config['templLen'] * (config['copyNumber'] + 1)
+	nbRds = int((config['readCoverage'] * config['templLen']) / config['readLength'])
+
+	for d in divRates:
+		for s in subIndelRats:
+			dsCombi = f"m{(d * s):.2f}_d{(d * (1 / s)):.2f}_i{(d * (1 / s)):.2f}"
+			homFileNames += expand("../simulations/homologies/homologies_rl{rl}_rid{i}_" + dsCombi + "_cn{C}_tl{tl}_chP6C4_" + \
+				"ep0:0:0_ri{ri}_c1_u1_t0.txt", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], ri=range(nbRds))
+
+	return homFileNames
+
+def genMinimap2Files(wcs):
+	divRates = config['divergenceRates']
+	subIndelRats = config['substitutionIndelRates']
+	miniFileNames = []
+	rl = 2 * config['templLen'] * (config['copyNumber'] + 1)
+	nbRds = int((config['readCoverage'] * config['templLen']) / config['readLength'])
+
+	for d in divRates:
+		for s in subIndelRats:
+			dsCombi = f"m{(d * s):.2f}_d{(d * (1 / s)):.2f}_i{(d * (1 / s)):.2f}"
+			miniFileNames += expand("../simulations/minimap2Res/textmappings_rl{rl}_rid{i}_" + dsCombi + "_cn{C}_tl{tl}_chP6C4_" + \
+				"ep0:0:0_ri{ri}.sam", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], ri=range(nbRds))
+
+	return miniFileNames
+
+def genWinnowmap2Files(wcs):
+	divRates = config['divergenceRates']
+	subIndelRats = config['substitutionIndelRates']
+	winFileNames = []
+	rl = 2 * config['templLen'] * (config['copyNumber'] + 1)
+	nbRds = int((config['readCoverage'] * config['templLen']) / config['readLength'])
+
+	for d in divRates:
+		for s in subIndelRats:
+			dsCombi = f"m{(d * s):.2f}_d{(d * (1 / s)):.2f}_i{(d * (1 / s)):.2f}"
+			winFileNames += expand("../simulations/Winnowmap2Res/textmappings_rl{rl}_rid{i}_" + dsCombi + "_cn{C}_tl{tl}_chP6C4_" + \
+				"ep0:0:0_ri{ri}.sam", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], ri=range(nbRds))
+
+	return winFileNames
 
 rule all:
 	input:
@@ -97,9 +129,25 @@ rule all:
 		#minimap2 and bwamem runs
 		# matchProgCallToSeed,
 		#
-		genTextNames
-		# genTempCopyNames
+		genHomFiles,
+		genMinimap2Files,
+		genWinnowmap2Files
 
+rule convertMultiFastq2SinglFastq:
+	input:
+		"{something}.fastq"
+	output:
+		expand("{s}_{i}.fastq", s="{something}", i=range(int((config['readCoverage'] * config['templLen']) / config['readLength'])))
+	shell:
+		"python3 scripts/convMulFq2SinFq.py {input}"
+
+rule convertMultiFastq2SinglFasta:
+	input:
+		"{something}.fastq"
+	output:
+		expand("{s}_{i}.fasta", s="{something}", i=range(int((config['readCoverage'] * config['templLen']) / config['readLength'])))
+	shell:
+		"python3 scripts/convMulFq2SinFa.py {input}"
 
 rule assembleText:
 	input:
@@ -161,6 +209,46 @@ rule runBWAmem:
 	shell:
 		"bwa mem {input.ref} {input.rds} | gzip -3 > {output}"
 
+rule runWinnowmap2:
+	input:
+		ref = "../simulations/text_rl{rl}_rid{ri}_m{desc}.fasta",
+		qry = "../simulations/reads/reads_tl{tl}_rid{ri}_ch{rdDesc}_{i}.fastq",
+		cnts = "../simulations/repKmers_k15_rl{rl}_rid{ri}_m{desc}.txt"
+	output:
+		res = "../simulations/Winnowmap2Res/textmappings_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{rdDesc}_ri{i}.sam",
+		bench = "../benchmarks/benchWinnowmap2_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{rdDesc}_ri{i}.txt"
+	shell:
+		"/usr/bin/time -v ../software/Winnowmap/bin/winnowmap -W {input.cnts} -ax map-pb {input.ref} {input.qry} > {output.res}" + \
+		" 2> {output.bench}"
+
+rule printCounts:
+	input:
+		"../simulations/merylDB_k{k}_rl{desc}"
+	output:
+		temp("../simulations/repKmers_k{k}_rl{desc}.txt")
+	shell:
+		"../software/Winnowmap/bin/meryl print greater-than distinct=0.9998 {input} > {output}"
+
+rule countKmers:
+	input:
+		"../simulations/text_rl{desc}.fasta"
+	params:
+		"{k}"
+	output:
+		temp("../simulations/merylDB_k{k}_rl{desc}")
+	shell:
+		"../software/Winnowmap/bin/meryl count k={params} output {output} {input}"
+
+rule runMinimap2onPacBio:
+	input:
+		ref = "../simulations/text_rl{rl}_rid{ri}_m{desc}.fasta",
+		qry = "../simulations/reads/reads_tl{tl}_rid{ri}_ch{rdDesc}_{i}.fastq"
+	output:
+		res = "../simulations/minimap2Res/textmappings_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{rdDesc}_ri{i}.sam",
+		bench = "../benchmarks/benchMinimap2_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{rdDesc}_ri{i}.txt"
+	shell:
+		"/usr/bin/time -v minimap2 -ax map-hifi {input.ref} {input.qry} > {output.res} 2> {output.bench}"
+
 rule runMinimap2:
 	input:
 		ref = "../simulations/genomes/{genome}.fasta",
@@ -186,6 +274,24 @@ rule reproduceSimulation:
 		" 10.0 --seed {params.sd} {input.ref} 2> {output.log}; cat $(echo {output.log} | sed 's/.log//g')_*.fastq | gzip -3 > " + \
 		"{output.rds}; cat $(echo {output.log} | sed 's/.log//g')_*.maf | gzip -3 > {output.maf}; rm $(echo {output.log} | sed " + \
 		"'s/.log//g')_*.{{maf,ref,fastq}}"
+
+rule simPattern:
+	input:
+		ref = "../simulations/randSeq_l{desc}.fasta",
+		model = "../software/pbsim2/data/{chem}.model"
+	params:
+		erR = "{erR}",
+		dep = config['readCoverage'],
+		rdLen = config['readLength']
+	output:
+		rds = "../simulations/reads/reads_tl{desc}_ch{chem}_ep{erR}.fastq",
+		log = "../simulations/reads/reads_tl{desc}_ch{chem}_ep{erR}.log"
+	wildcard_constraints:
+		erR="[0-9]+:[0-9]+:[0-9]+"
+	shell:
+		"pbsim --hmm_model {input.model} --difference-ratio {params} --prefix $(echo {output.log} | sed 's/.log//g') --depth " + \
+		"{params.dep} --length-min {params.rdLen} --length-max {params.rdLen} {input.ref} 2> {output.log}; cat $(echo " + \
+		"{output.log} | sed 's/.log//g')_*.fastq > {output.rds}; rm $(echo {output.log} | sed 's/.log//g')_*.{{ref,fastq}}"
 
 rule simReads:
 	input:
@@ -262,24 +368,19 @@ rule constructSearchPairs:
 
 rule searchHomologies:
 	input:
-		"../simulations/searchPairs/searchPairs_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}.txt"
+		pttn = "../simulations/reads/reads_tl{tl}_rid{ri}_ch{chem}_ep{erR}_{i}.fasta",
+		txt = "../simulations/text_rl{rl}_rid{ri}_m{desc}.fasta"
 	params:
 		c = "{c}",
 		u = "{u}",
-		thres = "{t}"
+		thres = "{t}",
+		k = config['k']
 	output:
-		"../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_c{c}_u{u}_t{t}_pPy.txt"
-	wildcard_constraints:
-		t = "[0-9]+"
-	run:
-		i = 0
-
-		for l in open(input[0], 'r'):
-			i += 1
-			shell("echo Pair {i} >> {output}")
-			l = l.strip()
-			pattern, text = l.split(' ')
-			shell("python3 scripts/FindThoms.py -p {pattern} -s {text} -c {params.c} -u {params.u} -t {params.thres} >> {output}")
+		homs = "../simulations/homologies/homologies_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{chem}_ep{erR}_ri{i}_c{c}_u{u}_t{t}.txt",
+		bench = "../benchmarks/benchFindThoms_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{chem}_ep{erR}_ri{i}_c{c}_u{u}_t{t}.txt"
+	shell:
+		"/usr/bin/time -v src/FindThoms -p {input.pttn} -s {input.txt} -k {params.k} -c {params.c} -u {params.u} -t {params.thres} > " + \
+		"{output.homs} 2> {output.bench}"
 
 rule searchHomologiesIndvdlyWthScrptImpl:
 	input:
