@@ -61,5 +61,5 @@ for i in range(1, len(seq) + 1):
 		seq.insert(i, choice(NUCL_ALPHABET))
 
 #Write mutated sequence to file
-SeqIO.write([SeqRecord(Seq("".join(seq)), id="MutatedSeq", description=f"{templateRecord.id}_{templateRecord.description}_" + \
-	f"MutationSeed={arguments.s}")], open(arguments.o, 'w'), "fasta")
+SeqIO.write(SeqRecord(Seq("".join(seq)), id="MutatedSeq", description=f"{templateRecord.id}_{templateRecord.description}_" + \
+	f"MutationSeed={arguments.s}"), open(arguments.o, 'w'), "fasta")

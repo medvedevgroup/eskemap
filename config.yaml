@@ -16,3 +16,4 @@ implType: ["Py", "Cpp"]
 divergenceRates: [0.01, 0.05]
 substitutionIndelRates: [0.5, 1, 2]
 copyNumber: 3
+templLen: 50000

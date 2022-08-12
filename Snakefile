@@ -51,10 +51,24 @@ def genTempCopyNames(wcs):
 	for d in divRates:
 		for s in subIndelRats:
 			dsCombi = f"m{(d * s):.2f}_d{(d * (1 / s)):.2f}_i{(d * (1 / s)):.2f}"
-			copyNames += expand("../simulations/randSeqCopy_l50000_rid{i}_" + dsCombi + "_cn{C}.fasta", i=range(100), C=range(\
-				int(config['copyNumber'])))
+			copyNames += expand("../simulations/randSeqCopy_l{l}_rid{i}_" + dsCombi + "_cn{C}.fasta", l=config['templLen'], i=\
+				range(100), C=range(int(config['copyNumber'])))
 
 	return copyNames
+
+def genTextNames(wcs):
+	divRates = config['divergenceRates']
+	subIndelRats = config['substitutionIndelRates']
+	textNames = []
+	rl = 2 * config['templLen'] * (config['copyNumber'] + 1)
+
+	for d in divRates:
+		for s in subIndelRats:
+			dsCombi = f"m{(d * s):.2f}_d{(d * (1 / s)):.2f}_i{(d * (1 / s)):.2f}"
+			textNames += expand("../simulations/text_rl{l}_rid{i}_" + dsCombi + "_cn{C}.fasta", l=rl, i=range(100), C=\
+				config['copyNumber'])
+
+	return textNames
 
 rule all:
 	input:
@@ -80,19 +94,22 @@ rule all:
 		# expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
 		# 	config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=\
 		# 	config['implType']),
-		genTempCopyNames
-		# expand("../simulations/allRes_p{p}.md5", p=config['implType'])
-		# matchProgCallToSeed
+		#minimap2 and bwamem runs
+		# matchProgCallToSeed,
+		#
+		genTextNames
+		# genTempCopyNames
+
 
 rule assembleText:
 	input:
-		randSeq = "../simulations/randSeq_l{rl}_rid{i}.fasta"
-		cpys = expand("../simulations/randSeqCopy_l{rl}_rid{i}_m{m}_d{d}_i{l}_cn{c}.fasta", rl="{rl}", i="{i}", m="{m}", d="{d}", \
-			l="{l}", cn=range(int(config['copyNumber'])))
+		randSeq = "../simulations/randSeq_l{rl}_rid{i}.fasta",
+		cpys = expand("../simulations/randSeqCopy_l{tl}_rid{i}_m{m}_d{d}_i{l}_cn{c}.fasta", tl=config['templLen'], i="{i}", m="{m}"\
+			, d="{d}", l="{l}", c=range(int(config['copyNumber'])))
 	output:
 		"../simulations/text_rl{rl}_rid{i}_m{m}_d{d}_i{l}_cn{c}.fasta"
 	shell:
-		"python3 scripts/assembleText.py "
+		"python3 scripts/assembleText.py -b {input.randSeq} -i {input.cpys} -o {output}"
 
 rule mutateTemplate:
 	input:

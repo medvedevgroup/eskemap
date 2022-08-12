@@ -28,4 +28,4 @@ seq = ""
 for i in range(arguments.l):
 	seq += choice(NUCL_ALPHABET)
 
-SeqIO.write([SeqRecord(Seq(seq), id="RandomSeq", description=f"Seed={arguments.s}")], open(arguments.o, 'w'), "fasta")
+SeqIO.write(SeqRecord(Seq(seq), id="RandomSeq", description=f"Seed={arguments.s}"), open(arguments.o, 'w'), "fasta")
