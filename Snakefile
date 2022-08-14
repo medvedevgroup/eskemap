@@ -51,7 +51,7 @@ def genTextNames(wcs):
 
 	for d in divRates:
 		for s in subIndelRats:
-			dsCombi = f"m{(d * s):.2f}_d{(d * (1 / s)):.2f}_i{(d * (1 / s)):.2f}"
+			dsCombi = f"m{(d * s):.3f}_d{d}_i{d}"
 			textNames += expand("../simulations/text_rl{l}_rid{i}_" + dsCombi + "_cn{C}.fasta", l=rl, i=range(100), C=\
 				config['copyNumber'])
 
@@ -66,7 +66,7 @@ def genHomFiles(wcs):
 
 	for d in divRates:
 		for s in subIndelRats:
-			dsCombi = f"m{(d * s):.2f}_d{(d * (1 / s)):.2f}_i{(d * (1 / s)):.2f}"
+			dsCombi = f"m{(d * s):.3f}_d{d}_i{d}"
 			homFileNames += expand("../simulations/homologies/homologies_rl{rl}_rid{i}_" + dsCombi + "_cn{C}_tl{tl}_chP6C4_" + \
 				"ep0:0:0_ri{ri}_c1_u1_t0.txt", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], ri=range(nbRds))
 
@@ -81,7 +81,7 @@ def genMinimap2Files(wcs):
 
 	for d in divRates:
 		for s in subIndelRats:
-			dsCombi = f"m{(d * s):.2f}_d{(d * (1 / s)):.2f}_i{(d * (1 / s)):.2f}"
+			dsCombi = f"m{(d * s):.3f}_d{d}_i{d}"
 			miniFileNames += expand("../simulations/minimap2Res/textmappings_rl{rl}_rid{i}_" + dsCombi + "_cn{C}_tl{tl}_chP6C4_" + \
 				"ep0:0:0_ri{ri}.sam", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], ri=range(nbRds))
 
@@ -96,7 +96,7 @@ def genWinnowmap2Files(wcs):
 
 	for d in divRates:
 		for s in subIndelRats:
-			dsCombi = f"m{(d * s):.2f}_d{(d * (1 / s)):.2f}_i{(d * (1 / s)):.2f}"
+			dsCombi = f"m{(d * s):.3f}_d{d}_i{d}"
 			winFileNames += expand("../simulations/Winnowmap2Res/textmappings_rl{rl}_rid{i}_" + dsCombi + "_cn{C}_tl{tl}_chP6C4_" + \
 				"ep0:0:0_ri{ri}.sam", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], ri=range(nbRds))
 
@@ -235,7 +235,7 @@ rule countKmers:
 	params:
 		"{k}"
 	output:
-		temp("../simulations/merylDB_k{k}_rl{desc}")
+		temp(directory("../simulations/merylDB_k{k}_rl{desc}"))
 	shell:
 		"../software/Winnowmap/bin/meryl count k={params} output {output} {input}"
 
