@@ -55,7 +55,7 @@ const vector<Thomology> findThoms(const Sketch& skP, const Sketch& skT, const ui
 			col2pos.push_back(j);
 
 			//Testing
-			if(*fSkIt == 74701964) cout << "findThoms: j: " << j << endl;
+			// if(*fSkIt == 74701964) cout << "findThoms: j: " << j << endl;
 		}
 
 		++j;
@@ -153,7 +153,7 @@ const vector<Thomology> findThoms(const Sketch& skP, const Sketch& skT, const ui
 			//Check if score is high enough
 			if(*rowIt > maxThres){
 				//Testing
-				cout << "findThoms: *fSkIt: " << *fSkIt << " *rSkIt: " << *rSkIt << endl;
+				// cout << "findThoms: *fSkIt: " << *fSkIt << " *rSkIt: " << *rSkIt << endl;
 
 				//Add t-homology to results
 				res.push_back(make_tuple(col2pos[i], col2pos[j], *rowIt));

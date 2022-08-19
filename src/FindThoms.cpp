@@ -49,7 +49,7 @@ int main(int argc, char **argv){
 	skT = buildSketch(seq, kmerLen, frac);
 
 	//Testing
-	cout << "main: length of text: " << seq.length() << endl;
+	// cout << "main: length of text: " << seq.length() << endl;
 
 	//Find t-homologies and output them
 	outputHoms(findThoms(skP, skT, comWght, uniWght, tThres), normalize, skP.size());

@@ -68,7 +68,8 @@ def genHomFiles(wcs):
 		for s in subIndelRats:
 			dsCombi = f"m{(d * s):.3f}_d{d}_i{d}"
 			homFileNames += expand("../simulations/homologies/homologies_rl{rl}_rid{i}_" + dsCombi + "_cn{C}_tl{tl}_chP6C4_" + \
-				"ep0:0:0_ri{ri}_c1_u1_t0.txt", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], ri=range(nbRds))
+				"ep0:0:0_ri{ri}_c{m}_u1_t0.txt", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], ri=\
+				range(nbRds), m=config['matchScores'])
 
 	return homFileNames
 

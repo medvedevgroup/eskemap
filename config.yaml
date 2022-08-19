@@ -21,3 +21,4 @@ k: 15 #default of minimap2 and Winnowmap2
 PacBioPolymerase: "P6C4"
 readCoverage: 2
 readLength: 20000
+matchScores: [1, 5, 10, 15, 30]
