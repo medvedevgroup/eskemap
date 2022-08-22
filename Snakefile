@@ -68,8 +68,11 @@ def genHomFiles(wcs):
 		for s in subIndelRats:
 			dsCombi = f"m{(d * s):.3f}_d{d}_i{d}"
 			homFileNames += expand("../simulations/homologies/homologies_rl{rl}_rid{i}_" + dsCombi + "_cn{C}_tl{tl}_chP6C4_" + \
-				"ep0:0:0_ri{ri}_c{m}_u1_t0.txt", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], ri=\
-				range(nbRds), m=config['matchScores'])
+				"ep0:0:0_ri{ri}_k{k}_c1_u1_t0.txt", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], ri=\
+				range(nbRds), k=config['k'])
+			homFileNames += expand("../simulations/homologies/homologies_rl{rl}_rid{i}_" + dsCombi + "_cn{C}_tl{tl}_chP6C4_" + \
+				"ep0:0:0_ri{ri}_k15_c1_u1_t-19999.txt", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], ri=\
+				range(nbRds))
 
 	return homFileNames
 
@@ -84,7 +87,8 @@ def genMinimap2Files(wcs):
 		for s in subIndelRats:
 			dsCombi = f"m{(d * s):.3f}_d{d}_i{d}"
 			miniFileNames += expand("../simulations/minimap2Res/textmappings_rl{rl}_rid{i}_" + dsCombi + "_cn{C}_tl{tl}_chP6C4_" + \
-				"ep0:0:0_ri{ri}.sam", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], ri=range(nbRds))
+				"ep0:0:0_k{k}_ri{ri}.sam", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], k=config['k'], ri=\
+				range(nbRds))
 
 	return miniFileNames
 
@@ -99,7 +103,8 @@ def genWinnowmap2Files(wcs):
 		for s in subIndelRats:
 			dsCombi = f"m{(d * s):.3f}_d{d}_i{d}"
 			winFileNames += expand("../simulations/Winnowmap2Res/textmappings_rl{rl}_rid{i}_" + dsCombi + "_cn{C}_tl{tl}_chP6C4_" + \
-				"ep0:0:0_ri{ri}.sam", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], ri=range(nbRds))
+				"ep0:0:0_k{k}_ri{ri}.sam", rl=rl, i=range(100), C=config['copyNumber'], tl=config['templLen'], k=config['k'], ri=\
+				range(nbRds))
 
 	return winFileNames
 
@@ -214,13 +219,15 @@ rule runWinnowmap2:
 	input:
 		ref = "../simulations/text_rl{rl}_rid{ri}_m{desc}.fasta",
 		qry = "../simulations/reads/reads_tl{tl}_rid{ri}_ch{rdDesc}_{i}.fastq",
-		cnts = "../simulations/repKmers_k15_rl{rl}_rid{ri}_m{desc}.txt"
+		cnts = "../simulations/repKmers_k{k}_rl{rl}_rid{ri}_m{desc}.txt"
+	params:
+		"{k}"
 	output:
-		res = "../simulations/Winnowmap2Res/textmappings_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{rdDesc}_ri{i}.sam",
-		bench = "../benchmarks/benchWinnowmap2_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{rdDesc}_ri{i}.txt"
+		res = "../simulations/Winnowmap2Res/textmappings_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{rdDesc}_k{k}_ri{i}.sam",
+		bench = "../benchmarks/benchWinnowmap2_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{rdDesc}_{k}_ri{i}.txt"
 	shell:
-		"/usr/bin/time -v ../software/Winnowmap/bin/winnowmap -W {input.cnts} -ax map-pb {input.ref} {input.qry} > {output.res}" + \
-		" 2> {output.bench}"
+		"/usr/bin/time -v ../software/Winnowmap/bin/winnowmap -W {input.cnts} -ax map-pb -k {params} {input.ref} {input.qry} > " + \
+		"{output.res} 2> {output.bench}"
 
 rule printCounts:
 	input:
@@ -244,11 +251,13 @@ rule runMinimap2onPacBio:
 	input:
 		ref = "../simulations/text_rl{rl}_rid{ri}_m{desc}.fasta",
 		qry = "../simulations/reads/reads_tl{tl}_rid{ri}_ch{rdDesc}_{i}.fastq"
+	params:
+		"{k}"
 	output:
-		res = "../simulations/minimap2Res/textmappings_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{rdDesc}_ri{i}.sam",
-		bench = "../benchmarks/benchMinimap2_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{rdDesc}_ri{i}.txt"
+		res = "../simulations/minimap2Res/textmappings_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{rdDesc}_k{k}_ri{i}.sam",
+		bench = "../benchmarks/benchMinimap2_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{rdDesc}_k{k}_ri{i}.txt"
 	shell:
-		"/usr/bin/time -v minimap2 -ax map-hifi {input.ref} {input.qry} > {output.res} 2> {output.bench}"
+		"/usr/bin/time -v minimap2 -ax map-hifi -k {params} {input.ref} {input.qry} > {output.res} 2> {output.bench}"
 
 rule runMinimap2:
 	input:
@@ -375,10 +384,10 @@ rule searchHomologies:
 		c = "{c}",
 		u = "{u}",
 		thres = "{t}",
-		k = config['k']
+		k = "{k}"
 	output:
-		homs = "../simulations/homologies/homologies_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{chem}_ep{erR}_ri{i}_c{c}_u{u}_t{t}.txt",
-		bench = "../benchmarks/benchFindThoms_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{chem}_ep{erR}_ri{i}_c{c}_u{u}_t{t}.txt"
+		homs = "../simulations/homologies/homologies_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{chem}_ep{erR}_ri{i}_k{k}_c{c}_u{u}_t{t}.txt",
+		bench = "../benchmarks/benchFindThoms_rl{rl}_rid{ri}_m{desc}_tl{tl}_ch{chem}_ep{erR}_ri{i}_k{k}_c{c}_u{u}_t{t}.txt"
 	shell:
 		"/usr/bin/time -v src/FindThoms -p {input.pttn} -s {input.txt} -k {params.k} -c {params.c} -u {params.u} -t {params.thres} > " + \
 		"{output.homs} 2> {output.bench}"
