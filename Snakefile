@@ -134,10 +134,13 @@ rule all:
 		# 	config['implType']),
 		#minimap2 and bwamem runs
 		# matchProgCallToSeed,
+		# DP implementation benchmark on human data
+		expand("../benchmarks/benchFindThoms_humanChr20_refined_onlyCapitalNucs_ep{e}_s1657921994_rr{i}_k15_c1_u1_t-1000.txt", e=\
+		config['errorPatterns'], i=range(10)),
 		#
-		genHomFiles,
-		genMinimap2Files,
-		genWinnowmap2Files
+		# genHomFiles,
+		# genMinimap2Files,
+		# genWinnowmap2Files
 
 rule convertMultiFastq2SinglFastq:
 	input:
@@ -376,6 +379,33 @@ rule constructSearchPairs:
 
 				shell("echo {pattern} {genome} >> {output}")
 
+rule drawRandomRead:
+	input:
+		"../simulations/reads/humanChr20_cR103_ep{errorPattern}_s{seed}.fastq.gz"
+	params:
+		"{i}"
+	output:
+		"../simulations/reads/humanChr20_cR103_ep{errorPattern}_s{seed}_rr{i}.fasta"
+	shell:
+		"SCRIPT_INPUT=$(echo {input} | sed 's/.gz//g'); gunzip -c {input} > $SCRIPT_INPUT; python3 scripts/DrawRandSeqRec.py " + \
+		"$SCRIPT_INPUT {output}"
+
+rule searchHumanHomologies:
+	input:
+		pttn = "../simulations/reads/humanChr20_cR103_ep{errorPattern}_s{seed}_rr{i}.fasta",
+		txt = "../simulations/genomes/{refName}.fasta"
+	params:
+		c = "{c}",
+		u = "{u}",
+		thres = "{t}",
+		k = "{k}"
+	output:
+		homs = "../simulations/homologies/homologies_{refName}_ep{errorPattern}_s{seed}_rr{i}_k{k}_c{c}_u{u}_t{t}.txt",
+		bench = "../benchmarks/benchFindThoms_{refName}_ep{errorPattern}_s{seed}_rr{i}_k{k}_c{c}_u{u}_t{t}.txt"
+	shell:
+		"/usr/bin/time -v src/FindThoms -p {input.pttn} -s {input.txt} -k {params.k} -c {params.c} -u {params.u} -t " + \
+		"{params.thres} > {output.homs} 2> {output.bench}"
+
 rule searchHomologies:
 	input:
 		pttn = "../simulations/reads/reads_tl{tl}_rid{ri}_ch{chem}_ep{erR}_{i}.fasta",
@@ -418,15 +448,15 @@ rule searchHomologiesWthCppImpl:
 	shell:
 		"src/FindThoms -p {input.pttn} -s {input.txt} -c {params.c} -u {params.u} -t {params.thres} > {output}"
 
-# rule aggregateResults:
+# rule uncompressGzippedFastq:
 # 	input:
-# 		genAggList
+# 		"{fileNameWithoutGz}.fastq.gz"
 # 	output:
-# 		"../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_c{c}_u{u}_t{t}_pCpp.txt"
-# 	run:
-# 		files2Agg = sorted(glob('../simulations/searchPairs/searchPairs_gn100_rn400_gl1000_rl500_o3_m0_i0_d0_ref*.fasta'), key=\
-# 			lambda n: int(n.split("ref")[1].split('.')[0]))
-# 		shell("cat {' '.join(files2Agg)} > {output}")
+# 		temp("{fileNameWithoutGz}.fastq")
+# 	# wildcard_constraints:
+# 	# 	fileNameWithoutGz=".*(?<!gz)$"
+# 	shell:
+# 		"gunzip -c {input} > {output}"
 
 rule createFASTApairs:
 	input:
