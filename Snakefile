@@ -4,11 +4,14 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 from os.path import exists
-from random import randrange
+from random import randrange, seed
 from sys import maxsize
 from glob import glob
 
 NB_RANDSEQS = (config['nbCpys'] + 1) * config['nbSimSeqs']
+
+#Initialize random number generator with global seed for this workflow
+seed(config['globalSeed'])
 
 def matchProgCallToSeed(wcs):
 	samFiles = []
@@ -108,8 +111,19 @@ def genWinnowmap2Files(wcs):
 
 	return winFileNames
 
+def genSampleFileNames(wcs):
+	scoreFiles = []
+
+	for i in range(config['randomSampleSize']):
+		seed = randrange(maxsize)
+		scoreFiles.append(f"../simulations/expValExp/scores/nonDupGlobIntSecScore_se{seed}_sl10000_sr0.01_ir0_dr0_k11_r0.1_c1_u1.txt")
+
+	return scoreFiles
+
 rule all:
 	input:
+		#Expectation value estimation
+		genSampleFileNames,
 		#Tests for DP script
 		# expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_pPy.txt", gn=\
 		# 	config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
@@ -134,13 +148,28 @@ rule all:
 		# 	config['implType']),
 		#minimap2 and bwamem runs
 		# matchProgCallToSeed,
-		# DP implementation benchmark on human data
+		#DP implementation benchmark on human data
 		expand("../benchmarks/benchFindThoms_humanChr20_refined_onlyCapitalNucs_ep{e}_s1657921994_rr{i}_k15_c1_u1_t-1000.txt", e=\
 		config['errorPatterns'], i=range(10)),
 		#
-		# genHomFiles,
-		# genMinimap2Files,
-		# genWinnowmap2Files
+		genHomFiles,
+		genMinimap2Files,
+		genWinnowmap2Files
+
+rule calculateGlobalIntersectionSimilarity:
+	input:
+		"../simulations/expValExp/sketches/noDupKskSeqPairs_se{desc}.sk"
+	output:
+		"../simulations/expValExp/scores/nonDupGlobIntSecScore_se{desc}_c1_u1.txt"
+	shell:
+		"python3 scripts/CalcGlobInterSim.py -p {input} > {output}"
+
+rule generateNoDuplicateKmerSketchPairs:
+	output:
+		"../simulations/expValExp/sketches/noDupKskSeqPairs_se{seed}_sl{seqLen}_sr{subRate}_ir{insRate}_dr{delRate}_k{k}_r{hRat}.sk"
+	shell:
+		"python3 scripts/GenNoDupKsketchPair.py -s {wildcards.seed} -l {wildcards.seqLen} -m {wildcards.subRate} -i " + \
+		"{wildcards.insRate} -d {wildcards.delRate} -k {wildcards.k} -r {wildcards.hRat} > {output}"
 
 rule convertMultiFastq2SinglFastq:
 	input:

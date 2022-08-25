@@ -16,50 +16,56 @@ NUCL_ALPHABET = "ACGT"
 #Substitution alphabets
 SUB_BASES = {'A': "CGT", 'C': "AGT", 'G': "ACT", 'T': "ACG"}
 
-#Setting up the argument parser
-parser = args.ArgumentParser(description="This script mutates a given DNA sequence and writes it to file in FASTA format.")
-parser.add_argument('-m', metavar='SubRate', type=float, required=True, help="Substitution rate")
-parser.add_argument('-d', metavar='DelRate', type=float, required=True, help="Deletion rate")
-parser.add_argument('-i', metavar='InsLen', type=float, required=True, help="Mean insertion length")
-parser.add_argument('-t', metavar='Template', type=str, required=True, help="File name of template sequence to mutate")
-parser.add_argument('-o', metavar='Output', type=str, required=True, help="Name of output FASTA")
-parser.add_argument('-s', metavar='Seed', type=int, default=randrange(maxsize), help="Random seed to use")
+def mutateSeq(tempSeq, subRate, delRate, avgInsLen):
+	seq = [b for b in tempSeq]
 
-arguments = parser.parse_args()
+	#Apply substitutions and deletions
+	for i in range(len(seq)):
+		#Throw the dice
+		outcome = random()
 
-#Check if rates and insertion length were chosen reasonable
-if arguments.m < 0 or arguments.m > 1:
-	print("ERROR: Substitution rate should be between 0 and 1", file=stderr)
+		#Select an action
+		if outcome <= subRate:
+			seq[i] = choice(SUB_BASES[seq[i]])
+		elif outcome <= subRate + delRate:
+			#This means even if a base is deleted we will allow insertions to appear before and after its previous place
+			seq[i] = ""
 
-if arguments.d < 0 or arguments.d > 1:
-	print("ERROR: Deletion rate should be between 0 and 1", file=stderr)
+	#Apply insertions
+	for i in range(1, len(seq) + 1):
+		while random() > (1 / (1 + avgInsLen)):
+			seq.insert(i, choice(NUCL_ALPHABET))
 
-if arguments.i < 0:
-	print("ERROR: Mean insertion length should be positive", file=stderr)
+	return "".join(seq)
 
-#Load template
-templateRecord = list(SeqIO.parse(open(arguments.t, 'r'), "fasta"))[0]
-seq = [b for b in templateRecord.seq]
-#Initialize random seed
-seed(arguments.s)
+if __name__ == '__main__':
+	#Setting up the argument parser
+	parser = args.ArgumentParser(description="This script mutates a given DNA sequence and writes it to file in FASTA format.")
+	parser.add_argument('-m', metavar='SubRate', type=float, required=True, help="Substitution rate")
+	parser.add_argument('-d', metavar='DelRate', type=float, required=True, help="Deletion rate")
+	parser.add_argument('-i', metavar='InsLen', type=float, required=True, help="Mean insertion length")
+	parser.add_argument('-t', metavar='Template', type=str, required=True, help="File name of template sequence to mutate")
+	parser.add_argument('-o', metavar='Output', type=str, required=True, help="Name of output FASTA")
+	parser.add_argument('-s', metavar='Seed', type=int, default=randrange(maxsize), help="Random seed to use")
 
-#Apply substitutions and deletions
-for i in range(len(seq)):
-	#Throw the dice
-	outcome = random()
+	arguments = parser.parse_args()
 
-	#Select an action
-	if outcome <= arguments.m:
-		seq[i] = choice(SUB_BASES[seq[i]])
-	elif outcome <= arguments.m + arguments.d:
-		#This means even if a base is deleted we will allow insertions to appear before and after its previous place
-		seq[i] = ""
+	#Check if rates and insertion length were chosen reasonable
+	if arguments.m < 0 or arguments.m > 1:
+		print("ERROR: Substitution rate should be between 0 and 1", file=stderr)
 
-#Apply insertions
-for i in range(1, len(seq) + 1):
-	while random() > (1 / (1 + arguments.d)):
-		seq.insert(i, choice(NUCL_ALPHABET))
+	if arguments.d < 0 or arguments.d > 1:
+		print("ERROR: Deletion rate should be between 0 and 1", file=stderr)
 
-#Write mutated sequence to file
-SeqIO.write(SeqRecord(Seq("".join(seq)), id="MutatedSeq", description=f"{templateRecord.id}_{templateRecord.description}_" + \
+	if arguments.i < 0:
+		print("ERROR: Mean insertion length should be positive", file=stderr)
+
+	#Load template
+	templateRecord = list(SeqIO.parse(open(arguments.t, 'r'), "fasta"))[0]
+	#Initialize random seed
+	seed(arguments.s)
+	#Mutate sequence
+	seq = mutateSeq(templateRecord.seq, arguments.m, arguments.d, arguments.i)
+	#Write mutated sequence to file
+	SeqIO.write(SeqRecord(Seq(seq), id="MutatedSeq", description=f"{templateRecord.id}_{templateRecord.description}_" + \
 	f"MutationSeed={arguments.s}"), open(arguments.o, 'w'), "fasta")

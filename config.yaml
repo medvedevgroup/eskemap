@@ -1,6 +1,6 @@
 simMeasure: ["intersec", "algnWoutOffs"]
 nbSimSeqs: 100
-simSeqLen: 10008
+simSeqLen: 10000
 mutationRates: [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1]
 geneLen: 1000
 nbCpys: 3
@@ -8,6 +8,8 @@ randSeqLen: 500
 nbRandSeqs: 400
 pbsimOutFlSufs: ["ref", "fastq", "maf"]
 errorPatterns: ["23:31:46", "46:62:92", "92:124:184", "184:248:368", "368:496:736"]
+globalSeed: 3096671072007954294
+randomSampleSize: 1000
 genomes: ["SAL_GB9998AA_AS", "humanChr20", "wheetChr1A-D"] #, "GCF_000001405.40_GRCh38.p14_genomic" 
 bwaIdxFileSufs: ["amb", "ann", "bwt", "pac", "sa"]
 prog: ["minimap2", "bwamem"]
