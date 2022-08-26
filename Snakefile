@@ -116,7 +116,19 @@ def genSampleFileNames(wcs):
 
 	for i in range(config['randomSampleSize']):
 		seed = randrange(maxsize)
-		scoreFiles.append(f"../simulations/expValExp/scores/nonDupGlobIntSecScore_se{seed}_sl10000_sr0.01_ir0_dr0_k11_r0.1_c1_u1.txt")
+		scoreFiles.append(f"../simulations/expValExp/scores/nonDupGlobIntSecScore_se{seed}_sl10000_sr0.01_ir0_dr0_k11_r0.1_c1" + \
+			"_u1.txt")
+
+	tl = config['templLen']
+	k = config['minimap2DefaultK']
+
+	for i in range(config['randomSampleSize']):
+		for d in config['divergenceRates']:
+			for s in config['substitutionIndelRates']:
+				sd = randrange(maxsize)
+				sr = f"{(d * s):.3f}"
+				scoreFiles.append(f"../simulations/expValExp/scores/nonDupGlobIntSecScore_se{sd}_sl{tl}_sr{sr}_ir{d}_dr{d}_k{k}" + \
+					"_r0.1_c1_u1.txt")
 
 	return scoreFiles
 
