@@ -116,7 +116,7 @@ def genSampleFileNames(wcs):
 
 	for i in range(config['randomSampleSize']):
 		seed = randrange(maxsize)
-		scoreFiles.append(f"../simulations/expValExp/scores/nonDupGlobIntSecScore_se{seed}_sl10000_sr0.01_ir0_dr0_k11_r0.1_c1" + \
+		scoreFiles.append(f"../simulations/expValExp/scores/noDupGlobIntSecScore_se{seed}_sl10000_sr0.01_ir0_dr0_k11_r0.1_c1" + \
 			"_u1.txt")
 
 	tl = config['templLen']
@@ -127,7 +127,15 @@ def genSampleFileNames(wcs):
 			for s in config['substitutionIndelRates']:
 				sd = randrange(maxsize)
 				sr = f"{(d * s):.3f}"
-				scoreFiles.append(f"../simulations/expValExp/scores/nonDupGlobIntSecScore_se{sd}_sl{tl}_sr{sr}_ir{d}_dr{d}_k{k}" + \
+				scoreFiles.append(f"../simulations/expValExp/scores/noDupGlobIntSecScore_se{sd}_sl{tl}_sr{sr}_ir{d}_dr{d}_k{k}" + \
+					"_r0.1_c1_u1.txt")
+
+	for i in range(config['randomSampleSize']):
+		for d in config['divergenceRates']:
+			for s in config['substitutionIndelRates']:
+				sd = randrange(maxsize)
+				sr = f"{(d * s):.3f}"
+				scoreFiles.append(f"../simulations/expValExp/scores/dupGlobIntSecScore_se{sd}_sl{tl}_sr{sr}_ir{d}_dr{d}_k{k}" + \
 					"_r0.1_c1_u1.txt")
 
 	return scoreFiles
@@ -170,17 +178,24 @@ rule all:
 
 rule calculateGlobalIntersectionSimilarity:
 	input:
-		"../simulations/expValExp/sketches/noDupKskSeqPairs_se{desc}.sk"
+		"../simulations/expValExp/sketches/{dupInfo}KskSeqPairs_se{desc}.sk"
 	output:
-		"../simulations/expValExp/scores/nonDupGlobIntSecScore_se{desc}_c1_u1.txt"
+		"../simulations/expValExp/scores/{dupInfo}GlobIntSecScore_se{desc}_c1_u1.txt"
 	shell:
 		"python3 scripts/CalcGlobInterSim.py -p {input} > {output}"
+
+rule generateKmerSketchPairs:
+	output:
+		"../simulations/expValExp/sketches/dupKskSeqPairs_se{seed}_sl{seqLen}_sr{subRate}_ir{insRate}_dr{delRate}_k{k}_r{hRat}.sk"
+	shell:
+		"python3 scripts/GenKsketchPair.py -s {wildcards.seed} -l {wildcards.seqLen} -m {wildcards.subRate} -i " + \
+		"{wildcards.insRate} -d {wildcards.delRate} -k {wildcards.k} -r {wildcards.hRat} > {output}"
 
 rule generateNoDuplicateKmerSketchPairs:
 	output:
 		"../simulations/expValExp/sketches/noDupKskSeqPairs_se{seed}_sl{seqLen}_sr{subRate}_ir{insRate}_dr{delRate}_k{k}_r{hRat}.sk"
 	shell:
-		"python3 scripts/GenNoDupKsketchPair.py -s {wildcards.seed} -l {wildcards.seqLen} -m {wildcards.subRate} -i " + \
+		"python3 scripts/GenKsketchPair.py -n -s {wildcards.seed} -l {wildcards.seqLen} -m {wildcards.subRate} -i " + \
 		"{wildcards.insRate} -d {wildcards.delRate} -k {wildcards.k} -r {wildcards.hRat} > {output}"
 
 rule convertMultiFastq2SinglFastq:

@@ -23,6 +23,7 @@ if __name__ == '__main__':
 	parser.add_argument('-k', metavar='KmerLen', type=int, default=9, help="The k-mer length to use")
 	parser.add_argument('-r', metavar='HashRatio', type=float, default=0.1, help="The ratio of hash values from the set of all " + \
 		"possible hash values to be included into a sketch")
+	parser.add_argument('-n', action="store_true", help="Generate sketches that contain no duplicates")
 
 	arguments = parser.parse_args()
 
@@ -49,7 +50,7 @@ if __name__ == '__main__':
 
 		sketch = calcSketch(seq, arguments.k, minHashThres)
 
-		if len(sketch) == len(unique(sketch)):
+		if not arguments.n or len(sketch) == len(unique(sketch)):
 			hasDuplicates = False
 
 	#Mutate sequence and make sure its sketch still has no duplicates
@@ -59,11 +60,17 @@ if __name__ == '__main__':
 		mutSeq = mutateSeq(seq, arguments.m, arguments.d, arguments.i)
 		mutSeqSketch = calcSketch(mutSeq, arguments.k, minHashThres)
 
-		if len(mutSeqSketch) == len(unique(mutSeqSketch)):
+		if not arguments.n or len(mutSeqSketch) == len(unique(mutSeqSketch)):
 			hasDuplicates = False
 
 	#Output sketches
-	print(f">NoDuplicateSketchPair_{arguments.s} original template")
-	print(' '.join([str(h) for h in sketch]))
-	print(f">NoDuplicateSketchPair_{arguments.s} mutated template")
-	print(' '.join([str(h) for h in mutSeqSketch]))
+	if arguments.n:
+		print(f">NoDuplicateSketchPair_{arguments.s} original template")
+		print(' '.join([str(h) for h in sketch]))
+		print(f">NoDuplicateSketchPair_{arguments.s} mutated template")
+		print(' '.join([str(h) for h in mutSeqSketch]))
+	else:
+		print(f">SketchPair_{arguments.s} original template")
+		print(' '.join([str(h) for h in sketch]))
+		print(f">SketchPair_{arguments.s} mutated template")
+		print(' '.join([str(h) for h in mutSeqSketch]))
