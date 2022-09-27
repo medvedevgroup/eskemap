@@ -138,6 +138,16 @@ def genSampleFileNames(wcs):
 				scoreFiles.append(f"../simulations/expValExp/scores/dupGlobIntSecScore_se{sd}_sl{tl}_sr{sr}_ir{d}_dr{d}_k{k}" + \
 					"_r0.1_c1_u1.txt")
 
+	for i in range(config['randomSampleSize']):
+		for d in config['divergenceRates']:
+			for s in config['substitutionIndelRates']:
+				sd = randrange(maxsize)
+				sr = f"{(d * s):.3f}"
+				scoreFiles.append(f"../simulations/expValExp/scores/noDupGlobIntSecScore_se{sd}_sl{config['readLength']}_sr{sr}" + \
+					f"_ir{d}_dr{d}_k{k}_r0.1_c1_u1.txt")
+				scoreFiles.append(f"../simulations/expValExp/scores/dupGlobIntSecScore_se{sd}_sl{config['readLength']}_sr{sr}" + \
+					f"_ir{d}_dr{d}_k{k}_r0.1_c1_u1.txt")
+
 	return scoreFiles
 
 rule all:
