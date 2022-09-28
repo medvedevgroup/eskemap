@@ -1,6 +1,7 @@
 #include "Sketch.cpp"
 #include "IO.cpp"
 #include "Thomology.cpp"
+#include "Index.cpp"
 
 int main(int argc, char **argv){
 	//Flag to save that scores are to be normalized
@@ -47,9 +48,8 @@ int main(int argc, char **argv){
 
 	//Calculate text sketch
 	skT = buildSketch(seq, kmerLen, frac);
-
-	//Testing
-	// cout << "main: length of text: " << seq.length() << endl;
+	//Index the text sketch
+	Index tIdx = Index(skT);//TODO: This function still needs to be tested!
 
 	//Find t-homologies and output them
 	outputHoms(findThoms(skP, skT, comWght, uniWght, tThres), normalize, skP.size());

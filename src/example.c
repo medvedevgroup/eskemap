@@ -17,7 +17,8 @@ int main(int argc, char *argv[])
 
 	mm_verbose = 2; // disable message output to stderr
 	mm_set_opt(0, &iopt, &mopt);
-
+	//Change window size for minimizer calculation
+	iopt.w = 1;
 
 	// mopt.flag |= MM_F_CIGAR; // perform alignment
 
@@ -58,9 +59,16 @@ int main(int argc, char *argv[])
 	// 	mm_tbuf_destroy(tbuf);
 
 		// int mm_idx_name2id(const mm_idx_t *mi, const char *name);
+		// printf("w is %d\n", iopt.w);
+		mm_idx_stat(mi);
 		uint8_t *seq = (uint8_t*) calloc(mi->seq[0].len + 1, sizeof(uint8_t));
 		int seqLen = mm_idx_getseq(mi, 0, 0, mi->seq[0].len, seq);
-		printf("%d\n", seq[1]);
+
+		for(int i = 0; i < seqLen; ++i){
+			printf("%d ", seq[i]);
+		}
+		// printf("seqLen: %d\n", seqLen);
+		
 		// int mm_idx_alt_read(mm_idx_t *mi, const char *fn);
 		// int mm_idx_bed_read(mm_idx_t *mi, const char *fn, int read_junc);
 		// int mm_idx_bed_junc(const mm_idx_t *mi, int32_t ctg, int32_t st, int32_t en, uint8_t *s);
