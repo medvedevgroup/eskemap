@@ -1,17 +1,10 @@
 #ifndef INDEX_HPP
 #define INDEX_HPP
 
-#include <utility>
+#include "Sketch.h"
 
 //A compare function to sort elements in a hash position vector
-inline const bool smHshnPos(const pair<uint64_t, uint32_t>&hpa, const pair<uint64_t, uint32_t>& hpb){//TODO: This function still needs to be tested!
-	//Testing
-	if(hpa.first == hpb.first){
-		cout << "1 Option " << (hpa.second < hpb.second ? "1" : "2") << endl;
-	} else{
-		cout << "2 Option " << (hpa.second < hpb.second ? "1" : "2") << endl;
-	}
-
+inline const bool smHshnPos(const pair<uint64_t, uint32_t>&hpa, const pair<uint64_t, uint32_t>& hpb){
 	return hpa.first != hpb.first ? hpa.first < hpb.first : hpa.second < hpb.second;
 }
 

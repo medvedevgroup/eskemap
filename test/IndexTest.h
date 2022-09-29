@@ -1,11 +1,7 @@
 #ifndef INDEX_TEST_HPP
 #define INDEX_TEST_HPP
 
-// #include <utility>
-
 #include "Index.h"
-
-// using namespace std;
 
 class IndexTest : public ::testing::Test {
 
