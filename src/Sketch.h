@@ -48,36 +48,11 @@ inline uint64_t getBaseNb(const char& c){
 //This function calculates a hash for the given numerical representation of a k-mer and a mask of the form (4**k)-1 where k is the k-mer length;
 //it originates from the minimap2 source code (the function hash64 in sketch.c)
 static inline uint64_t getHash(uint64_t kmer, uint64_t mask){
-	//Testing
-	// cout << "~kmer: " << ~kmer << endl;
-	// cout << "kmer << 21:" << (kmer << 21) << endl;
-	// cout << "~kmer + (kmer << 21):" << (~kmer + (kmer << 21)) << endl;
-
 	kmer = (~kmer + (kmer << 21)) & mask; // kmer = (kmer << 21) - kmer - 1;
-
-	//Testing
-	// cout << kmer << endl;
-
 	kmer = kmer ^ kmer >> 24;
-
-	//Testing
-	// cout << "kmer ^ kmer >> 24:" << kmer << endl;
-
 	kmer = ((kmer + (kmer << 3)) + (kmer << 8)) & mask; // kmer * 265
-
-	//Testing
-	// cout << "((kmer + (kmer << 3)) + (kmer << 8)) & mask:" << kmer << endl;
-
 	kmer = kmer ^ kmer >> 14;
-
-	//Testing
-	// cout << "kmer ^ kmer >> 14:" << kmer << endl;
-
 	kmer = ((kmer + (kmer << 2)) + (kmer << 4)) & mask; // kmer * 21
-
-	//Testing
-	// cout << "((kmer + (kmer << 2)) + (kmer << 4)) & mask:" << kmer << endl;
-
 	kmer = kmer ^ kmer >> 28;
 	kmer = (kmer + (kmer << 31)) & mask;
 	return kmer;
