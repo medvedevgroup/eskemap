@@ -36,118 +36,92 @@
 	    //Mask for calculating the hash
 	    uint64_t mask = (1ULL<<2*iopt.k) - 1;
 	    //I am not super sure what this does...might be relevant for homopolymer compression...
-	    int kmer_span = iopt.k;
+	    int kmer_span = iopt.k, shift1 = 2 * (iopt.k - 1), z;
+	    //A variable to store a k-mer's hash
+	    uint64_t m;
 
 		while ((mi = mm_idx_reader_read(r, n_threads)) != 0) { // traverse each part of the index
 			mm_idx_stat(mi);
 
-			//Allocate space for first k-mer in indexed sequence
-			uint8_t *seq = (uint8_t*) calloc(iopt.k, sizeof(uint8_t));
+		    //Allocate space for first k-mer in indexed sequence
+		    uint8_t *seq = (uint8_t*) calloc(mi->seq[0].len, sizeof(uint8_t));
 			//Get sequence of first k-mer
-			int seqLen = mm_idx_getseq(mi, 0, 0, iopt.k, seq);
+			int seqLen = mm_idx_getseq(mi, 0, 0, mi->seq[0].len, seq);
 
-			printf("Length of first %d-mer is %d\nSequence is ", iopt.k, seqLen);
-			// for(int i = 0; i < seqLen; ++i){
-			// 	printf("%d", seq[i]);
-			// }
-			// printf("\n");
+			// printf("Length of indexed sequence is %d\n", seqLen);
 
-			//A k-mer we want to query
-			// char *str = "TCTTATCTCAGAAAA";
-			// char *str = "AAATACACCGCACTG";
-			char *str = "TCTTATCTCAGAAAA";
 			//2-bit compressed sequence representation of a k-mer
-			uint64_t minier = 0;
+			uint64_t minier = 0, refkm = 0, revkm = 0;
 
-			for (uint32_t i= 0; i < iopt.k; ++i) {
-				int c = seq_nt4_table[(uint8_t)str[i]];
-				
-				// mm128_t info = { UINT64_MAX, UINT64_MAX };
+			for (uint32_t i= 0; i < seqLen; ++i) {
+				int c = seq_nt4_table[(uint8_t)seq[i]];
 				
 				//Check if current base is ambiguous
 				if (c < 4) { // not an ambiguous base
-					// int z;
-					// if (is_hpc) {
-					// 	int skip_len = 1;
-					// 	if (i + 1 < len && seq_nt4_table[(uint8_t)str[i + 1]] == c) {
-					// 		for (skip_len = 2; i + skip_len < len; ++skip_len)
-					// 			if (seq_nt4_table[(uint8_t)str[i + skip_len]] != c)
-					// 				break;
-					// 		i += skip_len - 1; // put $i at the end of the current homopolymer run
-					// 	}
-					// 	tq_push(&tq, skip_len);
-					// 	kmer_span += skip_len;
-					// 	if (tq.count > k) kmer_span -= tq_shift(&tq);
-					// } else kmer_span = l + 1 < k? l + 1 : k;
+					refkm = (refkm << 2 | c) & mask;           // forward k-mer
+					revkm = (revkm >> 2) | (3ULL^c) << shift1; // reverse k-mer
+				}
 
-					minier = (minier << 2 | c) & mask;           // forward k-mer
+				//Check if we have read in the next complete k-mer
+				if(i > iopt.k - 2){
+					printf("K-mer is %lu\n", refkm);
+
+					//Check if k-mer and its reverse complement are identical
+					if(refkm == revkm){
+						printf("But we won't find it because it is its own reverse complement");
+						continue;
+					}
+
+					//Check if reverse complement is smaller
+					// if(refkm < revkm){
+
+					//We always want to use the k-mer coming from the reference strand
+					minier = refkm;
 					
-					// kmer[1] = (kmer[1] >> 2) | (3ULL^c) << shift1; // reverse k-mer
-					
-					// if (kmer[0] == kmer[1]) continue; // skip "symmetric k-mers" as we don't know it strand
-					// z = kmer[0] < kmer[1]? 0 : 1; // strand
-					// ++l;
-					// if (l >= k && kmer_span < 256) {
-					// 	info.x = hash64(kmer[z], mask) << 8 | kmer_span;
-					// 	info.y = (uint64_t)rid<<32 | (uint32_t)i<<1 | z;
+					// } else{
+					// 	minier = revkm;
+
+					// 	printf("But we query its reverse complement\n");
 					// }
-				}// else l = 0, tq.count = tq.front = 0, kmer_span = 0;
 
-				// buf[buf_pos] = info; // need to do this here as appropriate buf_pos and buf[buf_pos] are needed below
-				// if (l == w + k - 1 && min.x != UINT64_MAX) { // special case for the first window - because identical k-mers are not stored yet
-				// 	for (j = buf_pos + 1; j < w; ++j)
-				// 		if (min.x == buf[j].x && buf[j].y != min.y) kv_push(mm128_t, km, *p, buf[j]);
-				// 	for (j = 0; j < buf_pos; ++j)
-				// 		if (min.x == buf[j].x && buf[j].y != min.y) kv_push(mm128_t, km, *p, buf[j]);
-				// }
-				// if (info.x <= min.x) { // a new minimum; then write the old min
-				// 	if (l >= w + k && min.x != UINT64_MAX) kv_push(mm128_t, km, *p, min);
-				// 	min = info, min_pos = buf_pos;
-				// } else if (buf_pos == min_pos) { // old min has moved outside the window
-				// 	if (l >= w + k - 1 && min.x != UINT64_MAX) kv_push(mm128_t, km, *p, min);
-				// 	for (j = buf_pos + 1, min.x = UINT64_MAX; j < w; ++j) // the two loops are necessary when there are identical k-mers
-				// 		if (min.x >= buf[j].x) min = buf[j], min_pos = j; // >= is important s.t. min is always the closest k-mer
-				// 	for (j = 0; j <= buf_pos; ++j)
-				// 		if (min.x >= buf[j].x) min = buf[j], min_pos = j;
-				// 	if (l >= w + k - 1 && min.x != UINT64_MAX) { // write identical k-mers
-				// 		for (j = buf_pos + 1; j < w; ++j) // these two loops make sure the output is sorted
-				// 			if (min.x == buf[j].x && min.y != buf[j].y) kv_push(mm128_t, km, *p, buf[j]);
-				// 		for (j = 0; j <= buf_pos; ++j)
-				// 			if (min.x == buf[j].x && min.y != buf[j].y) kv_push(mm128_t, km, *p, buf[j]);
-				// 	}
-				// }
-				// if (++buf_pos == w) buf_pos = 0;
+					//Calculate hash of k-mer to query
+					m = hash64(minier, mask);
+					//Query hashed k-mer in index
+					const uint64_t *idx_p = mm_idx_get(mi, m, &n);
+
+					// printf("Querying done\n");
+
+			        //Check if k-mer could be found
+				    if (n > 0) {
+				        //Check if k-mer occurs only once
+				        if (n == 1) {
+				        	// printf("Single occurrence\n");
+
+				            //Print sequence id position and strand
+				            printf("%ld %d %d\n", (*idx_p)>>32, ((uint32_t)(*idx_p))>>1, ((uint32_t)*idx_p)&1);
+				        }
+				        else {
+				        	// printf("Multiple occurrences\n");
+
+				           	//Iterate over all occurrences
+				            for (int i = 0; i < n; i++) {
+				                //Print sequence id position and strand
+				                printf("%ld %d %d\n", (*idx_p)>>32, ((uint32_t)(*idx_p))>>1, ((uint32_t)*idx_p)&1);
+				                //Move to next occurrence
+				                idx_p++;
+			                }
+			            }
+				    }
+
+				    // n = 0;
+				}
 			}
 
-			printf("minier: %lu\n", minier);
 			// minier = 78048;
 
-			//Calculate hash of k-mer to query
-	        uint64_t m = hash64(minier, mask);// << 8 | kmer_span;
-	        const uint64_t *idx_p = mm_idx_get(mi, m, &n);
-
-	        //Check if k-mer could be found
-		    if (n > 0) {
-		        //Check if k-mer occurs only once
-		        if (n == 1) {
-		            //Print sequence id position and strand
-		            printf("%ld %d %d", (*idx_p)>>32, ((uint32_t)(*idx_p))>>1, ((uint32_t)*idx_p)&1);
-		        }
-		        else {
-		           	//Iterate over all occurrences
-		            for (int i = 0; i < n; i++) {
-		                //Print sequence id position and strand
-		                printf("%ld %d %d\n", (*idx_p)>>32, ((uint32_t)(*idx_p))>>1, ((uint32_t)*idx_p)&1);
-		                //Move to next occurrence
-		                idx_p++;
-	                }
-	            }
-
-	            // printf("m: %lu\n", m);
-
-		            // if(count > 5) break;
-		    }
-
+			// //Calculate hash of k-mer to query
+	  //       uint64_t m = hash64(minier, mask);// << 8 | kmer_span;
+	        
 	        // printf("hash(TTATCCCAGATCAAC): %lu\n", hash64(minier, mask));
 	        // uint8_t count = 0;
 
@@ -181,7 +155,7 @@
 
 			mm_idx_destroy(mi);
 		}
-		mm_idx_reader_close(r); // close the index reader
+		// mm_idx_reader_close(r); // close the index reader
 
 		return 0;
 	}
