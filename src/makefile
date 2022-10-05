@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -std=c++2a -O3
+CFLAGS = -std=c++2a -O3 -lz -lm -lpthread
 
 all:
-	$(CC) FindThoms.cpp $(CFLAGS) -o FindThoms
+	$(CC) FindThoms.cpp ../../software/minimap2/libminimap2.a $(CFLAGS) -o FindThoms

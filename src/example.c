@@ -16,6 +16,7 @@
 		mm_idxopt_t iopt;
 		mm_mapopt_t mopt;
 		int n_threads = 1;
+		hFrac = 0.2;
 
 		mm_verbose = 2; // disable message output to stderr
 		mm_set_opt(0, &iopt, &mopt);
@@ -77,7 +78,7 @@
 
 					//We always want to use the k-mer coming from the reference strand
 					minier = refkm;
-					
+
 					// } else{
 					// 	minier = revkm;
 

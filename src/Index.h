@@ -2,11 +2,17 @@
 #define INDEX_HPP
 
 #include "Sketch.h"
+#include "../../software/minimap2/minimap.h"
+
+#define INDEX_DEFAULT_DUMP_FILE "indexDump.idx"
 
 //A compare function to sort elements in a hash position vector
-inline const bool smHshnPos(const pair<uint64_t, uint32_t>&hpa, const pair<uint64_t, uint32_t>& hpb){
+inline const bool smHshnPos(const pair<uint64_t, uint32_t>& hpa, const pair<uint64_t, uint32_t>& hpb){
 	return hpa.first != hpb.first ? hpa.first < hpb.first : hpa.second < hpb.second;
 }
+
+//This function generates the L array need for alpha-homology detection
+const vector<pair<uint64_t, uint32_t>> genL(const Sketch& pSk, const mm_idx_t *tidx, const uint32_t& k);
 
 class Index {
 

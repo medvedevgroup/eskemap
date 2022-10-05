@@ -3,22 +3,21 @@
 #include "Thomology.h"
 
 //This function finds all t-homologies of a text with respect to some pattern using dynamic programming
-const vector<Thomology> findThoms(const Sketch& skP, const Sketch& skT, const uint32_t& cw, const uint32_t& uw, const int32_t& t){
+const vector<Thomology> findThoms(const Sketch& skP, const vector<pair<uint64_t, uint32_t>>& L, const uint32_t& cw, 
+	const uint32_t& uw, const int32_t& t){
 	//Some counter variables
 	uint32_t i, j, k, occ;
 	//The maximum threshold to compare against
 	int32_t maxThres;
-	//An array to store a mapping between columns and positions in the text they belong to
-	vector<uint32_t> col2pos;
 	vector<Thomology> res;
 	//The score matrix
 	vector<vector<int32_t>> scores;
-	//A sketch to store a reduced representation of the text
-	Sketch L;
-	//An iterator to iterate over L
+	//A sketch interator
 	Sketch::const_iterator fSkIt;
+	//An iterator to iterate over L
+	vector<pair<uint64_t, uint32_t>>::const_iterator fLit;
 	//An iterator to reversely iterate over L
-	Sketch::const_reverse_iterator rSkIt;
+	vector<pair<uint64_t, uint32_t>>::const_reverse_iterator rLit;
 	//An iterator to iterate over lists in pos
 	vector<uint32_t>::const_iterator posIt;
 	//A list to store scores of maximum t-homologies along with their start position
@@ -41,59 +40,34 @@ const vector<Thomology> findThoms(const Sketch& skP, const Sketch& skT, const ui
 
 	//Set position counter
 	j = 0;
-	//Reserve some space for L and col2pos
-	L.reserve(P_MULTIPLICITY * skP.size());
-	col2pos.reserve(P_MULTIPLICITY * skP.size());
-
-	//Reduce the text on matching positions
-	for(fSkIt = skT.begin(); fSkIt != skT.end(); ++fSkIt){
-		//Check if k-mer occurs in pattern
-		if(occp.contains(*fSkIt)){
-			//Store k-mer in L
-			L.push_back(*fSkIt);
-			//Store k-mer's position in t
-			col2pos.push_back(j);
-
-			//Testing
-			// if(*fSkIt == 74701964) cout << "findThoms: j: " << j << endl;
-		}
-
-		++j;
-	}
-
-	//From now on L and col2pos will keep their sizes
-	L.shrink_to_fit();
-	col2pos.shrink_to_fit();
-	//Reset position counter
-	j = 0;
 
 	//Fill score matrix
-	for(fSkIt = L.begin(); fSkIt != L.end(); ++fSkIt){
+	for(fLit = L.begin(); fLit != L.end(); ++fLit){
 		//Add new column in score matrix...
 		scores.push_back(vector<int32_t>());
 		//...and reserve enough space
 		scores.back().reserve(j + 1);
 
-		//Check if current hash occurred already before
-		if(pos.contains(*fSkIt)){
+		//Check if current hash occurred already before//TODO: Can we speed this up by using the index?
+		if(pos.contains(fLit->first)){
 			//Add current position as occurrence for this hash
-			pos[*fSkIt].push_back(j);
+			pos[fLit->first].push_back(j);
 		} else{
-			pos[*fSkIt] = {j};
+			pos[fLit->first] = {j};
 		}
 
 		//We don't want to search k_min from the beginning again each time
 		k = 0;
-		posIt = pos[*fSkIt].begin();
+		posIt = pos[fLit->first].begin();
 
 		//Iterate over start positions
 		for(i = 0; i <= j; ++i){
 			//Walk through vector at current position
-			while(posIt != pos[*fSkIt].end()){
+			while(posIt != pos[fLit->first].end()){
 				//Check if we have found k_min already
 				if(i <= *posIt){
 					//Calculate occ(t[j], t[i, j-1])
-					occ = pos[*fSkIt].size() - k - 1;
+					occ = pos[fLit->first].size() - k - 1;
 					break;
 				}
 
@@ -104,10 +78,10 @@ const vector<Thomology> findThoms(const Sketch& skP, const Sketch& skT, const ui
 			//Check if we are dealing with the base case
 			if(i == j){
 				scores.back().push_back(cw - uw * (skP.size() - 1));
-			} else if(occ < occp[*fSkIt]){//Discriminate between cases
-				scores.back().push_back(scores[j - 1][i] + cw + uw - uw * (col2pos[j] - col2pos[j - 1] - 1));
+			} else if(occ < occp[fLit->first]){//Discriminate between cases
+				scores.back().push_back(scores[j - 1][i] + cw + uw - uw * (fLit->second - L[j - 1].second - 1));
 			} else{
-				scores.back().push_back(scores[j - 1][i] - uw * (col2pos[j] - col2pos[j - 1]));
+				scores.back().push_back(scores[j - 1][i] - uw * (fLit->second - L[j - 1].second));
 			}
 		}
 
@@ -115,7 +89,7 @@ const vector<Thomology> findThoms(const Sketch& skP, const Sketch& skT, const ui
 	}
 
 	//Get a reverse iterator to iterate over L
-	rSkIt = L.rbegin();
+	rLit = L.rbegin();
 	//Get a counter for the column that we are at
 	j = scores.size() - 1;
 
@@ -128,14 +102,15 @@ const vector<Thomology> findThoms(const Sketch& skP, const Sketch& skT, const ui
 		//Set the threshold that a maximum t-homology has to exceed
 		maxThres = t - 1;
 		//Get a forward iterator to iterate over L
-		fSkIt = L.begin();
+		fLit = L.begin();
 
 		//Walk through column from top to bottom
 		for(vector<int32_t>::const_iterator rowIt = colRit->begin(); rowIt != colRit->end(); ++rowIt){
-			//If the substring is a t-homology and its first and last hash is identical this hash needs to occur at least twice inside the pattern
-			if(i != j && *fSkIt == *rSkIt && occp[*fSkIt] < 2){
+			//If the substring is a t-homology and its first and last hashes are identical this hash needs to occur at least twice 
+			//inside the pattern
+			if(i != j && fLit->first == rLit->first && occp[fLit->first] < 2){
 				++i;
-				++fSkIt;
+				++fLit;
 				continue;
 			}
 
@@ -152,11 +127,8 @@ const vector<Thomology> findThoms(const Sketch& skP, const Sketch& skT, const ui
 
 			//Check if score is high enough
 			if(*rowIt > maxThres){
-				//Testing
-				// cout << "findThoms: *fSkIt: " << *fSkIt << " *rSkIt: " << *rSkIt << endl;
-
 				//Add t-homology to results
-				res.push_back(make_tuple(col2pos[i], col2pos[j], *rowIt));
+				res.push_back(make_tuple(L[i].second, L[j].second, *rowIt));
 				//Add score to list with maximum scores
 				maxScores.insert(li, make_pair(i, *rowIt));
 				//Update maximum to comare with
@@ -164,10 +136,10 @@ const vector<Thomology> findThoms(const Sketch& skP, const Sketch& skT, const ui
 			}
 
 			++i;
-			++fSkIt;
+			++fLit;
 		}
 
-		++rSkIt;
+		++rLit;
 		--j;
 	}
 
