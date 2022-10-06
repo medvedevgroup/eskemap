@@ -31,7 +31,8 @@
 //	11. We are not dealing with a column to which a hash belongs that occurs twice in the text, but only once in the pattern and a 
 //		maximal t-homology can be found in the same column, but for a larger start position
 TEST_F(FindThomsTest, uniH){
-	r = findThoms({1, 2, 1}, {1, 2, 3, 2, 2, 1}, 1, 1, -1);
+	r = findThoms({1, 2, 1}, {make_pair(1, 42), make_pair(2, 45), make_pair(3, 56), make_pair(2, 58), make_pair(2, 64), 
+		make_pair(1, 74)}, 1, 1, -1);
 
 	ASSERT_EQ(r.size(), 3);
 	EXPECT_EQ(get<0>(r.front()), 0);
@@ -61,7 +62,8 @@ TEST_F(FindThomsTest, uniH){
 //	11. We are not dealing with a column to which a hash belongs that occurs twice in the text, but only once in the pattern and a 
 //		maximal t-homology can be found in the same column, but for a larger start position
 TEST_F(FindThomsTest, irrMax){
-	r = findThoms({1, 2, 3, 4}, {1, 5, 3, 4, 1, 2, 5, 5, 2}, 1, 1, -1);
+	r = findThoms({1, 2, 3, 4}, {make_pair(1, 42), make_pair(5, 45), make_pair(3, 56), make_pair(4, 58), make_pair(1, 64), 
+		make_pair(2, 69), make_pair(5, 74), make_pair(5, 82), make_pair(2, 88)}, 1, 1, -1);
 
 	ASSERT_EQ(r.size(), 4);
 	EXPECT_EQ(get<0>(r.front()), 0);
@@ -95,7 +97,7 @@ TEST_F(FindThomsTest, irrMax){
 //	11. We are not dealing with a column to which a hash belongs that occurs twice in the text, but only once in the pattern and a 
 //		maximal t-homology can be found in the same column, but for a larger start position
 TEST_F(FindThomsTest, msInc){
-	r = findThoms({1, 2}, {1, 2, 1}, 1, 1, 0);
+	r = findThoms({1, 2}, {make_pair(1, 42), make_pair(2, 45), make_pair(1, 56)}, 1, 1, 0);
 
 	ASSERT_EQ(r.size(), 2);
 	EXPECT_EQ(get<0>(r.front()), 1);

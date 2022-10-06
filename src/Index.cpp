@@ -52,6 +52,9 @@ const vector<pair<uint64_t, uint32_t>> genL(const Sketch& pSk, const mm_idx_t *t
 	//Reserve some space for L
 	L.reserve(P_MULTIPLICITY * pSk.size());
 
+	//Testing
+	cout << "1 Option " << (pSk.empty() ? "1" : "2") << endl;
+
 	//Query index for all hashes occurring in the read sketch
 	for(sI = pSk.begin(); sI != pSk.end(); ++sI){
 		//Query current hash in index
@@ -59,17 +62,28 @@ const vector<pair<uint64_t, uint32_t>> genL(const Sketch& pSk, const mm_idx_t *t
 
 		//Check if hash could be found
 		if(nHits > 0){
+			//Testing
+			cout << "2 Option 1" << endl;
+			if(nHits > 1){
+				cout << "3 Option 1" << endl;
+			} else{
+				cout << "3 Option 2" << endl;
+			}
+
 		    //Iterate over all occurrences
 		    for(i = 0; i < nHits; ++i){
 		    	L.push_back(make_pair(*sI, (((uint32_t)(*idx_p))>>1) - k + 1));
 		        //Move to next occurrence
 		        idx_p++;
 	        }
+		} else{
+			//Testing
+			cout << "2 Option 2" << endl;
 		}
 	}
 
 	//Sort L by ascending positions in text
-	sort(L.begin(), L.end(), smHshnPos);
+	sort(L.begin(), L.end(), smPos);
 
 	return L;
 }

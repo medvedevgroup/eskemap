@@ -2,7 +2,6 @@
 #include "IO.cpp"
 #include "Thomology.cpp"
 #include "Index.cpp"
-// #include "../../software/minimap2/minimap.h"
 
 int main(int argc, char **argv){
 	//Flag to save that scores are to be normalized
@@ -55,7 +54,7 @@ int main(int argc, char **argv){
 	//Adjust k if necessary
 	iopt.k = kmerLen;
 	//Open an index reader //TODO: We do not allow yet to use a prebuilt index
-	r = mm_idx_reader_open(tFile, &iopt, INDEX_DEFAULT_DUMP_FILE);
+	r = mm_idx_reader_open(tFile.c_str(), &iopt, INDEX_DEFAULT_DUMP_FILE);
 
 	//Check if index could be opened successfully
 	if(r == NULL){

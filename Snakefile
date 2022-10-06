@@ -153,7 +153,7 @@ def genSampleFileNames(wcs):
 rule all:
 	input:
 		#Expectation value estimation
-		genSampleFileNames,
+		# genSampleFileNames,
 		#Tests for DP script
 		# expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_pPy.txt", gn=\
 		# 	config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
@@ -170,21 +170,21 @@ rule all:
 		# 	config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
 		# 	config['mutationRates'], i=range(config['nbSimSeqs'])),
 		#Tests for DP C++ implementation
-		# expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
-		# 	config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
-		# 	config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=config['implType']),
-		# expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
-		# 	config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=\
-		# 	config['implType']),
+		expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
+			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
+			config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=config['implType']),
+		expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
+			config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=\
+			config['implType']),
 		#minimap2 and bwamem runs
 		# matchProgCallToSeed,
 		#DP implementation benchmark on human data
-		expand("../benchmarks/benchFindThoms_humanChr20_refined_onlyCapitalNucs_ep{e}_s1657921994_rr{i}_k15_c1_u1_t-1000.txt", e=\
-		config['errorPatterns'], i=range(10)),
+		# expand("../benchmarks/benchFindThoms_humanChr20_refined_onlyCapitalNucs_ep{e}_s1657921994_rr{i}_k15_c1_u1_t-1000.txt", e=\
+		# config['errorPatterns'], i=range(10)),
 		#
-		genHomFiles,
-		genMinimap2Files,
-		genWinnowmap2Files
+		# genHomFiles,
+		# genMinimap2Files,
+		# genWinnowmap2Files
 
 rule calculateGlobalIntersectionSimilarity:
 	input:

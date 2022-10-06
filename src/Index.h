@@ -6,9 +6,14 @@
 
 #define INDEX_DEFAULT_DUMP_FILE "indexDump.idx"
 
-//A compare function to sort elements in a hash position vector
+//A compare function to sort elements in a hash position vector primarily by hash and secondarily by position in ascending order
 inline const bool smHshnPos(const pair<uint64_t, uint32_t>& hpa, const pair<uint64_t, uint32_t>& hpb){
 	return hpa.first != hpb.first ? hpa.first < hpb.first : hpa.second < hpb.second;
+}
+
+//A compare function to sort elements in a hash position vector by ascending positions only
+inline const bool smPos(const pair<uint64_t, uint32_t>& hpa, const pair<uint64_t, uint32_t>& hpb){//TODO: This function still needs to be tested!
+	return hpa.second < hpb.second;
 }
 
 //This function generates the L array need for alpha-homology detection
