@@ -12,7 +12,7 @@ inline const bool smHshnPos(const pair<uint64_t, uint32_t>& hpa, const pair<uint
 }
 
 //A compare function to sort elements in a hash position vector by ascending positions only
-inline const bool smPos(const pair<uint64_t, uint32_t>& hpa, const pair<uint64_t, uint32_t>& hpb){//TODO: This function still needs to be tested!
+inline const bool smPos(const pair<uint64_t, uint32_t>& hpa, const pair<uint64_t, uint32_t>& hpb){
 	return hpa.second < hpb.second;
 }
 

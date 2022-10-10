@@ -30,7 +30,7 @@ inline void dsHlp(){
 [-t HOM_THRES]" << endl << endl;
 	cerr << "Find sketch-based pattern homology in text." << endl << endl;
 	cerr << "Required parameters:" << endl;
-	cerr << "   -p   --pattern  Pattern sequence file (FASTA format)" << endl;
+	cerr << "   -p   --pattern  Pattern sequences file (FASTA format)" << endl;
 	cerr << "   -s   --text     Text sequence file (FASTA format)" << endl << endl;
 	cerr << "Optional parameters with required argument:" << endl;
 	cerr << "   -k   --ksize             K-mer length to be used for sketches (default " << K << ")" << endl;

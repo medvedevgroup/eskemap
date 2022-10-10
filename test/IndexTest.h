@@ -28,6 +28,10 @@ class GenLtest : public ::testing::Test {
 			mm_set_opt(0, &iopt, &mopt);
 			//Adjust k if necessary
 			iopt.k = K;
+			//Open an index reader
+			r = mm_idx_reader_open("testText.fasta", &iopt, INDEX_DEFAULT_DUMP_FILE);
+			//Read index
+			idx = mm_idx_reader_read(r, 1);
 		}
 
 		//An index option struct

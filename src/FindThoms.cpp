@@ -3,6 +3,9 @@
 #include "Thomology.cpp"
 #include "Index.cpp"
 
+//The FracMinHash ratio
+double hFrac = HASH_RATIO;
+
 int main(int argc, char **argv){
 	//Flag to save that scores are to be normalized
 	bool normalize = NORM_FLAG_DEFAULT;
@@ -13,8 +16,6 @@ int main(int argc, char **argv){
 	uint32_t uniWght = DEFAULT_WEIGHT;
 	//The t-homology threshold
 	int32_t tThres = T;
-	//The FracMinHash ratio
-	double hFrac = HASH_RATIO;
 	//Input file names
 	string pFile, tFile;
 	//An input sequence
@@ -29,8 +30,6 @@ int main(int argc, char **argv){
 	const mm_idx_t *tidx;
 	//The input sequences' sketches
 	Sketch skP;
-	//A vector storing hashes and their positions in the t which also occur in p
-	vector<pair<uint64_t, uint32_t>> L;
 
 	//Parse arguments
 	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, hFrac, comWght, uniWght, tThres, normalize)){
@@ -74,10 +73,8 @@ int main(int argc, char **argv){
 		return -1; 
 	}
 
-	//Generate L
-	L = genL(skP, tidx, kmerLen);//TODO: This function still needs to be tested!
 	//Find t-homologies and output them
-	outputHoms(findThoms(skP, L, comWght, uniWght, tThres), normalize, skP.size());//TODO: This function needs to be tested again!
+	outputHoms(findThoms(skP, genL(skP, tidx, kmerLen), comWght, uniWght, tThres), normalize, skP.size());
 
 	return 0;
 }
