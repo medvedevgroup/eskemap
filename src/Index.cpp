@@ -61,7 +61,7 @@ const vector<pair<uint64_t, uint32_t>> genL(const Sketch& pSk, const mm_idx_t *t
 		if(nHits > 0){
 			//Iterate over all occurrences
 		    for(i = 0; i < nHits; ++i){
-		    	L.push_back(make_pair(*sI, (((uint32_t)(*idx_p))>>1) - k + 1));
+		    	L.push_back(make_pair(*sI, ((uint32_t)(*idx_p))>>1));
 		        //Move to next occurrence
 		        idx_p++;
 	        }
@@ -70,6 +70,10 @@ const vector<pair<uint64_t, uint32_t>> genL(const Sketch& pSk, const mm_idx_t *t
 
 	//Sort L by ascending positions in text
 	sort(L.begin(), L.end(), smPos);
+
+	//Testing
+	// for(vector<pair<uint64_t, uint32_t>>::const_iterator j = L.begin(); j != L.end(); ++j) cout << "(" << j->first << ", " << j->second << ") ";
+	// cout << endl;
 
 	return L;
 }
