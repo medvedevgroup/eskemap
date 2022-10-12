@@ -42,8 +42,8 @@ class GenLtest : public ::testing::Test {
 		mm_idx_reader_t *r;
 		//A pointer to the index
 		mm_idx_t* idx;
-		//The pattern sketch
-		Sketch p;
+		//A table storing the number of occurrences of each hash inside the pattern
+		unordered_map<uint64_t, uint32_t> p;
 		//The L array
 		vector<pair<uint64_t, uint32_t>> L;
 };

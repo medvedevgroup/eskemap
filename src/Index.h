@@ -17,7 +17,7 @@ inline const bool smPos(const pair<uint64_t, uint32_t>& hpa, const pair<uint64_t
 }
 
 //This function generates the L array need for alpha-homology detection
-const vector<pair<uint64_t, uint32_t>> genL(const Sketch& pSk, const mm_idx_t *tidx, const uint32_t& k);
+const vector<pair<uint64_t, uint32_t>> genL(const unordered_map<uint64_t, uint32_t>& phshs, const mm_idx_t *tidx);
 
 class Index {
 

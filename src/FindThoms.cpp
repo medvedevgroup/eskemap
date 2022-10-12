@@ -74,7 +74,7 @@ int main(int argc, char **argv){
 	}
 
 	//Find t-homologies and output them
-	outputHoms(findThoms(skP, genL(skP, tidx, kmerLen), comWght, uniWght, tThres), normalize, skP.size());
+	outputHoms(findThoms(skP, tidx, comWght, uniWght, tThres), normalize, skP.size());
 
 	return 0;
 }

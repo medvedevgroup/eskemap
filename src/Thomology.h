@@ -3,13 +3,15 @@
 
 #include <tuple>
 
+#include "../../software/minimap2/minimap.h"
+
 #define T 0
 #define DEFAULT_WEIGHT 1
 
 using Thomology = tuple<uint32_t, uint32_t, int32_t>;
 
 //This function finds all t-homologies of a text with respect to some pattern using dynamic programming
-const vector<Thomology> findThoms(const Sketch& skP, const vector<pair<uint64_t, uint32_t>>& L, const uint32_t& cw, 
+const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, 
 	const uint32_t& uw, const int32_t& t);
 
 #endif

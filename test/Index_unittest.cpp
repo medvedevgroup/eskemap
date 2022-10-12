@@ -57,27 +57,27 @@ TEST(SmPosTest, eq){
 	EXPECT_FALSE(smPos(make_pair(42, 23), make_pair(42, 23)));
 }
 
-//Tests for function const vector<pair<uint64_t, uint32_t>> genL(const Sketch&, const mm_idx_t*, const uint32_t&)//
-//	1. The pattern sketch is (not) empty DONE
+//Tests for function const vector<pair<uint64_t, uint32_t>> genL(const unordered_map<uint64_t, uint32_t>&, const mm_idx_t*)//
+//	1. The hash table is (not) empty DONE
 //	2. A hash can(not) be found inside the index DONE
 //	3. A shared hash occurs (not) more than once inside the text sketch DONE
-//	4. The order of shared hashes between pattern and text sketch is (not) different DONE
+//	4. The order of shared hashes between hash table and text sketch is (not) different and the hash table is not empty DONE
 
 //Tests the function genL under the following conditions
 //	1. The pattern sketch is empty
 TEST_F(GenLtest, noP){
-	L = genL(p, NULL, iopt.k);
+	L = genL(p, NULL);
 
 	EXPECT_TRUE(L.empty());
 }
 
 //Tests the function genL under the following conditions
-//	1. The pattern sketch is not empty
+//	1. The hash table is not empty
 //	2. A hash can(not) be found inside the index
 //	3. A shared hash occurs (not) more than once inside the text sketch
-//	4. The order of shared hashes between pattern and text sketch is different
+//	4. The order of shared hashes between hash table and text sketch is different
 TEST_F(GenLtest, uH){
-	L = genL({197108, 19367, 241811}, idx, iopt.k);
+	L = genL({{197108, 1}, {19367, 1,}, {241811, 2}}, idx);
 
 	ASSERT_FALSE(L.empty());
 	ASSERT_EQ(L.size(), 3);
@@ -90,12 +90,12 @@ TEST_F(GenLtest, uH){
 }
 
 //Tests the function genL under the following conditions
-//	1. The pattern sketch is not empty
+//	1. The hash table is not empty
 //	2. A hash can(not) be found inside the index
 //	3. A shared hash occurs not more than once inside the text sketch
-//	4. The order of shared hashes between pattern and text sketch is not different
+//	4. The order of shared hashes between hash table and text sketch is not different
 TEST_F(GenLtest, eqOrd){
-	L = genL({13466, 19367, 241811}, idx, iopt.k);
+	L = genL({{241811, 1}, {13466, 1}, {19367, 1}}, idx);
 
 	ASSERT_FALSE(L.empty());
 	ASSERT_EQ(L.size(), 2);

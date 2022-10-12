@@ -13,9 +13,6 @@ from Bio import SeqIO
 #This function reports a t-homology
 def reportThomology(intStart, intEnd, score, pattern, text):
 	print(f"[{intStart},{intEnd}]:", score)
-
-	# print("p:", pattern)
-	# print("t[i,j]:", text[intStart:intEnd + 1])
 	print("maxNbSketches(pattern,text):", max(len(pattern), j - i + 1))
 
 if __name__ == '__main__':
@@ -83,9 +80,14 @@ if __name__ == '__main__':
 			occp[h] = [1]
 
 	#Testing
+	print("L:")
+	for i in range(len(text)):
+		if text[i] in occp:
+			print(f"({text[i]}, {i})", end=' ')
+	print("")
 	# print("pattern:", pattern)
 	# print("occp:", occp)
-	# exit(0)
+	exit(0)
 
 	# #Fill lastPos array
 	# seenHashes = {}
