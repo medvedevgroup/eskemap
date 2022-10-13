@@ -35,9 +35,6 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 	//Fill occp
 	for(fSkIt = skP.begin(); fSkIt != skP.end(); ++fSkIt){
 		if(occp.contains(*fSkIt)){
-			//Testing
-			cout << "1 Option 2" << endl;
-
 			++occp[*fSkIt];
 		} else{
 			occp[*fSkIt] = 1;
@@ -46,31 +43,6 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 
 	//Generate L
 	L = genL(occp, tidx);
-
-	//Testing
-	for(unordered_map<uint64_t, uint32_t>::const_iterator oi = occp.begin(); oi != occp.end(); ++oi){
-		if(oi->second == 1) cout << "1 Option 1" << endl;
-		bool found = false;
-		for(fLit = L.begin(); fLit != L.end(); ++fLit){
-			if(oi->first == fLit->first){
-				found = true;
-				break;
-			}
-		}
-		if(!found){
-			cout << "2 Option 2.1" << endl;
-			cout << "Unique hash is " << oi->first << endl;
-		}
-	}
-	if(!L.empty()) cout << "2 Option 1" << endl;
-	uint32_t lastPos;
-	for(fLit = L.begin(); fLit != L.end(); ++fLit){
-		if(fLit->second > 0 && fLit->second != lastPos + 1){
-			cout << "2 Option 2.2" << endl;
-			break;
-		}
-		lastPos = fLit->second;
-	}
 
 	//Set position counter
 	j = 0;
@@ -84,15 +56,9 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 
 		//Check if current hash occurred already before//TODO: Can we speed this up by using the index?
 		if(pos.contains(fLit->first)){
-			//Testing
-			cout << "3 Option 2" << endl;
-
 			//Add current position as occurrence for this hash
 			pos[fLit->first].push_back(j);
 		} else{
-			//Testing
-			cout << "3 Option 1" << endl;
-
 			pos[fLit->first] = {j};
 		}
 
@@ -106,16 +72,10 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 			while(posIt != pos[fLit->first].end()){
 				//Check if we have found k_min already
 				if(i <= *posIt){
-					//Testing
-					cout << "4 Option 1" << endl;
-
 					//Calculate occ(t[j], t[i, j-1])
 					occ = pos[fLit->first].size() - k - 1;
 					break;
 				}
-
-				//Testing
-				cout << "4 Option 2" << endl;
 
 				++k;
 				++posIt;
@@ -123,21 +83,10 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 
 			//Check if we are dealing with the base case
 			if(i == j){
-				//Testing
-				cout << "5 Option 1" << endl;
-
 				scores.back().push_back(cw - uw * (skP.size() - 1));
 			} else if(occ < occp[fLit->first]){//Discriminate between cases
-				//Testing
-				cout << "5 Option 2" << endl;
-				cout << "6 Option 1" << endl;
-
 				scores.back().push_back(scores[j - 1][i] + cw + uw - uw * (fLit->second - L[j - 1].second - 1));
 			} else{
-				//Testing
-				cout << "5 Option 2" << endl;
-				cout << "6 Option 2" << endl;
-
 				scores.back().push_back(scores[j - 1][i] - uw * (fLit->second - L[j - 1].second));
 			}
 		}
@@ -161,43 +110,20 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 		//Get a forward iterator to iterate over L
 		fLit = L.begin();
 
-		//Testing
-		bool maxFound = false, caseOccd = false;
-
 		//Walk through column from top to bottom
 		for(vector<int32_t>::const_iterator rowIt = colRit->begin(); rowIt != colRit->end(); ++rowIt){
 			//If the substring is a t-homology and its first and last hashes are identical this hash needs to occur at least twice 
 			//inside the pattern
 			if(i != j && fLit->first == rLit->first && occp[fLit->first] < 2){
-				//Testing
-				cout << "7 Option 1" << endl;
-				maxFound = true;
-
 				++i;
 				++fLit;
 				continue;
 			}
 
-			//Testing
-			cout << "7 Option 2" << endl;
-
 			//Walk through the list to consider all relevant maximums seen so far
 			while(li != maxScores.end()){
 				//Maximums found in rows > i are irrelevant at this point
-				if(i < li->first){
-					//Testing
-					cout << "8 Option 1" << endl;
-
-					break;
-				}
-
-				//Testing
-				cout << "8 Option 2" << endl;
-				if(maxThres < li->second){
-					cout << "9 Option 1" << endl;
-				} else{
-					cout << "9 Option 2" << endl;
-				}
+				if(i < li->first) break;
 
 				//Update maximum to compare with
 				maxThres = max(maxThres, li->second);
@@ -207,30 +133,17 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 
 			//Check if score is high enough
 			if(*rowIt > maxThres){
-				//Testing
-				cout << "10 Option 1" << endl;
-				if(maxFound){
-					caseOccd = true;
-					cout << "11 Option 1" << endl;
-				}
-
 				//Add t-homology to results
 				res.push_back(make_tuple(L[i].second, L[j].second, *rowIt));
 				//Add score to list with maximum scores
 				maxScores.insert(li, make_pair(i, *rowIt));
 				//Update maximum to comare with
 				maxThres = *rowIt;
-			} else{
-				//Testing
-				cout << "10 Option 2" << endl;
 			}
 
 			++i;
 			++fLit;
 		}
-
-		//Testing
-		if(!maxFound || !caseOccd) cout << "11 Option 2" << endl;
 
 		++rLit;
 		--j;

@@ -20,6 +20,8 @@ int main(int argc, char **argv){
 	string pFile, tFile;
 	//An input sequence
 	string seq;
+	//A file stream
+	ifstream fStr;
 	//An index option struct
 	mm_idxopt_t iopt;
 	//A mapping options struct
@@ -28,8 +30,10 @@ int main(int argc, char **argv){
 	mm_idx_reader_t *r;
 	//A pointer to the index
 	const mm_idx_t *tidx;
-	//The input sequences' sketches
-	Sketch skP;
+	//A vector of pattern sketches
+	vector<pair<string, Sketch>> pSks;
+	//An iterator to iterate over pattern sketches
+	vector<pair<string, Sketch>>::const_iterator p;
 
 	//Parse arguments
 	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, hFrac, comWght, uniWght, tThres, normalize)){
@@ -38,16 +42,6 @@ int main(int argc, char **argv){
 		return 1;
 	}
 
-	//Try to load pattern sequence
-	if(!readFASTA(pFile, seq)){
-		cerr << "ERROR: Pattern sequence file could not be read" << endl;
-		return -1;
-	}
-
-	//Calculate pattern sketch
-	skP = buildSketch(seq, kmerLen, hFrac);
-	//We do not need the pattern sequence anymore
-	seq.clear();
 	//Set index options to default
 	mm_set_opt(0, &iopt, &mopt);
 	//Adjust k if necessary
@@ -73,8 +67,23 @@ int main(int argc, char **argv){
 		return -1; 
 	}
 
-	//Find t-homologies and output them
-	outputHoms(findThoms(skP, tidx, comWght, uniWght, tThres), normalize, skP.size());
+	//Open stream to read in patterns
+	fStr.open(pFile);
+
+	//Load pattern sequences in batches
+	while(lPttnSks(fStr, kmerLen, hFrac, pSks) || !pSks.empty()){//TODO: Implement this function!
+		//Iterate over pattern sketches
+		for(p = pSks.begin(); p != pSks.end(); ++p){
+			//Only output pattern sequence name if there is more than one sequence
+			if(pSks.size() > 1) cout << p->first << endl;
+
+			//Find t-homologies and output them
+			outputHoms(findThoms(p->second, tidx, comWght, uniWght, tThres), normalize, p->second.size());
+		}
+
+		//Remove processed pattern sketches
+		pSks.clear();
+	}
 
 	return 0;
 }

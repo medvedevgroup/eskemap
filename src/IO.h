@@ -9,6 +9,7 @@
 #define MIN_PARAM_NB 6
 #define MAX_RATIO 1.0
 #define NORM_FLAG_DEFAULT false
+#define PATTERN_BATCH_SIZE 250000
 
 //This function prints usage infos
 inline void dspHlp(){
@@ -66,5 +67,9 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 
 //This function reads a file in FASTA format and returns true on success
 const bool readFASTA(const string& filePath, string& seq);
+
+//This function reads in batches of FASTA sequence entries from file and transforms them into sketches. Returns false if end of file
+//was reached.
+const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, vector<pair<string, Sketch>>& pSks);
 
 #endif
