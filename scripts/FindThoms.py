@@ -80,14 +80,14 @@ if __name__ == '__main__':
 			occp[h] = [1]
 
 	#Testing
-	print("L:")
-	for i in range(len(text)):
-		if text[i] in occp:
-			print(f"({text[i]}, {i})", end=' ')
-	print("")
+	# print("L:")
+	# for i in range(len(text)):
+	# 	if text[i] in occp:
+	# 		print(f"({text[i]}, {i})", end=' ')
+	# print("")
 	# print("pattern:", pattern)
 	# print("occp:", occp)
-	exit(0)
+	# exit(0)
 
 	# #Fill lastPos array
 	# seenHashes = {}

@@ -213,9 +213,16 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, vect
 
 	//Read in file character by character
 	while(fStr.get(c)){
+		//Testing
+		// cout << "lPttnSks: Start of while loop" << endl;
+
 		//An entry's sequence is complete if we find a second header (which can only start after at least one line break) in the 
 		//file
 		if(c == '>' && headerRead && lnBrkDiscvd){
+			//Testing
+			// cout << "lPttnSks: Entry is complete" << endl;
+			// exit(0);
+
 			//Add sequence's sketch and id to result vector
 			pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac)));
 			//Clear sequence id
@@ -224,7 +231,12 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, vect
 			seq.clear();
 
 			//Check if enough sequences have been read
-			if(pSks.size() == PATTERN_BATCH_SIZE) return true;
+			if(pSks.size() == PATTERN_BATCH_SIZE){
+				//Testing
+				// cout << "lPttnSks: Batch size reached" << endl;
+
+				return true;
+			}
 
 			//Reset id-read flag
 			idRead = false;
@@ -242,19 +254,39 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, vect
 
 		//Update sequence id if we are still reading it
 		if(headerRead && !lnBrkDiscvd && !idRead){
+			//Testing
+			// cout << "lPttnSks: Read sequence id" << endl;
+
 			seqID += c;
 			continue;
 		}
 
 		//There is no sequence to load in the header line
-		if(headerRead && !lnBrkDiscvd) continue;
+		if(headerRead && !lnBrkDiscvd){
+			//Testing
+			// cout << "lPttnSks: Still in header line" << endl;
+
+			continue;
+		}
 
 		//We are only interested in unambigous, unmasked nucleotides
-		if(c == 'A' || c == 'C' || c == 'G' || c == 'T') seq += c;
+		if(c == 'A' || c == 'C' || c == 'G' || c == 'T'){
+			//Testing
+			// cout << "lPttnSks: Reading sequence" << endl;
+
+			seq += c;
+		} else{
+			//Testing
+			// cout << "lPttnSks: Reading something but sequence" << endl;
+		}
 	}
 
-	//Add last entry's sketch and sequence id to result vector
-	pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac)));
+	//Testing
+	// cout << "lPttnSks: seq: " << seq << endl;
+	// exit(0);
+
+	//Add last entry's sketch and sequence id to result vector if it is not empty
+	if(!seq.empty()) pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac)));
 
 	return false;
 }

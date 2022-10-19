@@ -72,6 +72,10 @@ int main(int argc, char **argv){
 
 	//Load pattern sequences in batches
 	while(lPttnSks(fStr, kmerLen, hFrac, pSks) || !pSks.empty()){//TODO: Implement this function!
+		//Testing
+		// cout << "main: Do we return?" << endl;
+		// exit(0);
+
 		//Iterate over pattern sketches
 		for(p = pSks.begin(); p != pSks.end(); ++p){
 			//Only output pattern sequence name if there is more than one sequence
@@ -83,6 +87,9 @@ int main(int argc, char **argv){
 
 		//Remove processed pattern sketches
 		pSks.clear();
+
+		//Testing
+		// cout << "main: Cleared pattern sketch vector. Size: " << pSks.size() << " Empty: " << (pSks.empty() ? "Yes" : "No!") << endl;
 	}
 
 	return 0;
