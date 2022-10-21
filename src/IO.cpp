@@ -206,7 +206,15 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, vect
 	string seq, seqID;
 
 	//Check if the file is open
-	if(!fStr.is_open()) return false;
+	if(!fStr.is_open()){
+		//Testing
+		cout << "1 Option 2" << endl;
+
+		return false;
+	}
+
+	//Testing
+	cout << "1 Option 1" << endl;
 
 	//If this function is called iteratively, the '>' of the next entry has already been read
 	headerRead = fStr.gcount() != 0;
@@ -220,7 +228,7 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, vect
 		//file
 		if(c == '>' && headerRead && lnBrkDiscvd){
 			//Testing
-			// cout << "lPttnSks: Entry is complete" << endl;
+			cout << "2 Option 1" << endl;
 			// exit(0);
 
 			//Add sequence's sketch and id to result vector
@@ -233,10 +241,13 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, vect
 			//Check if enough sequences have been read
 			if(pSks.size() == PATTERN_BATCH_SIZE){
 				//Testing
-				// cout << "lPttnSks: Batch size reached" << endl;
+				cout << "3 Option 1" << endl;
 
 				return true;
 			}
+
+			//Testing
+			cout << "3 Option 2" << endl;
 
 			//Reset id-read flag
 			idRead = false;
@@ -245,8 +256,14 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, vect
 			continue;
 		}
 
-		//Note if we have found the beginning of a header
-		headerRead = headerRead || (c == '>');
+		//Testing
+		cout << "2 Option 2" << endl;
+		cout << "5 Option " << (headerRead ? "1" : "2") << endl;
+		cout << "6 Option " << (!headerRead && c == '>' ? "1" : "2") << endl;
+		cout << "7 Option " << (idRead ? "1" : "2") << endl;
+		cout << "8 Option " << (!idRead && (headerRead && c == ' ' && !lnBrkDiscvd) ? "1" : "2") << endl;
+		cout << "9 Option " << (lnBrkDiscvd ? "1" : "2") << endl;
+		cout << "10 Option " << (!lnBrkDiscvd && c == '\n' ? "1" : "2") << endl;
 		//Note if we have completely read the sequence id
 		idRead = idRead || (headerRead && c == ' ' && !lnBrkDiscvd);
 		//Note if we have found the first line break after a new header started
@@ -255,29 +272,38 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, vect
 		//Update sequence id if we are still reading it
 		if(headerRead && !lnBrkDiscvd && !idRead){
 			//Testing
-			// cout << "lPttnSks: Read sequence id" << endl;
+			cout << "4 Option 1" << endl;
 
 			seqID += c;
 			continue;
 		}
 
+		//Note if we have found the beginning of a header
+		headerRead = headerRead || (c == '>');
+
+		//Testing
+		cout << "4 Option 2" << endl;
+
 		//There is no sequence to load in the header line
 		if(headerRead && !lnBrkDiscvd){
 			//Testing
-			// cout << "lPttnSks: Still in header line" << endl;
+			cout << "11 Option 1" << endl;
 
 			continue;
 		}
 
+		//Testing
+		cout << "11 Option 2" << endl;
+
 		//We are only interested in unambigous, unmasked nucleotides
 		if(c == 'A' || c == 'C' || c == 'G' || c == 'T'){
 			//Testing
-			// cout << "lPttnSks: Reading sequence" << endl;
+			cout << "12 Option 1" << endl;
 
 			seq += c;
 		} else{
 			//Testing
-			// cout << "lPttnSks: Reading something but sequence" << endl;
+			cout << "12 Option 2" << endl;
 		}
 	}
 
@@ -286,7 +312,15 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, vect
 	// exit(0);
 
 	//Add last entry's sketch and sequence id to result vector if it is not empty
-	if(!seq.empty()) pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac)));
+	if(!seq.empty()){
+		//Testing
+		cout << "13 Option 1" << endl;
+
+		pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac)));
+	} else{
+		//Testing
+		cout << "13 Option 2" << endl;
+	}
 
 	return false;
 }

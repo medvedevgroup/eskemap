@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include "IOtest.h"
-#include "IO.cpp"
 
 //Tests for function const bool prsArgs(int&, char**, string&, string&, Measure&)//
 //	1. Minimum number of parameters is (not) given DONE
@@ -696,4 +695,53 @@ TEST_F(OutputHomsTest, nnScrs){
 	EXPECT_TRUE(stream.eof());
 
 	cout.rdbuf(coutPtr);
+}
+
+//Tests for function const bool lPttnSks(ifstream&, const uint32_t&, const double&, vector<pair<string, Sketch>>&)//
+//	1. The file we want to read is (not) open 1/0
+//	2. We have (not) found the beginning of a second sequence entry DONE
+//	3. We found another sequence entry and did (not) reach the batch size limit 0/0
+//	4. We did (not) find a character to update the current sequence id DONE
+//	5. We do (not) set the "header read" flag, because it was set before DONE
+//	6. We do (not) set the "header read" flag, because we discover the beginning of a sequence entry for the first time DONE
+//	7. We do (not) set the "id read" flag, because it was set before DONE
+//	8. We do (not) set the "id read" flag and it was not set before DONE
+//	9. We do (not) set the "line break discovered" flag, because it was set before DONE
+//	10. We do (not) set the "line break discovered" flag and is was not set before DONE
+//	11. We are (not) inside the header of a sequence entry DONE
+//	12. We do (not) read another nucleotide DONE
+//	13. We could (not) successfully generate a sketch of the last sequence entry's sequence 0/1
+
+//Tests the function lPttnSks under the following conditions
+//	1. The file we want to read is open
+//	2. We have (not) found the beginning of a second sequence entry
+//	4. We did (not) find a character to update the current sequence id
+//	5. We do (not) set the "header read" flag, because it was set before
+//	6. We do (not) set the "header read" flag, because we discover the beginning of a sequence entry for the first time
+//	7. We do (not) set the "id read" flag, because it was set before
+//	8. We do (not) set the "id read" flag and it was not set before
+//	9. We do (not) set the "line break discovered" flag, because it was set before
+//	10. We do (not) set the "line break discovered" flag and is was not set before
+//	11. We are (not) inside the header of a sequence entry
+//	12. We do (not) read another nucleotide
+//	13. We could not successfully generate a sketch of the last sequence entry's sequence
+TEST_F(lPttnSksTest, exFl){
+	fStr.open("TestFASTA.fasta");
+
+	EXPECT_FALSE(lPttnSks(fStr, K, HASH_RATIO, s));
+
+	ASSERT_FALSE(s.empty());
+	EXPECT_EQ(s.size(), 1);
+	EXPECT_EQ(s.front().first, "Header");
+	EXPECT_TRUE(s.front().second.empty());
+}
+
+//Tests the function lPttnSks under the following conditions
+//	1. The file we want to read is not open
+TEST_F(lPttnSksTest, nexFl){
+	fStr.open("TestFASTA.fsta");
+
+	EXPECT_FALSE(lPttnSks(fStr, K, HASH_RATIO, s));
+
+	EXPECT_TRUE(s.empty());
 }

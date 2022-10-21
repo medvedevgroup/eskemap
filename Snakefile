@@ -181,6 +181,10 @@ rule all:
 		#DP implementation benchmark on human data
 		# expand("../benchmarks/benchFindThoms_humanChr20_refined_onlyCapitalNucs_ep{e}_s1657921994_rr{i}_k15_c1_u1_t-1000.txt", e=\
 		# config['errorPatterns'], i=range(10)),
+		#Benchmark on real data
+		"../benchmarks/benchFindThoms_t2thumanChrY_chP6C4_ep6:50:54_s322235950486831966_k15_c1_u1_t0.txt",
+		"../benchmarks/benchMinimap2_t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_k15.txt",
+		"../benchmarks/benchWinnowmap2_t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_k15.txt",
 		#
 		# genHomFiles,
 		# genMinimap2Files,
@@ -284,6 +288,20 @@ rule runBWAmem:
 	shell:
 		"bwa mem {input.ref} {input.rds} | gzip -3 > {output}"
 
+rule runWinnowmap2onRealGenome:
+	input:
+		ref = "../simulations/genomes/{genome}.fasta",
+		qry = "../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}.fastq.gz",
+		cnts = "../simulations/repKmers_k{k}_{genome}.txt"
+	params:
+		"{k}"
+	output:
+		res = "../simulations/Winnowmap2Res/{genome}_c{chem}_ep{dRat}_s{seed}_k{k}.sam.gz",
+		bench = "../benchmarks/benchWinnowmap2_{genome}_c{chem}_ep{dRat}_s{seed}_k{k}.txt"
+	shell:
+		"/usr/bin/time -v ../software/Winnowmap/bin/winnowmap -W {input.cnts} -ax map-pb -k {params} {input.ref} {input.qry} 2>" + \
+		" {output.bench} | gzip -3 > {output.res}"
+
 rule runWinnowmap2:
 	input:
 		ref = "../simulations/text_rl{rl}_rid{ri}_m{desc}.fasta",
@@ -300,11 +318,21 @@ rule runWinnowmap2:
 
 rule printCounts:
 	input:
-		"../simulations/merylDB_k{k}_rl{desc}"
+		"../simulations/merylDB_k{k}_{desc}"
 	output:
-		temp("../simulations/repKmers_k{k}_rl{desc}.txt")
+		temp("../simulations/repKmers_k{k}_{desc}.txt")
 	shell:
 		"../software/Winnowmap/bin/meryl print greater-than distinct=0.9998 {input} > {output}"
+
+rule countGenomeKmers:
+	input:
+		"../simulations/genomes/{genome}.fasta"
+	params:
+		"{k}"
+	output:
+		temp(directory("../simulations/merylDB_k{k}_{genome}"))
+	shell:
+		"../software/Winnowmap/bin/meryl count k={params} output {output} {input}"
 
 rule countKmers:
 	input:
@@ -315,6 +343,18 @@ rule countKmers:
 		temp(directory("../simulations/merylDB_k{k}_rl{desc}"))
 	shell:
 		"../software/Winnowmap/bin/meryl count k={params} output {output} {input}"
+
+rule runMinimap2onRealGenomePacBio:
+	input:
+		ref = "../simulations/genomes/{genome}.fasta",
+		qry = "../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}.fastq.gz"
+	params:
+		"{k}"
+	output:
+		res = "../simulations/minimap2Res/{genome}_c{chem}_ep{dRat}_s{seed}_k{k}.sam.gz",
+		bench = "../benchmarks/benchMinimap2_{genome}_c{chem}_ep{dRat}_s{seed}_k{k}.txt"
+	shell:
+		"/usr/bin/time -v minimap2 -ax map-hifi -k {params} {input.ref} {input.qry} 2> {output.bench} | gzip -3 > {output.res}"
 
 rule runMinimap2onPacBio:
 	input:
@@ -456,6 +496,33 @@ rule drawRandomRead:
 		"SCRIPT_INPUT=$(echo {input} | sed 's/.gz//g'); gunzip -c {input} > $SCRIPT_INPUT; python3 scripts/DrawRandSeqRec.py " + \
 		"$SCRIPT_INPUT {output}"
 
+rule convertCompressedFastq2Fasta:
+	input:
+		"{pth}.fastq.gz"
+	output:
+		"{pth}.fasta"
+	run:
+		fqName = input[0].replace(".gz", "")
+		shell("gunzip -c {input} > %s" %fqName)
+		SeqIO.write(SeqIO.parse(fqName, "fastq"), open(output[0], 'w'), "fasta")
+		shell("rm %s" %fqName)
+
+rule searchReadHomologies:
+	input:
+		rds = "../simulations/reads/{genome}_c{chem}_ep{errorPattern}_s{seed}.fasta",
+		txt = "../simulations/genomes/{genome}.fasta"
+	params:
+		c = "{c}",
+		u = "{u}",
+		thres = "{t}",
+		k = "{k}"
+	output:
+		homs = "../simulations/homologies/homologies_{genome}_ch{chem}_ep{errorPattern}_s{seed}_k{k}_c{c}_u{u}_t{t}.txt",
+		bench = "../benchmarks/benchFindThoms_{genome}_ch{chem}_ep{errorPattern}_s{seed}_k{k}_c{c}_u{u}_t{t}.txt"
+	shell:
+		"/usr/bin/time -v src/FindThoms -p {input.rds} -s {input.txt} -k {params.k} -c {params.c} -u {params.u} -t " + \
+		"{params.thres} > {output.homs} 2> {output.bench}"
+
 rule searchHumanHomologies:
 	input:
 		pttn = "../simulations/reads/humanChr20_cR103_ep{errorPattern}_s{seed}_rr{i}.fasta",
@@ -514,11 +581,11 @@ rule searchHomologiesWthCppImpl:
 	shell:
 		"src/FindThoms -p {input.pttn} -s {input.txt} -c {params.c} -u {params.u} -t {params.thres} > {output}"
 
-# rule uncompressGzippedFastq:
+# rule uncompressZip:
 # 	input:
-# 		"{fileNameWithoutGz}.fastq.gz"
+# 		"{fileNameWithoutGz}.gz"
 # 	output:
-# 		temp("{fileNameWithoutGz}.fastq")
+# 		temp("{fileNameWithoutGz}")
 # 	# wildcard_constraints:
 # 	# 	fileNameWithoutGz=".*(?<!gz)$"
 # 	shell:

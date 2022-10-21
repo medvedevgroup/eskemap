@@ -3,7 +3,7 @@
 
 #include "Measures.h"
 #include "Thomology.h"
-#include "IO.h"
+#include "IO.cpp"
 
 using namespace std;
 
@@ -81,6 +81,20 @@ protected:
 		streambuf *coutPtr;
 		//The results
 		vector<Thomology> r;
+};
+
+class lPttnSksTest : public ::testing::Test {
+
+protected:
+
+		lPttnSksTest() {}
+
+		//A file stream
+		ifstream fStr;
+		//A pattern sketch vector
+		vector<pair<string, Sketch>> s;
+		//An iterator for a pattern sketch vector
+		vector<pair<string, Sketch>>::const_iterator i;
 };
 
 #endif
