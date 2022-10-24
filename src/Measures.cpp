@@ -58,23 +58,6 @@ const int32_t calcAlgnHshsScore(const PairSketch& skA, const PairSketch& skB, co
 				//For the first element we do not need to compare anything
 				cur.push_back(-i);
 			} else{
-				//Testing
-				// if(ia->second == ib->second){
-				// 	cout << "1 option 1" << endl;
-
-				// 	if(lst[j-1] + 1 >= max(lst[j] - 1, cur[j-1] - 1)){
-				// 		cout << "2 option 1" << endl;
-				// 	}
-				// } else{
-				// 	cout << "1 option 2" << endl;
-
-				// 	if(lst[j-1] - 1 >= max(lst[j] - 1, cur[j-1] - 1)){
-				// 		cout << "2 option 2" << endl;
-				// 	}
-				// }
-				// if(lst[j] - 1 > lst[j-1] + (ia->second == ib->second ? 1 : -1) && lst[j] - 1 >= cur[j-1] - 1) cout << "3 option 1" << endl;
-				// if(cur[j-1] - 1 > max(lst[j-1] + (ia->second == ib->second ? 1 : -1), lst[j] - 1)) cout << "3 option 2" << endl;
-
 				//Calculate the current element
 				cur.push_back(max(lst[j-1] + (ia->second == ib->second ? 1 : -1), max(lst[j] - 1, cur[j-1] - 1)));
 				//Increment iterator

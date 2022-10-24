@@ -67,6 +67,22 @@ int main(int argc, char **argv){
 		return -1; 
 	}
 
+	//Testing
+	// string genome;
+	// unordered_map<uint64_t, char> seenHashes;
+	// readFASTA(tFile, genome);
+	// Sketch tsk = buildSketch(genome, kmerLen, hFrac);
+	// cout << "main: Length of text sketch: " << tsk.size() << endl;
+	// int nHits;
+	// for(Sketch::const_iterator gi = tsk.begin(); gi != tsk.end(); ++gi){
+	// 	if(!seenHashes.contains(*gi)){
+	// 		seenHashes[*gi] = 1;
+	// 		const uint64_t *idx_p = mm_idx_get(tidx, *gi, &nHits);
+	// 		cout << nHits << endl;
+	// 	}
+	// }
+	// return 0;
+
 	//Open stream to read in patterns
 	fStr.open(pFile);
 

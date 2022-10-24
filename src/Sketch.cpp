@@ -58,9 +58,6 @@ const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFr
 		//Calculate numerical k-mer representation and its hash
 		kmerHash = getHash(calcKmerNb(seq.substr(i, k)), mask);
 
-		//Testing
-		// if(kmerHash == 1058) cout << "buildSketch: Hash 1058 belongs to k-mer " << seq.substr(i, k) << endl;
-
 		//Check if hash value is small enough to be kept
 		if(kmerHash <= maxHash) sk.push_back(kmerHash);
 	}
