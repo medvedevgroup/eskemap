@@ -10,6 +10,7 @@
 #define MAX_RATIO 1.0
 #define NORM_FLAG_DEFAULT false
 #define PATTERN_BATCH_SIZE 250000
+#define STRING_BUFFER_SIZE_DEFAULT 50
 
 //This function prints usage infos
 inline void dspHlp(){
@@ -70,6 +71,10 @@ const bool readFASTA(const string& filePath, string& seq);
 
 //This function reads in batches of FASTA sequence entries from file and transforms them into sketches. Returns false if end of file
 //was reached.
-const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, vector<pair<string, Sketch>>& pSks);
+const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, const unordered_map<uint64_t, char>& bLstmers, 
+	vector<pair<string, Sketch>>& pSks);
+
+//This function reads 64-bit numbers from file and returns them as a hash table
+const unordered_map<uint64_t, char> readBlstKmers(const string& fname);
 
 #endif

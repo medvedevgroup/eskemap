@@ -200,7 +200,8 @@ const bool readFASTA(const string& filePath, string& seq){
 
 //This function reads in batches of FASTA sequence entries from file and transforms them into sketches. Returns false if end of file
 //was reached.
-const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, vector<pair<string, Sketch>>& pSks){
+const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, const unordered_map<uint64_t, char>& bLstmers, 
+	vector<pair<string, Sketch>>& pSks){
 	bool headerRead, idRead = false, lnBrkDiscvd = false;
 	char c;
 	string seq, seqID;
@@ -232,7 +233,7 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, vect
 			// exit(0);
 
 			//Add sequence's sketch and id to result vector
-			pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac)));
+			pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac, bLstmers)));//TODO: Tests for this function need to be revised!
 			//Clear sequence id
 			seqID.clear();
 			//Clear sequence
@@ -264,7 +265,7 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, vect
 		// cout << "8 Option " << (!idRead && (headerRead && c == ' ' && !lnBrkDiscvd) ? "1" : "2") << endl;
 		// cout << "9 Option " << (lnBrkDiscvd ? "1" : "2") << endl;
 		// cout << "10 Option " << (!lnBrkDiscvd && c == '\n' ? "1" : "2") << endl;
-		
+
 		//Note if we have completely read the sequence id
 		idRead = idRead || (headerRead && c == ' ' && !lnBrkDiscvd);
 		//Note if we have found the first line break after a new header started

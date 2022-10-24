@@ -35,8 +35,9 @@ PairSketch buildSketch(const string& s){
 	return sk;
 }
 
-//This function builds a FracMinHash sketch of a sequence using a given hash threshold
-const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFrac){
+//This function builds a FracMinHash sketch of a sequence using a given hash threshold. K-mers occurring on the given black list are
+//ignored
+const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFrac, unordered_map<uint64_t, char>& bLstmers){
 	const uint64_t mask = pow(ALPHABET_SIZE, k) - 1;
 	//Calculate maximum hash value in sketch
 	const uint64_t maxHash = hFrac * mask;
@@ -59,7 +60,7 @@ const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFr
 		kmerHash = getHash(calcKmerNb(seq.substr(i, k)), mask);
 
 		//Check if hash value is small enough to be kept
-		if(kmerHash <= maxHash) sk.push_back(kmerHash);
+		if(kmerHash <= maxHash && !bLstmers.contains(kmerHash)) sk.push_back(kmerHash);
 	}
 
 	//Resize sketch (just for case we have allocated way too much memory)

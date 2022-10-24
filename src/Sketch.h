@@ -64,8 +64,9 @@ uint64_t calcKmerNb(const string& kmer);
 //This function builds the sketch of a sequence using a given hash threshold
 PairSketch buildSketch(const string& s, const uint64_t& ht);
 
-//This function builds a FracMinHash sketch of a sequence using a given hash threshold
-const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFrac);
+//This function builds a FracMinHash sketch of a sequence using a given hash threshold. K-mers occurring on the given black list are
+//ignored
+const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFrac, unordered_map<uint64_t, char>& bLstmers);
 
 //This function dereplicates elements from sketches sharing the same hash value (only the first one is kept). WARNING: It does not preserve elements'
 //initial ordering

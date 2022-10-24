@@ -22,6 +22,8 @@ int main(int argc, char **argv){
 	string seq;
 	//A file stream
 	ifstream fStr;
+	//A hash table to store black listed k-mers
+	unordered_map<uint64_t, char> bLstmers;
 	//An index option struct
 	mm_idxopt_t iopt;
 	//A mapping options struct
@@ -72,24 +74,36 @@ int main(int argc, char **argv){
 	// unordered_map<uint64_t, char> seenHashes;
 	// readFASTA(tFile, genome);
 	// Sketch tsk = buildSketch(genome, kmerLen, hFrac);
-	// cout << "main: Length of text sketch: " << tsk.size() << endl;
+	// // cout << "main: Length of text sketch: " << tsk.size() << endl;
 	// int nHits;
 	// for(Sketch::const_iterator gi = tsk.begin(); gi != tsk.end(); ++gi){
 	// 	if(!seenHashes.contains(*gi)){
 	// 		seenHashes[*gi] = 1;
 	// 		const uint64_t *idx_p = mm_idx_get(tidx, *gi, &nHits);
-	// 		cout << nHits << endl;
+	// 		if(nHits < 100)	cout << *gi << endl;
 	// 	}
 	// }
 	// return 0;
 
+	//Load high abundance k-mers
+	bLstmers = readBlstKmers("lowAbundKmers.txt");//TODO: Implement this function!
 	//Open stream to read in patterns
 	fStr.open(pFile);
 
 	//Load pattern sequences in batches
-	while(lPttnSks(fStr, kmerLen, hFrac, pSks) || !pSks.empty()){//TODO: Implement this function!
+	while(lPttnSks(fStr, kmerLen, hFrac, bLstmers, pSks) || !pSks.empty()){//TODO: Implement this function!
 		//Testing
 		// cout << "main: Do we return?" << endl;
+		// for(p = pSks.begin(); p != pSks.end(); ++p){
+		// 	if(p->first == "S1_4" || p->first == "S1_5" || p->first == "S1_15"){
+		// 		cout << p->first << endl;
+		// 		int nHits;
+		// 		for(Sketch::const_iterator hi = p->second.begin(); hi != p->second.end(); ++hi){
+		// 			const uint64_t *idx_p = mm_idx_get(tidx, *hi, &nHits);
+		// 			cout << *hi << " " << nHits << endl;
+		// 		}
+		// 	}
+		// }
 		// exit(0);
 
 		//Iterate over pattern sketches
