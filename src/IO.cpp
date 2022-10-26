@@ -318,11 +318,31 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, cons
 		//Testing
 		// cout << "13 Option 1" << endl;
 
-		pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac)));
+		pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac, bLstmers)));
 	} else{
 		//Testing
 		// cout << "13 Option 2" << endl;
 	}
 
 	return false;
+}
+
+//This function reads 64-bit numbers from file and returns them as a hash table
+const unordered_map<uint64_t, char> readBlstKmers(const string& fname){
+	char nb[STRING_BUFFER_SIZE_DEFAULT];
+	char* end;
+	ifstream iFile(fname);
+	unordered_map<uint64_t, char> numbers;
+
+	//Check if file could be opened
+	if(!iFile.is_open()){
+		cerr << "readBlstKmers: WARNING input file could not be opened. Hash table will be empty!" << endl;
+
+		return numbers;
+	}
+
+	//Read numbers
+	while(iFile.getline(nb, STRING_BUFFER_SIZE_DEFAULT)) numbers[strtoull(nb, &end, 0)] = 1;
+
+	return numbers;
 }

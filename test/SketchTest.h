@@ -53,6 +53,8 @@ class BuildSketch1Test : public ::testing::Test {
 		double r;
 		//The sketch to be calculated;
 		Sketch s;
+		//A hash table with black listed k-mers
+		unordered_map<uint64_t, char> b;
 };
 
 #endif

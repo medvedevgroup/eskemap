@@ -698,9 +698,9 @@ TEST_F(OutputHomsTest, nnScrs){
 }
 
 //Tests for function const bool lPttnSks(ifstream&, const uint32_t&, const double&, vector<pair<string, Sketch>>&)//
-//	1. The file we want to read is (not) open 1/0
+//	1. The file we want to read is (not) open DONE
 //	2. We have (not) found the beginning of a second sequence entry DONE
-//	3. We found another sequence entry and did (not) reach the batch size limit 0/0
+//	3. We found another sequence entry and did (not) reach the batch size limit 0/1
 //	4. We did (not) find a character to update the current sequence id DONE
 //	5. We do (not) set the "header read" flag, because it was set before DONE
 //	6. We do (not) set the "header read" flag, because we discover the beginning of a sequence entry for the first time DONE
@@ -715,6 +715,7 @@ TEST_F(OutputHomsTest, nnScrs){
 //Tests the function lPttnSks under the following conditions
 //	1. The file we want to read is open
 //	2. We have (not) found the beginning of a second sequence entry
+//	3. We found another sequence entry and did not reach the batch size limit
 //	4. We did (not) find a character to update the current sequence id
 //	5. We do (not) set the "header read" flag, because it was set before
 //	6. We do (not) set the "header read" flag, because we discover the beginning of a sequence entry for the first time
@@ -728,7 +729,7 @@ TEST_F(OutputHomsTest, nnScrs){
 TEST_F(lPttnSksTest, exFl){
 	fStr.open("TestFASTA.fasta");
 
-	EXPECT_FALSE(lPttnSks(fStr, K, HASH_RATIO, s));
+	EXPECT_FALSE(lPttnSks(fStr, K, HASH_RATIO, b, s));
 
 	ASSERT_FALSE(s.empty());
 	EXPECT_EQ(s.size(), 1);
@@ -741,7 +742,17 @@ TEST_F(lPttnSksTest, exFl){
 TEST_F(lPttnSksTest, nexFl){
 	fStr.open("TestFASTA.fsta");
 
-	EXPECT_FALSE(lPttnSks(fStr, K, HASH_RATIO, s));
+	EXPECT_FALSE(lPttnSks(fStr, K, HASH_RATIO, b, s));
 
 	EXPECT_TRUE(s.empty());
+}
+
+//Tests the function lPttnSks under the following conditions
+//	1. The file we want to read is open
+//	2. We have (not) found the beginning of a second sequence entry
+//	3. We found another sequence entry and did (not) reach the batch size limit
+//	4. We did (not) find a character to update the current sequence id
+//	5. We do (not) set the "header read" flag, because it was set before
+TEST_F(lPttnSksTest, btchLim){
+
 }

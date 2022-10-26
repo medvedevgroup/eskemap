@@ -91,6 +91,8 @@ protected:
 
 		//A file stream
 		ifstream fStr;
+		//A hash table with black listed k-mers
+		unordered_map<uint64_t, char> b;
 		//A pattern sketch vector
 		vector<pair<string, Sketch>> s;
 		//An iterator for a pattern sketch vector
