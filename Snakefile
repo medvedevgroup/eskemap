@@ -182,9 +182,12 @@ rule all:
 		# expand("../benchmarks/benchFindThoms_humanChr20_refined_onlyCapitalNucs_ep{e}_s1657921994_rr{i}_k15_c1_u1_t-1000.txt", e=\
 		# config['errorPatterns'], i=range(10)),
 		#Benchmark on real data
-		"../benchmarks/benchFindThoms_t2thumanChrY_chP6C4_ep6:50:54_s322235950486831966_k15_c1_u1_t0.txt",
-		"../benchmarks/benchMinimap2_t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_k15.txt",
-		"../benchmarks/benchWinnowmap2_t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_k15.txt",
+		expand("../benchmarks/benchFindThoms_t2thumanChrY_chP6C4_ep6:50:54_s322235950486831966_k15_hr0.2_c1_u1_t0_rep{i}.txt", i=\
+			range(config['benchRepRuns'])),
+		expand("../benchmarks/benchMinimap2_t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_k15_rep{i}.txt", i=\
+			range(config['benchRepRuns'])),
+		expand("../benchmarks/benchWinnowmap2_t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_k15_rep{i}.txt", i=\
+			range(config['benchRepRuns'])),
 		#
 		# genHomFiles,
 		# genMinimap2Files,
@@ -294,13 +297,14 @@ rule runWinnowmap2onRealGenome:
 		qry = "../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}.fastq.gz",
 		cnts = "../simulations/repKmers_k{k}_{genome}.txt"
 	params:
-		"{k}"
+		k = "{k}",
+		r = "{r}"
 	output:
-		res = "../simulations/Winnowmap2Res/{genome}_c{chem}_ep{dRat}_s{seed}_k{k}.sam.gz",
-		bench = "../benchmarks/benchWinnowmap2_{genome}_c{chem}_ep{dRat}_s{seed}_k{k}.txt"
+		res = temp("../simulations/Winnowmap2Res/{genome}_c{chem}_ep{dRat}_s{seed}_k{k}_rep{r}.sam.gz"),
+		bench = "../benchmarks/benchWinnowmap2_{genome}_c{chem}_ep{dRat}_s{seed}_k{k}_rep{r}.txt"
 	shell:
-		"/usr/bin/time -v ../software/Winnowmap/bin/winnowmap -W {input.cnts} -ax map-pb -k {params} {input.ref} {input.qry} 2>" + \
-		" {output.bench} | gzip -3 > {output.res}"
+		"/usr/bin/time -v ../software/Winnowmap/bin/winnowmap -W {input.cnts} -ax map-pb -k {params.k} {input.ref} {input.qry} " + \
+		"2> {output.bench} | gzip -3 > {output.res}"
 
 rule runWinnowmap2:
 	input:
@@ -349,12 +353,13 @@ rule runMinimap2onRealGenomePacBio:
 		ref = "../simulations/genomes/{genome}.fasta",
 		qry = "../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}.fastq.gz"
 	params:
-		"{k}"
+		k = "{k}",
+		r = "{r}"
 	output:
-		res = "../simulations/minimap2Res/{genome}_c{chem}_ep{dRat}_s{seed}_k{k}.sam.gz",
-		bench = "../benchmarks/benchMinimap2_{genome}_c{chem}_ep{dRat}_s{seed}_k{k}.txt"
+		res = temp("../simulations/minimap2Res/{genome}_c{chem}_ep{dRat}_s{seed}_k{k}_rep{r}.sam.gz"),
+		bench = "../benchmarks/benchMinimap2_{genome}_c{chem}_ep{dRat}_s{seed}_k{k}_rep{r}.txt"
 	shell:
-		"/usr/bin/time -v minimap2 -ax map-hifi -k {params} {input.ref} {input.qry} 2> {output.bench} | gzip -3 > {output.res}"
+		"/usr/bin/time -v minimap2 -ax map-hifi -k {params.k} {input.ref} {input.qry} 2> {output.bench} | gzip -3 > {output.res}"
 
 rule runMinimap2onPacBio:
 	input:
@@ -515,13 +520,16 @@ rule searchReadHomologies:
 		c = "{c}",
 		u = "{u}",
 		thres = "{t}",
-		k = "{k}"
+		k = "{k}",
+		r = "{r}",
+		hRat = "{hr}"
 	output:
-		homs = "../simulations/homologies/homologies_{genome}_ch{chem}_ep{errorPattern}_s{seed}_k{k}_c{c}_u{u}_t{t}.txt",
-		bench = "../benchmarks/benchFindThoms_{genome}_ch{chem}_ep{errorPattern}_s{seed}_k{k}_c{c}_u{u}_t{t}.txt"
+		homs = temp("../simulations/homologies/homologies_{genome}_ch{chem}_ep{errorPattern}_s{seed}_k{k}_hr{hr}_c{c}_u{u}_t{t}" + \
+			"_rep{r}.txt"),
+		bench = "../benchmarks/benchFindThoms_{genome}_ch{chem}_ep{errorPattern}_s{seed}_k{k}_hr{hr}_c{c}_u{u}_t{t}_rep{r}.txt"
 	shell:
-		"/usr/bin/time -v src/FindThoms -p {input.rds} -s {input.txt} -k {params.k} -c {params.c} -u {params.u} -t " + \
-		"{params.thres} > {output.homs} 2> {output.bench}"
+		"/usr/bin/time -v src/FindThoms -p {input.rds} -s {input.txt} -k {params.k} -r {params.hRat} -c {params.c} -u " + \
+		"{params.u} -t {params.thres} > {output.homs} 2> {output.bench}"
 
 rule searchHumanHomologies:
 	input:

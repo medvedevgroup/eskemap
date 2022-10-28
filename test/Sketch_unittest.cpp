@@ -132,7 +132,7 @@ TEST_F(RemDuplHshsTest, snglElm){
 //Tests for function const Sketch buildSketch(const string&, const uint32_t&, const double&, const unordered_map<uint64_t, char>&)//
 //	1. Sequence is (not) smaller than k DONE
 //	2. A hash is (not) larger than the threshold DONE
-//	3. A hash is (not) on the black list 0/0
+//	3. A hash is (not) on the black list DONE
 
 //Tests for function buildSketch under the following conditions
 //	1. Sequence is smaller than k
@@ -151,5 +151,17 @@ TEST_F(BuildSketch1Test, lngSeq){
 
 	ASSERT_FALSE(s.empty());
 	EXPECT_EQ(s.size(), 1);
-	EXPECT_EQ(s.front(), getHash(calcKmerNb("CGTACGTAC"), pow(4, K) - 1));
+	EXPECT_EQ(s.front(), getHash(calcKmerNb("CGTACGTAC"), (2 << (2 * K) - 1) - 1));
+}
+
+//Tests for function buildSketch under the following conditions
+//	1. Sequence is not smaller than k
+//	2. A hash is (not) larger than the threshold
+//	3. A hash is (not) on the black list
+TEST_F(BuildSketch1Test, blKm){
+	b[13466] = 1;
+
+	s = buildSketch("ACGTACGTACG", k, r, b);
+
+	ASSERT_TRUE(s.empty());
 }

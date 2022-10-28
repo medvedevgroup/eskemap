@@ -67,8 +67,8 @@ const bool prsArgs(int& nArgs, char** argList, string& seqa, string& seqb, Measu
 }
 
 //This function parses the program parameters. Returns false if given arguments are not valid
-const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, double& hFrac, uint32_t& cw, uint32_t& uw, 
-	int32_t& tThres, bool& norm){
+const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, double& hFrac, string& blFl, uint32_t& cw, 
+	uint32_t& uw, int32_t& tThres, bool& norm){
 	int option_index = 0, a;
 
 	static struct option long_options[] = {
@@ -76,6 +76,7 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
         {"text",               required_argument,  0, 's'},
         {"ksize",              required_argument,  0, 'k'},
         {"hashratio",          required_argument,  0, 'r'},
+        {"blacklist",          required_argument,  0, 'b'},
         {"commonhashweight",   required_argument,  0, 'c'},
         {"uniquehashweight",   required_argument,  0, 'u'},
         {"hom_thres",          required_argument,  0, 't'},
@@ -83,6 +84,9 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
         {"help",               no_argument,        0, 'h'},
         {0,                    0,                  0,  0 }
     };
+
+    //Testing
+    bool kgvn = false, hrgvn = false, cgvn = false;;
 
     //Parse all parameters given
 	while ((a = getopt_long(nArgs, argList, T_HOM_OPTIONS, long_options, &option_index)) != -1){
@@ -97,15 +101,31 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 				tFl = optarg;
 				break;
 			case 'k':
+				//Testing
+				kgvn = true;
+				cout << "3 Option 1" << endl;
+
 				//A k-mer length should be positive
 				if(atoi(optarg) <= 0){
+					//Testing
+					cout << "4 Option 2" << endl;
+
 					cerr << "ERROR: K-mer length not applicable" << endl;
 					return false;
 				}
 
+				//Testing
+				cout << "4 Option 1" << endl;
+
 				k = atoi(optarg);
 				break;
 			case 'r':
+				//Testing
+				hrgvn = true;
+				cout << "5 Option 1" << endl;
+				cout << "6 Option " << (atof(optarg) <= 0 ? "2" : "1") << endl;
+				cout << "7 Option " << (atof(optarg) > MAX_RATIO ? "1" : "2") << endl;
+
 				//Check if given value is reasonable to represent a ratio
 				if(atof(optarg) <= 0 || atof(optarg) > MAX_RATIO){
 					cerr << "ERROR: Given hash ratio not applicable" << endl;
@@ -115,7 +135,15 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 
 				hFrac = atof(optarg);
 				break;
+			case 'b':
+				//Save blacklist file name
+				blFl = optarg;
+				break;
 			case 'c':
+				//Testing
+				cgvn = true;
+				cout << "8 Option 1" << endl;
+
 				//Weights should be positive
 				if(atoi(optarg) <= 0){
 					cerr << "ERROR: Common hash weight not applicable" << endl;
@@ -147,6 +175,13 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 				break;
 		}
 	}
+
+	//Testing
+	cout << "1 Option " << (pFl.empty() ? "2" : "1") << endl;
+	cout << "2 Option " << (tFl.empty() ? "2" : "1") << endl;
+	if(!kgvn) cout << "3 Option 2" << endl;
+	if(!hrgvn) cout << "5 Option 2" << endl;
+	if(!cgvn) cout << "8 Option 2" << endl;
 
 	return !pFl.empty() && !tFl.empty();
 }
@@ -207,48 +242,25 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, cons
 	string seq, seqID;
 
 	//Check if the file is open
-	if(!fStr.is_open()){
-		//Testing
-		// cout << "1 Option 2" << endl;
-
-		return false;
-	}
-
-	//Testing
-	// cout << "1 Option 1" << endl;
+	if(!fStr.is_open()) return false;
 
 	//If this function is called iteratively, the '>' of the next entry has already been read
 	headerRead = fStr.gcount() != 0;
 
 	//Read in file character by character
 	while(fStr.get(c)){
-		//Testing
-		// cout << "lPttnSks: Start of while loop" << endl;
-
 		//An entry's sequence is complete if we find a second header (which can only start after at least one line break) in the 
 		//file
 		if(c == '>' && headerRead && lnBrkDiscvd){
-			//Testing
-			// cout << "2 Option 1" << endl;
-			// exit(0);
-
 			//Add sequence's sketch and id to result vector
-			pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac, bLstmers)));//TODO: Tests for this function need to be revised!
+			pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac, bLstmers)));
 			//Clear sequence id
 			seqID.clear();
 			//Clear sequence
 			seq.clear();
 
 			//Check if enough sequences have been read
-			if(pSks.size() == PATTERN_BATCH_SIZE){
-				//Testing
-				// cout << "3 Option 1" << endl;
-
-				return true;
-			}
-
-			//Testing
-			// cout << "3 Option 2" << endl;
+			if(pSks.size() == PATTERN_BATCH_SIZE) return true;
 
 			//Reset id-read flag
 			idRead = false;
@@ -257,15 +269,6 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, cons
 			continue;
 		}
 
-		//Testing
-		// cout << "2 Option 2" << endl;
-		// cout << "5 Option " << (headerRead ? "1" : "2") << endl;
-		// cout << "6 Option " << (!headerRead && c == '>' ? "1" : "2") << endl;
-		// cout << "7 Option " << (idRead ? "1" : "2") << endl;
-		// cout << "8 Option " << (!idRead && (headerRead && c == ' ' && !lnBrkDiscvd) ? "1" : "2") << endl;
-		// cout << "9 Option " << (lnBrkDiscvd ? "1" : "2") << endl;
-		// cout << "10 Option " << (!lnBrkDiscvd && c == '\n' ? "1" : "2") << endl;
-
 		//Note if we have completely read the sequence id
 		idRead = idRead || (headerRead && c == ' ' && !lnBrkDiscvd);
 		//Note if we have found the first line break after a new header started
@@ -273,9 +276,6 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, cons
 
 		//Update sequence id if we are still reading it
 		if(headerRead && !lnBrkDiscvd && !idRead){
-			//Testing
-			// cout << "4 Option 1" << endl;
-
 			seqID += c;
 			continue;
 		}
@@ -283,46 +283,15 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, cons
 		//Note if we have found the beginning of a header
 		headerRead = headerRead || (c == '>');
 
-		//Testing
-		// cout << "4 Option 2" << endl;
-
 		//There is no sequence to load in the header line
-		if(headerRead && !lnBrkDiscvd){
-			//Testing
-			// cout << "11 Option 1" << endl;
-
-			continue;
-		}
-
-		//Testing
-		// cout << "11 Option 2" << endl;
+		if(headerRead && !lnBrkDiscvd) continue;
 
 		//We are only interested in unambigous, unmasked nucleotides
-		if(c == 'A' || c == 'C' || c == 'G' || c == 'T'){
-			//Testing
-			// cout << "12 Option 1" << endl;
-
-			seq += c;
-		} else{
-			//Testing
-			// cout << "12 Option 2" << endl;
-		}
+		if(c == 'A' || c == 'C' || c == 'G' || c == 'T') seq += c;
 	}
-
-	//Testing
-	// cout << "lPttnSks: seq: " << seq << endl;
-	// exit(0);
 
 	//Add last entry's sketch and sequence id to result vector if it is not empty
-	if(!seq.empty()){
-		//Testing
-		// cout << "13 Option 1" << endl;
-
-		pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac, bLstmers)));
-	} else{
-		//Testing
-		// cout << "13 Option 2" << endl;
-	}
+	if(!seq.empty()) pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac, bLstmers)));
 
 	return false;
 }

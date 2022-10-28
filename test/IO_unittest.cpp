@@ -700,7 +700,7 @@ TEST_F(OutputHomsTest, nnScrs){
 //Tests for function const bool lPttnSks(ifstream&, const uint32_t&, const double&, vector<pair<string, Sketch>>&)//
 //	1. The file we want to read is (not) open DONE
 //	2. We have (not) found the beginning of a second sequence entry DONE
-//	3. We found another sequence entry and did (not) reach the batch size limit 0/1
+//	3. We found another sequence entry and did (not) reach the batch size limit DONE
 //	4. We did (not) find a character to update the current sequence id DONE
 //	5. We do (not) set the "header read" flag, because it was set before DONE
 //	6. We do (not) set the "header read" flag, because we discover the beginning of a sequence entry for the first time DONE
@@ -710,7 +710,7 @@ TEST_F(OutputHomsTest, nnScrs){
 //	10. We do (not) set the "line break discovered" flag and is was not set before DONE
 //	11. We are (not) inside the header of a sequence entry DONE
 //	12. We do (not) read another nucleotide DONE
-//	13. We could (not) successfully generate a sketch of the last sequence entry's sequence 0/1
+//	13. We could (not) successfully generate a sketch of the last sequence entry's sequence DONE
 
 //Tests the function lPttnSks under the following conditions
 //	1. The file we want to read is open
@@ -753,6 +753,87 @@ TEST_F(lPttnSksTest, nexFl){
 //	3. We found another sequence entry and did (not) reach the batch size limit
 //	4. We did (not) find a character to update the current sequence id
 //	5. We do (not) set the "header read" flag, because it was set before
+//	6. We do (not) set the "header read" flag, because we discover the beginning of a sequence entry for the first time
+//	7. We do not set the "id read" flag, because it was set before
+//	8. We do not set the "id read" flag and it was not set before
+//	9. We do (not) set the "line break discovered" flag, because it was set before
+//	10. We do (not) set the "line break discovered" flag and is was not set before
+//	11. We are (not) inside the header of a sequence entry
+//	12. We do (not) read another nucleotide
 TEST_F(lPttnSksTest, btchLim){
+	fStr.open("TestFASTA2.fasta");
 
+	EXPECT_TRUE(lPttnSks(fStr, K, HASH_RATIO, b, s));
+
+	ASSERT_FALSE(s.empty());
+	EXPECT_EQ(s.size(), PATTERN_BATCH_SIZE);
+	i = s.begin();
+
+	for(uint32_t j = 0; j < PATTERN_BATCH_SIZE; ++j, ++i){
+		EXPECT_EQ(i->first, "s" + to_string(j));
+		EXPECT_TRUE(i->second.empty());
+	}
+}
+
+//Tests the function lPttnSks under the following conditions
+//	1. The file we want to read is open
+//	2. We have (not) found the beginning of a second sequence entry
+//	3. We found another sequence entry and did not reach the batch size limit
+//	4. We did (not) find a character to update the current sequence id
+//	5. We do (not) set the "header read" flag, because it was set before
+//	6. We do (not) set the "header read" flag, because we discover the beginning of a sequence entry for the first time
+//	7. We do not set the "id read" flag, because it was set before
+//	8. We do not set the "id read" flag and it was not set before
+//	9. We do (not) set the "line break discovered" flag, because it was set before
+//	10. We do (not) set the "line break discovered" flag and is was not set before
+//	11. We are (not) inside the header of a sequence entry
+//	12. We do (not) read another nucleotide
+//	13. We could successfully generate a sketch of the last sequence entry's sequence
+TEST_F(lPttnSksTest, sucLseq){
+	fStr.open("TestFASTA1.fasta");
+
+	EXPECT_FALSE(lPttnSks(fStr, K, HASH_RATIO, b, s));
+
+	ASSERT_FALSE(s.empty());
+	i = s.begin();
+	EXPECT_EQ(i->first, "testEntry1");
+	EXPECT_EQ(i->second.size(), 1);
+	EXPECT_EQ(i->second.front(), getHash(calcKmerNb("CGTACGTAC"), (2 << (2 * K) - 1) - 1));
+	++i;
+	EXPECT_EQ(i->first, "testEntry2");
+	EXPECT_TRUE(i->second.empty());
+	EXPECT_EQ(s.back().first, "testEntry3");
+	EXPECT_TRUE(s.back().second.empty());
+}
+
+//Tests for function const unordered_map<uint64_t, char> readBlstKmers(const string&)//
+//	1. The file we want to read is (not) open DONE
+//	2. The file we want to read is (not) empty DONE
+
+//Tests the function realBlstKmers under the following conditions
+//	1. The file we want to read is open
+//	2. The file we want to read is empty
+TEST_F(ReadBlstKmersTest, empFl){
+	b = readBlstKmers("emptyBlacklist.txt");
+
+	EXPECT_TRUE(b.empty());
+}
+
+//Tests the function realBlstKmers under the following conditions
+//	1. The file we want to read is not open
+TEST_F(ReadBlstKmersTest, nExFl){
+	b = readBlstKmers("emptyBlackList.txt");
+
+	EXPECT_TRUE(b.empty());
+}
+
+//Tests the function realBlstKmers under the following conditions
+//	1. The file we want to read is open
+//	2. The file we want to read is not empty
+TEST_F(ReadBlstKmersTest, nEmpLst){
+	b = readBlstKmers("testBlacklist.txt");
+
+	EXPECT_FALSE(b.empty());
+	EXPECT_EQ(b.size(), 1);
+	EXPECT_EQ(b[0], 1);
 }

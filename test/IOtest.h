@@ -99,4 +99,14 @@ protected:
 		vector<pair<string, Sketch>>::const_iterator i;
 };
 
+class ReadBlstKmersTest : public ::testing::Test {
+
+protected:
+
+		ReadBlstKmersTest() {}
+
+		//A hash table with black listed k-mers
+		unordered_map<uint64_t, char> b;
+};
+
 #endif

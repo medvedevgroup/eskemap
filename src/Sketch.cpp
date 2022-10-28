@@ -46,16 +46,10 @@ const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFr
 
 	//If the sequence is smaller than k we are done
 	if(seq.length() < k){
-		//Testing
-		// cout << "1 Option 1" << endl;
-
 		cerr << "WARNING: Length of input sequence " << seq << " is smaller than k (k=" << k << ")" << endl;
 
 		return sk;
 	}
-
-	//Testing
-	// cout << "1 Option 2" << endl;
 
 	//Reserve as much space as is approximately needed to store the sketch (which hopefully saves some time)
 	sk.reserve(seq.length() * hFrac);
@@ -64,10 +58,6 @@ const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFr
 	for(uint32_t i = 0; i < seq.length() - k + 1; ++i){
 		//Calculate numerical k-mer representation and its hash
 		kmerHash = getHash(calcKmerNb(seq.substr(i, k)), mask);
-
-		//Testing
-		// cout << "2 Option " << (kmerHash > maxHash ? "1" : "2") << endl;
-		// cout << "3 Option " << (bLstmers.contains(kmerHash) ? "1" : "2") << endl;
 
 		//Check if hash value is small enough to be kept
 		if(kmerHash <= maxHash && !bLstmers.contains(kmerHash)) sk.push_back(kmerHash);

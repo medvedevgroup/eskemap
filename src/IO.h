@@ -5,7 +5,7 @@
 #include "Thomology.h"
 
 #define OPTIONS "a:b:ilh"
-#define T_HOM_OPTIONS "p:s:k:r:c:u:t:nh"
+#define T_HOM_OPTIONS "p:s:k:r:b:c:u:t:nh"
 #define MIN_PARAM_NB 6
 #define MAX_RATIO 1.0
 #define NORM_FLAG_DEFAULT false
@@ -28,8 +28,8 @@ inline void dspHlp(){
 
 //This function prints usage infos
 inline void dsHlp(){
-	cerr << "FindThoms [-hn] [-p PATTERN_FILE] [-s TEXT_FILE] [-k KMER_LEN] [-r HASH_RATIO] [-c COM_HASH_WGHT] [-u UNI_HASH_WGHT] \
-[-t HOM_THRES]" << endl << endl;
+	cerr << "FindThoms [-hn] [-p PATTERN_FILE] [-s TEXT_FILE] [-k KMER_LEN] [-r HASH_RATIO] [-b BLACKLIST] [-c COM_HASH_WGHT] \
+[-u UNI_HASH_WGHT] [-t HOM_THRES]" << endl << endl;
 	cerr << "Find sketch-based pattern homology in text." << endl << endl;
 	cerr << "Required parameters:" << endl;
 	cerr << "   -p   --pattern  Pattern sequences file (FASTA format)" << endl;
@@ -37,6 +37,7 @@ inline void dsHlp(){
 	cerr << "Optional parameters with required argument:" << endl;
 	cerr << "   -k   --ksize             K-mer length to be used for sketches (default " << K << ")" << endl;
 	cerr << "   -r   --hashratio         FracMin hash ratio to be used for sketches (default " << HASH_RATIO << ")" << endl;
+	cerr << "   -b   --blacklist         File containing hashes to ignore for sketch calculation" << endl;
 	cerr << "   -c   --commonhashweight  Weight to reward common hashes (default " << DEFAULT_WEIGHT << ")" << endl;
 	cerr << "   -u   --uniquehashweight  Weight to punish unique hashes (default " << DEFAULT_WEIGHT << ")" << endl;
 	cerr << "   -t   --hom_thres         Homology threshold (default " << T << ")" << endl;
@@ -63,8 +64,8 @@ inline void outputHoms(const vector<Thomology>& homs, const bool& norm, const ui
 const bool prsArgs(int& nArgs, char** argList, string& seqa, string& seqb, Measure& msr);
 
 //This function parses the program parameters. Returns false if given arguments are not valid
-const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, double& hFrac, uint32_t& cw, uint32_t& uw, 
-	int32_t& tThres, bool& norm);
+const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, double& hFrac, string& blFl, uint32_t& cw, 
+	uint32_t& uw, int32_t& tThres, bool& norm);
 
 //This function reads a file in FASTA format and returns true on success
 const bool readFASTA(const string& filePath, string& seq);

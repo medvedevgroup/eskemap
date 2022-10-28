@@ -17,7 +17,7 @@ int main(int argc, char **argv){
 	//The t-homology threshold
 	int32_t tThres = T;
 	//Input file names
-	string pFile, tFile;
+	string pFile, tFile, bLstFl;
 	//An input sequence
 	string seq;
 	//A file stream
@@ -38,7 +38,7 @@ int main(int argc, char **argv){
 	vector<pair<string, Sketch>>::const_iterator p;
 
 	//Parse arguments
-	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, hFrac, comWght, uniWght, tThres, normalize)){
+	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, hFrac, bLstFl, comWght, uniWght, tThres, normalize)){//TODO: Modify tests for this function!
 		//Display help message
 		dsHlp();
 		return 1;
@@ -86,12 +86,12 @@ int main(int argc, char **argv){
 	// return 0;
 
 	//Load high abundance k-mers
-	bLstmers = readBlstKmers("highAbundKmers.txt");//TODO: Implement this function!
+	bLstmers = readBlstKmers("highAbundKmers.txt");
 	//Open stream to read in patterns
 	fStr.open(pFile);
 
 	//Load pattern sequences in batches
-	while(lPttnSks(fStr, kmerLen, hFrac, bLstmers, pSks) || !pSks.empty()){//TODO: Implement this function!
+	while(lPttnSks(fStr, kmerLen, hFrac, bLstmers, pSks) || !pSks.empty()){
 		//Testing
 		// cout << "main: Do we return?" << endl;
 		// for(p = pSks.begin(); p != pSks.end(); ++p){
@@ -117,9 +117,6 @@ int main(int argc, char **argv){
 
 		//Remove processed pattern sketches
 		pSks.clear();
-
-		//Testing
-		// cout << "main: Cleared pattern sketch vector. Size: " << pSks.size() << " Empty: " << (pSks.empty() ? "Yes" : "No!") << endl;
 	}
 
 	return 0;
