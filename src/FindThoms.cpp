@@ -38,7 +38,7 @@ int main(int argc, char **argv){
 	vector<pair<string, Sketch>>::const_iterator p;
 
 	//Parse arguments
-	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, hFrac, bLstFl, comWght, uniWght, tThres, normalize)){//TODO: Modify tests for this function!
+	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, hFrac, bLstFl, comWght, uniWght, tThres, normalize)){
 		//Display help message
 		dsHlp();
 		return 1;

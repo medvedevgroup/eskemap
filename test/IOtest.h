@@ -55,6 +55,8 @@ class PrsArgs1Test : public ::testing::Test {
 		string p;
 		//Text sequence
 		string s;
+		//Black list file name
+		string b;
 };
 
 class ReadFASTAtest : public ::testing::Test {

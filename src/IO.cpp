@@ -85,9 +85,6 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
         {0,                    0,                  0,  0 }
     };
 
-    //Testing
-    bool kgvn = false, hrgvn = false, cgvn = false;;
-
     //Parse all parameters given
 	while ((a = getopt_long(nArgs, argList, T_HOM_OPTIONS, long_options, &option_index)) != -1){
 		//Assign parameter values
@@ -101,31 +98,15 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 				tFl = optarg;
 				break;
 			case 'k':
-				//Testing
-				kgvn = true;
-				cout << "3 Option 1" << endl;
-
 				//A k-mer length should be positive
 				if(atoi(optarg) <= 0){
-					//Testing
-					cout << "4 Option 2" << endl;
-
 					cerr << "ERROR: K-mer length not applicable" << endl;
 					return false;
 				}
 
-				//Testing
-				cout << "4 Option 1" << endl;
-
 				k = atoi(optarg);
 				break;
 			case 'r':
-				//Testing
-				hrgvn = true;
-				cout << "5 Option 1" << endl;
-				cout << "6 Option " << (atof(optarg) <= 0 ? "2" : "1") << endl;
-				cout << "7 Option " << (atof(optarg) > MAX_RATIO ? "1" : "2") << endl;
-
 				//Check if given value is reasonable to represent a ratio
 				if(atof(optarg) <= 0 || atof(optarg) > MAX_RATIO){
 					cerr << "ERROR: Given hash ratio not applicable" << endl;
@@ -140,10 +121,6 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 				blFl = optarg;
 				break;
 			case 'c':
-				//Testing
-				cgvn = true;
-				cout << "8 Option 1" << endl;
-
 				//Weights should be positive
 				if(atoi(optarg) <= 0){
 					cerr << "ERROR: Common hash weight not applicable" << endl;
@@ -175,13 +152,6 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 				break;
 		}
 	}
-
-	//Testing
-	cout << "1 Option " << (pFl.empty() ? "2" : "1") << endl;
-	cout << "2 Option " << (tFl.empty() ? "2" : "1") << endl;
-	if(!kgvn) cout << "3 Option 2" << endl;
-	if(!hrgvn) cout << "5 Option 2" << endl;
-	if(!cgvn) cout << "8 Option 2" << endl;
 
 	return !pFl.empty() && !tFl.empty();
 }

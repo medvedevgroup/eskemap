@@ -225,7 +225,8 @@ TEST_F(PrsArgsTest, dupOmes){
 	EXPECT_EQ(algnWoutOffs, m);
 }
 
-//Tests for function const bool prsArgs(int&, char**, string&, string&, uint32_t&, double&, uint32_t&, uint32_t&, int32_t&, bool&)//
+//Tests for function const bool prsArgs(int&, char**, string&, string&, uint32_t&, double&, string&, uint32_t&, uint32_t&, int32_t&,
+// bool&)//
 //	1. Pattern sequence is (not) given DONE
 //	2. Text sequence is (not) given DONE
 //	3. K-mer length is (not) given DONE
@@ -240,6 +241,7 @@ TEST_F(PrsArgsTest, dupOmes){
 //	12. t-homology threshold is (not) given DONE
 //	13. Normalization flag is (not) given DONE
 //	14. Help flag is (not) given DONE
+//	15. Blacklist is (not) given DONE
 
 //Tests the function prsArgs under the following conditions
 //	1. Pattern sequence is given
@@ -256,6 +258,7 @@ TEST_F(PrsArgsTest, dupOmes){
 //	12. t-homology threshold is given
 //	13. Normalization flag is given
 //	14. Help flag is not given
+//	15. Blacklist is not given
 TEST_F(PrsArgs1Test, pttnGvn){
 	nbArgs = 57;
 	argv = (char**) malloc(nbArgs * sizeof(char*));
@@ -276,7 +279,7 @@ TEST_F(PrsArgs1Test, pttnGvn){
 	argv[55] = strdup("-k");
 	argv[56] = strdup("2147483647");
 
-	EXPECT_TRUE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_TRUE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
 	EXPECT_EQ(nbArgs, 57);
 	EXPECT_EQ(p, "A");
 	EXPECT_EQ(s, "ACGT");
@@ -286,6 +289,7 @@ TEST_F(PrsArgs1Test, pttnGvn){
 	EXPECT_EQ(u, 2);
 	EXPECT_EQ(t, -1);
 	EXPECT_TRUE(n);
+	EXPECT_TRUE(b.empty());
 }
 
 //Tests the function prsArgs under the following conditions
@@ -298,6 +302,7 @@ TEST_F(PrsArgs1Test, pttnGvn){
 //	12. t-homology threshold is not given
 //	13. Normalization flag is not given
 //	14. Help flag is not given
+//	15. Blacklist is not given
 TEST_F(PrsArgs1Test, noPttn){
 	nbArgs = 59;
 	argv = (char**) malloc(nbArgs * sizeof(char*));
@@ -305,7 +310,7 @@ TEST_F(PrsArgs1Test, noPttn){
 	argv[57] = strdup("-s");
 	argv[58] = strdup("A");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
 	EXPECT_EQ(nbArgs, 59);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "A");
@@ -315,6 +320,7 @@ TEST_F(PrsArgs1Test, noPttn){
 	EXPECT_EQ(u, DEFAULT_WEIGHT);
 	EXPECT_EQ(t, T);
 	EXPECT_FALSE(n);
+	EXPECT_TRUE(b.empty());
 }
 
 //Tests the function prsArgs under the following conditions
@@ -327,6 +333,7 @@ TEST_F(PrsArgs1Test, noPttn){
 //	12. t-homology threshold is not given
 //	13. Normalization flag is not given
 //	14. Help flag is not given
+//	15. Blacklist is not given
 TEST_F(PrsArgs1Test, noTxt){
 	nbArgs = 61;
 	argv = (char**) malloc(nbArgs * sizeof(char*));
@@ -334,7 +341,7 @@ TEST_F(PrsArgs1Test, noTxt){
 	argv[59] = strdup("-p");
 	argv[60] = strdup("A");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
 	EXPECT_EQ(nbArgs, 61);
 	EXPECT_EQ(p, "A");
 	EXPECT_EQ(s, "");
@@ -344,6 +351,7 @@ TEST_F(PrsArgs1Test, noTxt){
 	EXPECT_EQ(u, DEFAULT_WEIGHT);
 	EXPECT_EQ(t, T);
 	EXPECT_FALSE(n);
+	EXPECT_TRUE(b.empty());
 }
 
 //Tests the function prsArgs under the following conditions
@@ -356,12 +364,13 @@ TEST_F(PrsArgs1Test, noTxt){
 //	12. t-homology threshold is not given
 //	13. Normalization flag is not given
 //	14. Help flag is not given
+//	15. Blacklist is not given
 TEST_F(PrsArgs1Test, noSeqs){
 	nbArgs = 61;
 	argv = (char**) malloc(nbArgs * sizeof(char*));
 	argv[60] = strdup("FindThoms");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
 	EXPECT_EQ(nbArgs, 61);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");
@@ -371,6 +380,7 @@ TEST_F(PrsArgs1Test, noSeqs){
 	EXPECT_EQ(u, DEFAULT_WEIGHT);
 	EXPECT_EQ(t, T);
 	EXPECT_FALSE(n);
+	EXPECT_TRUE(b.empty());
 }
 
 //Tests the function prsArgs under the following conditions
@@ -384,6 +394,7 @@ TEST_F(PrsArgs1Test, noSeqs){
 //	12. t-homology threshold is not given
 //	13. Normalization flag is not given
 //	14. Help flag is not given
+//	15. Blacklist is not given
 TEST_F(PrsArgs1Test, negK){
 	nbArgs = 63;
 	argv = (char**) malloc(nbArgs * sizeof(char*));
@@ -391,7 +402,7 @@ TEST_F(PrsArgs1Test, negK){
 	argv[61] = strdup("-k");
 	argv[62] = strdup("-1");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
 	EXPECT_EQ(nbArgs, 63);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");
@@ -401,6 +412,7 @@ TEST_F(PrsArgs1Test, negK){
 	EXPECT_EQ(u, DEFAULT_WEIGHT);
 	EXPECT_EQ(t, T);
 	EXPECT_FALSE(n);
+	EXPECT_TRUE(b.empty());
 }
 
 //Tests the function prsArgs under the following conditions
@@ -415,6 +427,7 @@ TEST_F(PrsArgs1Test, negK){
 //	12. t-homology threshold is not given
 //	13. Normalization flag is not given
 //	14. Help flag is not given
+//	15. Blacklist is not given
 TEST_F(PrsArgs1Test, negR){
 	nbArgs = 65;
 	argv = (char**) malloc(nbArgs * sizeof(char*));
@@ -422,7 +435,7 @@ TEST_F(PrsArgs1Test, negR){
 	argv[63] = strdup("-r");
 	argv[64] = strdup("-1");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
 	EXPECT_EQ(nbArgs, 65);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");
@@ -432,6 +445,7 @@ TEST_F(PrsArgs1Test, negR){
 	EXPECT_EQ(u, DEFAULT_WEIGHT);
 	EXPECT_EQ(t, T);
 	EXPECT_FALSE(n);
+	EXPECT_TRUE(b.empty());
 }
 
 //Tests the function prsArgs under the following conditions
@@ -446,6 +460,7 @@ TEST_F(PrsArgs1Test, negR){
 //	12. t-homology threshold is not given
 //	13. Normalization flag is not given
 //	14. Help flag is not given
+//	15. Blacklist is not given
 TEST_F(PrsArgs1Test, lrgR){
 	nbArgs = 67;
 	argv = (char**) malloc(nbArgs * sizeof(char*));
@@ -453,7 +468,7 @@ TEST_F(PrsArgs1Test, lrgR){
 	argv[65] = strdup("-r");
 	argv[66] = strdup("1.1");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
 	EXPECT_EQ(nbArgs, 67);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");
@@ -463,6 +478,7 @@ TEST_F(PrsArgs1Test, lrgR){
 	EXPECT_EQ(u, DEFAULT_WEIGHT);
 	EXPECT_EQ(t, T);
 	EXPECT_FALSE(n);
+	EXPECT_TRUE(b.empty());
 }
 
 //Tests the function prsArgs under the following conditions
@@ -476,6 +492,7 @@ TEST_F(PrsArgs1Test, lrgR){
 //	12. t-homology threshold is not given
 //	13. Normalization flag is not given
 //	14. Help flag is not given
+//	15. Blacklist is not given
 TEST_F(PrsArgs1Test, negC){
 	nbArgs = 69;
 	argv = (char**) malloc(nbArgs * sizeof(char*));
@@ -483,7 +500,7 @@ TEST_F(PrsArgs1Test, negC){
 	argv[67] = strdup("-c");
 	argv[68] = strdup("-1");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
 	EXPECT_EQ(nbArgs, 69);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");
@@ -493,6 +510,7 @@ TEST_F(PrsArgs1Test, negC){
 	EXPECT_EQ(u, DEFAULT_WEIGHT);
 	EXPECT_EQ(t, T);
 	EXPECT_FALSE(n);
+	EXPECT_TRUE(b.empty());
 }
 
 //Tests the function prsArgs under the following conditions
@@ -506,6 +524,7 @@ TEST_F(PrsArgs1Test, negC){
 //	12. t-homology threshold is not given
 //	13. Normalization flag is not given
 //	14. Help flag is not given
+//	15. Blacklist is not given
 TEST_F(PrsArgs1Test, negU){
 	nbArgs = 71;
 	argv = (char**) malloc(nbArgs * sizeof(char*));
@@ -513,7 +532,7 @@ TEST_F(PrsArgs1Test, negU){
 	argv[69] = strdup("-u");
 	argv[70] = strdup("-1");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
 	EXPECT_EQ(nbArgs, 71);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");
@@ -523,6 +542,7 @@ TEST_F(PrsArgs1Test, negU){
 	EXPECT_EQ(u, DEFAULT_WEIGHT);
 	EXPECT_EQ(t, T);
 	EXPECT_FALSE(n);
+	EXPECT_TRUE(b.empty());
 }
 
 //Tests the function prsArgs under the following conditions
@@ -535,13 +555,14 @@ TEST_F(PrsArgs1Test, negU){
 //	12. t-homology threshold is not given
 //	13. Normalization flag is not given
 //	14. Help flag is given
+//	15. Blacklist is not given
 TEST_F(PrsArgs1Test, help){
 	nbArgs = 72;
 	argv = (char**) malloc(nbArgs * sizeof(char*));
 	argv[70] = strdup("FindThoms");
 	argv[71] = strdup("-h");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
 	EXPECT_EQ(nbArgs, 72);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");
@@ -551,6 +572,38 @@ TEST_F(PrsArgs1Test, help){
 	EXPECT_EQ(u, DEFAULT_WEIGHT);
 	EXPECT_EQ(t, T);
 	EXPECT_FALSE(n);
+	EXPECT_TRUE(b.empty());
+}
+
+//Tests the function prsArgs under the following conditions
+//	1. Pattern sequence is not given
+//	2. Text sequence is not given
+//	3. K-mer length is not given
+//	5. Hash ratio is not given
+//	8. Common hash weight is not given
+//	10. Unique hash weight is not given
+//	12. t-homology threshold is not given
+//	13. Normalization flag is not given
+//	14. Help flag is not given
+//	15. Blacklist is given
+TEST_F(PrsArgs1Test, blGvn){
+	nbArgs = 74;
+	argv = (char**) malloc(nbArgs * sizeof(char*));
+	argv[71] = strdup("FindThoms");
+	argv[72] = strdup("-b");
+	argv[73] = strdup("testBlacklist.txt");
+
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
+	EXPECT_EQ(nbArgs, 74);
+	EXPECT_EQ(p, "");
+	EXPECT_EQ(s, "");
+	EXPECT_EQ(k, K);
+	EXPECT_EQ(h, HASH_RATIO);
+	EXPECT_EQ(c, DEFAULT_WEIGHT);
+	EXPECT_EQ(u, DEFAULT_WEIGHT);
+	EXPECT_EQ(t, T);
+	EXPECT_FALSE(n);
+	EXPECT_EQ(b, "testBlacklist.txt");
 }
 
 //Tests for function const bool readFASTA(const string&, string&)//
