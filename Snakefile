@@ -189,7 +189,7 @@ rule all:
 		expand("../benchmarks/benchWinnowmap2_t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_k15_rep{i}.txt", i=\
 			range(config['benchRepRuns'])),
 		#
-		# genHomFiles,
+		genHomFiles,
 		# genMinimap2Files,
 		# genWinnowmap2Files
 
