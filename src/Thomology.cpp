@@ -30,6 +30,11 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 	//Initialize pos (again, we assume there are no duplicates in t)
 	unordered_map<uint64_t, vector<uint32_t>> pos(skP.size());
 
+	//Testing
+	// cout << "findThoms: Pattern sketch:" << endl;
+	// for(fSkIt = skP.begin(); fSkIt != skP.end(); ++fSkIt) cout << *fSkIt << " ";
+	// cout << endl;
+
 	//Fill occp
 	for(fSkIt = skP.begin(); fSkIt != skP.end(); ++fSkIt){
 		if(occp.contains(*fSkIt)){
@@ -40,14 +45,14 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 	}
 
 	//Testing
-	// cout << "findThoms: Filling of occp done" << endl;
+	cout << "findThoms: Filling of occp done" << endl;
 
 	//Generate L
 	L = genL(occp, tidx);
 
 	//Testing
-	// cout << "findThoms: Generated L" << endl;
-	// cout << "findThoms: Its size is " << L.size() << endl;
+	cout << "findThoms: Generated L" << endl;
+	cout << "findThoms: Its size is " << L.size() << endl;
 
 	//Set position counter
 	j = 0;
@@ -100,8 +105,8 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 	}
 
 	//Testing
-	// cout << "findThoms: Scores calculated" << endl;
-	// cout << "findThoms: Size of score matrix: " << scores.size() << "^2" << endl;
+	cout << "findThoms: Scores calculated" << endl;
+	cout << "findThoms: Size of score matrix: " << scores.size() << "^2" << endl;
 
 	//Get a reverse iterator to iterate over L
 	rLit = L.rbegin();

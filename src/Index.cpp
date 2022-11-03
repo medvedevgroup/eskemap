@@ -57,6 +57,12 @@ const vector<pair<uint64_t, uint32_t>> genL(const unordered_map<uint64_t, uint32
 		//Query current hash in index
 		const uint64_t *idx_p = mm_idx_get(tidx, sI->first, &nHits);
 
+		//Testing
+		if(sI->first == 49938615){
+			cout << "genL: Current hash is " << sI->first << endl;
+			cout << "genL: Number of occurrences in text according to index: " << nHits << endl;
+		}
+
 		//Check if hash could be found
 		if(nHits > 0){
 			//Iterate over all occurrences
