@@ -27,3 +27,4 @@ readLength: 20000
 matchScores: [1, 5, 10, 15, 30]
 homologyThresholds: [0, -1000, -2000]
 benchRepRuns: 5
+readLens: [100, 250075, 500050, 750025, 1000000]

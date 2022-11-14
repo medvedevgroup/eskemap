@@ -150,10 +150,22 @@ def genSampleFileNames(wcs):
 
 	return scoreFiles
 
+def genReads(wcs):
+	rdFiles = []
+
+	for l in config['readLens']:
+		for i in range(config['randomSampleSize']):
+			sd = randrange(maxsize)
+			rdFiles.append(f"../simulations/expValExp/scores/randSeq_l{l}_rid{i}GlobIntSecScore_se{sd}_cP6C4_ep6:50:54_d1_l{l}-" + \
+				f"{l}_c1_u1.txt")
+
+	return rdFiles
+
 rule all:
 	input:
 		#Expectation value estimation
 		# genSampleFileNames,
+		genReads,
 		#Tests for DP script
 		# expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_pPy.txt", gn=\
 		# 	config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
@@ -215,6 +227,15 @@ rule generateNoDuplicateKmerSketchPairs:
 		"python3 scripts/GenKsketchPair.py -n -s {wildcards.seed} -l {wildcards.seqLen} -m {wildcards.subRate} -i " + \
 		"{wildcards.insRate} -d {wildcards.delRate} -k {wildcards.k} -r {wildcards.hRat} > {output}"
 
+rule generateReadSketchPairs:
+	input:
+		tmpl = "../simulations/genomes/{genome}.fasta",
+		rds = "../simulations/reads/{genome}_c{desc}_s{sd}_d{desc1}.fasta"
+	output:
+		"../simulations/expValExp/sketches/{genome}KskSeqPairs_se{sd}_c{desc}_d{desc1}.sk"
+	shell:
+		"python3 scripts/genRdSkPrs.py {input.tmpl} {input.rds} > {output}"
+
 rule convertMultiFastq2SinglFastq:
 	input:
 		"{something}.fastq"
@@ -233,7 +254,7 @@ rule convertMultiFastq2SinglFasta:
 
 rule assembleText:
 	input:
-		randSeq = "../simulations/randSeq_l{rl}_rid{i}.fasta",
+		randSeq = "../simulations/genomes/randSeq_l{rl}_rid{i}.fasta",
 		cpys = expand("../simulations/randSeqCopy_l{tl}_rid{i}_m{m}_d{d}_i{l}_cn{c}.fasta", tl=config['templLen'], i="{i}", m="{m}"\
 			, d="{d}", l="{l}", c=range(int(config['copyNumber'])))
 	output:
@@ -259,7 +280,7 @@ rule genRandTemplate:
 		length = "{l}",
 		repId = "{i}"
 	output:
-		"../simulations/randSeq_l{l}_rid{i}.fasta"
+		"../simulations/genomes/randSeq_l{l}_rid{i}.fasta"
 	shell:
 		"python3 scripts/GenRandSeq.py -l {params.length} -o {output}"
 
@@ -393,6 +414,8 @@ rule reproduceSimulation:
 		rds = temp("../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}.fastq.gz"),
 		maf = temp("../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}.maf.gz"),
 		log = "../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}.log"
+	wildcard_constraints:
+		seed="[0-9]+"
 	shell:
 		"pbsim --hmm_model {input.model} --difference-ratio {params.dr} --prefix $(echo {output.log} | sed 's/.log//g') --depth" + \
 		" 10.0 --seed {params.sd} {input.ref} 2> {output.log}; cat $(echo {output.log} | sed 's/.log//g')_*.fastq | gzip -3 > " + \
@@ -401,7 +424,7 @@ rule reproduceSimulation:
 
 rule simPattern:
 	input:
-		ref = "../simulations/randSeq_l{desc}.fasta",
+		ref = "../simulations/genomes/randSeq_l{desc}.fasta",
 		model = "../software/pbsim2/data/{chem}.model"
 	params:
 		erR = "{erR}",
@@ -416,6 +439,26 @@ rule simPattern:
 		"pbsim --hmm_model {input.model} --difference-ratio {params} --prefix $(echo {output.log} | sed 's/.log//g') --depth " + \
 		"{params.dep} --length-min {params.rdLen} --length-max {params.rdLen} {input.ref} 2> {output.log}; cat $(echo " + \
 		"{output.log} | sed 's/.log//g')_*.fastq > {output.rds}; rm $(echo {output.log} | sed 's/.log//g')_*.{{ref,fastq}}"
+
+rule simFixedLengthReads:
+	input:
+		ref = "../simulations/genomes/{genome}.fasta",
+		model = "../software/pbsim2/data/{chem}.model"
+	params:
+		dr = "{dRat}",
+		dp = "{dpth}",
+		lmin = "{minl}",
+		lmax = "{maxl}",
+		sd = "{seed}"
+	output:
+		rds = temp("../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}_d{dpth}_l{minl}-{maxl}.fastq.gz"),
+		maf = temp("../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}_d{dpth}_l{minl}-{maxl}.maf.gz"),
+		log = "../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}_d{dpth}_l{minl}-{maxl}.log"
+	shell:
+		"pbsim --hmm_model {input.model} --difference-ratio {params.dr} --prefix $(echo {output.log} | sed 's/.log//g') " + \
+		"--depth {params.dp} --seed {params.sd} --length-min {params.lmin} --length-max {params.lmax} {input.ref} 2> " + \
+		"{output.log}; cat $(echo {output.log} | sed 's/.log//g')_*.fastq | gzip -3 > {output.rds}; cat $(echo {output.log} | " + \
+		"sed 's/.log//g')_*.maf | gzip -3 > {output.maf}; rm $(echo {output.log} | sed 's/.log//g')_*.{{maf,ref,fastq}}"
 
 rule simReads:
 	input:
