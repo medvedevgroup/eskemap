@@ -150,22 +150,22 @@ def genSampleFileNames(wcs):
 
 	return scoreFiles
 
-def genReads(wcs):
-	rdFiles = []
+def genReadScoreFiles(wcs):
+	scrFiles = []
 
 	for l in config['readLens']:
 		for i in range(config['randomSampleSize']):
 			sd = randrange(maxsize)
-			rdFiles.append(f"../simulations/expValExp/scores/randSeq_l{l}_rid{i}GlobIntSecScore_se{sd}_cP6C4_ep6:50:54_d1_l{l}-" + \
+			scrFiles.append(f"../simulations/expValExp/scores/randSeq_l{l}_rid{i}GlobIntSecScore_se{sd}_cP6C4_ep6:50:54_d1_l{l}-" + \
 				f"{l}_c1_u1.txt")
 
-	return rdFiles
+	return scrFiles
 
 rule all:
 	input:
 		#Expectation value estimation
 		# genSampleFileNames,
-		genReads,
+		genReadScoreFiles,
 		#Tests for DP script
 		# expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_pPy.txt", gn=\
 		# 	config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
@@ -449,16 +449,17 @@ rule simFixedLengthReads:
 		dp = "{dpth}",
 		lmin = "{minl}",
 		lmax = "{maxl}",
-		sd = "{seed}"
+		sd = "{seed}",
 	output:
 		rds = temp("../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}_d{dpth}_l{minl}-{maxl}.fastq.gz"),
 		maf = temp("../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}_d{dpth}_l{minl}-{maxl}.maf.gz"),
 		log = "../simulations/reads/{genome}_c{chem}_ep{dRat}_s{seed}_d{dpth}_l{minl}-{maxl}.log"
 	shell:
 		"pbsim --hmm_model {input.model} --difference-ratio {params.dr} --prefix $(echo {output.log} | sed 's/.log//g') " + \
-		"--depth {params.dp} --seed {params.sd} --length-min {params.lmin} --length-max {params.lmax} {input.ref} 2> " + \
-		"{output.log}; cat $(echo {output.log} | sed 's/.log//g')_*.fastq | gzip -3 > {output.rds}; cat $(echo {output.log} | " + \
-		"sed 's/.log//g')_*.maf | gzip -3 > {output.maf}; rm $(echo {output.log} | sed 's/.log//g')_*.{{maf,ref,fastq}}"
+		"--depth {params.dp} --seed {params.sd} --length-min {params.lmin} --length-mean {params.lmin} --length-sd 0 " + \
+		"--length-max {params.lmax} {input.ref} 2> {output.log}; cat $(echo {output.log} | sed 's/.log//g')_*.fastq | gzip -3 >" + \
+		" {output.rds}; cat $(echo {output.log} | sed 's/.log//g')_*.maf | gzip -3 > {output.maf}; rm $(echo {output.log} | sed" + \
+		" 's/.log//g')_*.{{maf,ref,fastq}}"
 
 rule simReads:
 	input:

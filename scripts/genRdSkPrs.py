@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
 	#Iterate over input files
 	for i in range(1, 3):
-		for r in SeqIO.parse(open(argv[i], 'r')):
+		for r in SeqIO.parse(open(argv[i], 'r'), "fasta"):
 			sketch = calcSketch(r.seq, K, MIN_HASH_THRES)
 
 			if i == 1:
