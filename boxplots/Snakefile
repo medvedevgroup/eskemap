@@ -1,0 +1,45 @@
+configfile: 'config.yaml'
+
+from random import randrange, seed
+from sys import maxsize
+
+#Initialize random number generator with global seed for this workflow
+seed(config['globalSeed'])
+
+def genMutSeqNames(wcs):
+	names = expand("simSeqs/mutSeq_randSeq_l{sLen}_ts{tSd}_sr{subR}_d{delR}_i{iLen}.fasta", sLen = config['seqLen'], tSd = [\
+		str(randrange(maxsize)) for i in range(config['nbReps'])], subR = config['subRate'], delR = config['delRate'], iLen = \
+		config['avInLen'])
+
+	for i in range(len(names)):
+		names[i] = names[i].replace(".fasta", f"_ms{randrange(maxsize)}.fasta")
+	
+	return names
+
+rule all:
+	input:
+		genMutSeqNames
+		# expand("simSeqs/mutSeq_randSeq_l{sLen}_ts{tSd}_sr{subR}_d{delR}_i{iLen}_ms{mSd}.fasta", sLen = config['seqLen'], tSd = [str(randrange(maxsize)) for i in range(\
+		# 	config['nbReps'])], )
+
+rule mutateSeq:
+	input:
+		"simSeqs/{tmplNm}.fasta"
+	params:
+		m = "{subR}",
+		d = "{delR}",
+		i = "{iLen}",
+		s = "{mSd}"
+	output:
+		"simSeqs/mutSeq_{tmplNm}_sr{subR}_d{delR}_i{iLen}_ms{mSd}.fasta"
+	shell:
+		"python3 scripts/MutateSeq.py -m {params.m} -d {params.d} -i {params.i} -t {input} -o {output} -s {params.s}"
+
+rule genRandSeq:
+	params:
+		l = "{len}",
+		s = "{sd}"
+	output:
+		"simSeqs/randSeq_l{len}_ts{sd}.fasta"
+	shell:
+		"python3 scripts/GenRandSeq.py -l {params.l} -s {params.s} -o {output}"

@@ -1,0 +1,7 @@
+globalSeed: 171231122022
+seqLen: 1000
+nbReps: 100
+weights: [1, 10]
+subRate: [0.01]
+delRate: [0.05]
+avInLen: [0.05]
