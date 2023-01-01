@@ -7,8 +7,7 @@ from os.path import exists
 from Bio import SeqIO
 from numpy import unique
 
-#This script calculates the intersection similarity measure (as defined on June 16 2022 with a modification to treat duplications 
-#from July 11 2022) between a given pair of sketches
+#This script calculates the intersection similarity measure (described in the manuscript as of December 31 2022) between a given pair of sketches
 
 if __name__ == '__main__':
 	#Setting up the argument parser
@@ -25,25 +24,32 @@ if __name__ == '__main__':
 		print("ERROR: Weights must be positive!", file=stdout)
 		exit(-1)
 
-	#Load the sketches
-	sketches = []
+	#Read sketches and count k-mer occurrences
+	occ = {}
+	sketchCount = -1
 
 	for l in open(arguments.p, 'r'):
 		if l.startswith('>'):
+			sketchCount += 1
+
+			if sketchCount > 1:
+				break
+				
 			continue
 
-		sketches.append(l.split(' '))
+		for k in l.split(' '):
+			if not k in occ:
+				occ[k] = [0, 0]
 
-	#Initialize score
-	if sketches[0][0] in sketches[1]:
-		score = arguments.c - (len(sketches[1]) - 1) * arguments.u
-	else:
-		score = -arguments.u * (1 + len(sketches[1]))
+			#Testing
+			print("sketchCount:", sketchCount)
 
-	for i in range(1, len(sketches[0])):
-		if sketches[0][i] in sketches[1]:
-			score += arguments.c + arguments.u
-		else:
-			score -= arguments.u
+			occ[k][sketchCount] += 1
+
+	score = 0
+
+	for k in occ:
+		kMin = min(occ[k][:2])
+		score += kMin - arguments.u * (max(occ[k][:2]) - kMin)
 
 	print(score)
