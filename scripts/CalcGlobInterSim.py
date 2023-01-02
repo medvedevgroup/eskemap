@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse as args
-from math import floor
-from sys import stdout
-from os.path import exists
-from Bio import SeqIO
-from numpy import unique
+from sys import stderr
 
-#This script calculates the intersection similarity measure (described in the manuscript as of December 31 2022) between a given pair of sketches
+#This script calculates the intersection similarity measure (described in the manuscript as of December 31 2022) between a given 
+#pair of sketches
 
 if __name__ == '__main__':
 	#Setting up the argument parser
@@ -21,7 +18,7 @@ if __name__ == '__main__':
 
 	#Check if given weights are positive
 	if arguments.c < 1 or arguments.u < 1:
-		print("ERROR: Weights must be positive!", file=stdout)
+		print("ERROR: Weights must be positive!", file=stderr)
 		exit(-1)
 
 	#Read sketches and count k-mer occurrences
@@ -34,7 +31,7 @@ if __name__ == '__main__':
 
 			if sketchCount > 1:
 				break
-				
+
 			continue
 
 		for k in l.split(' '):

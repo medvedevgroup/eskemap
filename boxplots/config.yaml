@@ -1,7 +1,12 @@
-globalSeed: 171231122022
-seqLen: 1000
+#Parameters
+seqLen: 10000
 nbReps: 100
-weights: [1, 10]
+weights: [10, 100, 1000]
 subRate: [0.01]
-delRate: [0.05]
-avInLen: [0.05]
+delRate: [0.001, 0.01]
+avInLen: [0.001, 0.01]
+
+#Fixed constants
+globalSeed: 171231122022
+kmerLen: 15
+smplParam: 0.1

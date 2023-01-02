@@ -6,21 +6,92 @@ from sys import maxsize
 #Initialize random number generator with global seed for this workflow
 seed(config['globalSeed'])
 
-def genMutSeqNames(wcs):
-	names = expand("simSeqs/mutSeq_randSeq_l{sLen}_ts{tSd}_sr{subR}_d{delR}_i{iLen}.fasta", sLen = config['seqLen'], tSd = [\
-		str(randrange(maxsize)) for i in range(config['nbReps'])], subR = config['subRate'], delR = config['delRate'], iLen = \
-		config['avInLen'])
+def genScrFileNames(wcs):
+	skprs = expand("scores/sketchPair_fmrandSeq_l{sLen}_ts{tSd}_smmutSeq_randSeq_l{sLen}_ts{tSd}_sr{subR}_d{delR}_i{iLen}_k" + \
+		"{k}_r{r}.sk", sLen = config['seqLen'], tSd = [str(randrange(maxsize)) for i in range(config['nbReps'])], subR = \
+		config['subRate'], delR = config['delRate'], iLen = config['avInLen'], k = config["kmerLen"], r = config["smplParam"])
 
-	for i in range(len(names)):
-		names[i] = names[i].replace(".fasta", f"_ms{randrange(maxsize)}.fasta")
+	for i in range(len(skprs)):
+		skprs[i] = skprs[i].replace("_k", f"_ms{randrange(maxsize)}_k")
+
+	names = []
+
+	for i in range(len(skprs)):
+		for w in config["weights"]:
+			names.append(skprs[i].replace(".sk", f"_w{w}.lscr"))
+
+		names.append(skprs[i].replace(".sk", ".jscr"))
 	
 	return names
 
 rule all:
 	input:
-		genMutSeqNames
-		# expand("simSeqs/mutSeq_randSeq_l{sLen}_ts{tSd}_sr{subR}_d{delR}_i{iLen}_ms{mSd}.fasta", sLen = config['seqLen'], tSd = [str(randrange(maxsize)) for i in range(\
-		# 	config['nbReps'])], )
+		genScrFileNames,
+		expand("plots/boxplot_l{l}_n{n}_w{w}.pdf", l = config['seqLen'], n = config['nbReps'], w = config['weights']),
+		expand("plots/boxplot_l{l}_n{n}.pdf", l = config['seqLen'], n = config['nbReps'])
+
+rule createlinScoreBoxplot:
+	params:
+		l = "{seqLen}",
+		n = "{nReps}",
+		w = "{wght}",
+		sRs = ' '.join([str(r) for r in config['subRate']]),
+		dRs = ' '.join([str(r) for r in config['delRate']]),
+		iLs = ' '.join([str(r) for r in config['avInLen']])
+	output:
+		"plots/boxplot_l{seqLen}_n{nReps}_w{wght}.pdf"
+	shell:
+		"python3 scripts/CreateBoxplot.py -l {params.l} -n {params.n} -w {params.w} -s {params.sRs} -d {params.dRs} -i " + \
+		"{params.iLs} -o {output}"
+
+rule createJaccardBoxplot:
+	params:
+		l = "{seqLen}",
+		n = "{nReps}",
+		sRs = ' '.join([str(r) for r in config['subRate']]),
+		dRs = ' '.join([str(r) for r in config['delRate']]),
+		iLs = ' '.join([str(r) for r in config['avInLen']])
+	output:
+		"plots/boxplot_l{seqLen}_n{nReps}.pdf"
+	wildcard_constraints:
+		nReps="[0-9]+"
+	shell:
+		"python3 scripts/CreateBoxplot.py -l {params.l} -n {params.n} -s {params.sRs} -d {params.dRs} -i " + \
+		"{params.iLs} -o {output}"
+
+rule calculateWeightedJaccard:
+	input:
+		"sketches/{fileName}.sk"
+	output:
+		"scores/{fileName}.jscr"
+	priority:
+		2
+	shell:
+		"python3 scripts/CalcWeightedJaccard.py -p {input} > {output}"
+
+rule calculateLinScore:
+	input:
+		"sketches/{fileName}.sk"
+	params:
+		"{w}"
+	output:
+		"scores/{fileName}_w{w}.lscr"
+	priority:
+		1
+	shell:
+		"python3 scripts/CalcGlobInterSim.py -p {input} -u {params} > {output}"
+
+rule generateSketchPairs:
+	input:
+		"simSeqs/{fMateDesc}.fasta",
+		"simSeqs/{sMateDesc}.fasta"
+	params:
+		k = "{k}",
+		r = "{r}"
+	output:
+		temp("sketches/sketchPair_fm{fMateDesc}_sm{sMateDesc}_k{k}_r{r}.sk")
+	shell:
+		"python3 scripts/GenSketches.py -s {input} -k {params.k} -r {params.r} > {output}"
 
 rule mutateSeq:
 	input:
@@ -31,7 +102,7 @@ rule mutateSeq:
 		i = "{iLen}",
 		s = "{mSd}"
 	output:
-		"simSeqs/mutSeq_{tmplNm}_sr{subR}_d{delR}_i{iLen}_ms{mSd}.fasta"
+		temp("simSeqs/mutSeq_{tmplNm}_sr{subR}_d{delR}_i{iLen}_ms{mSd}.fasta")
 	shell:
 		"python3 scripts/MutateSeq.py -m {params.m} -d {params.d} -i {params.i} -t {input} -o {output} -s {params.s}"
 
@@ -40,6 +111,6 @@ rule genRandSeq:
 		l = "{len}",
 		s = "{sd}"
 	output:
-		"simSeqs/randSeq_l{len}_ts{sd}.fasta"
+		temp("simSeqs/randSeq_l{len}_ts{sd}.fasta")
 	shell:
 		"python3 scripts/GenRandSeq.py -l {params.l} -s {params.s} -o {output}"
