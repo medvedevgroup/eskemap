@@ -24,13 +24,16 @@ def genScrFileNames(wcs):
 	
 	return names
 
+ALLSCOREFILES = genScrFileNames
+
 rule all:
 	input:
-		genScrFileNames,
 		expand("plots/boxplot_l{l}_n{n}_w{w}.pdf", l = config['seqLen'], n = config['nbReps'], w = config['weights']),
 		expand("plots/boxplot_l{l}_n{n}.pdf", l = config['seqLen'], n = config['nbReps'])
 
 rule createlinScoreBoxplot:
+	input:
+		expand("plots/boxplot_l{l}_n{n}.pdf", l = config['seqLen'], n = config['nbReps'])
 	params:
 		l = "{seqLen}",
 		n = "{nReps}",
@@ -45,6 +48,8 @@ rule createlinScoreBoxplot:
 		"{params.iLs} -o {output}"
 
 rule createJaccardBoxplot:
+	input:
+		genScrFileNames
 	params:
 		l = "{seqLen}",
 		n = "{nReps}",
@@ -64,8 +69,6 @@ rule calculateWeightedJaccard:
 		"sketches/{fileName}.sk"
 	output:
 		"scores/{fileName}.jscr"
-	priority:
-		2
 	shell:
 		"python3 scripts/CalcWeightedJaccard.py -p {input} > {output}"
 
@@ -76,8 +79,6 @@ rule calculateLinScore:
 		"{w}"
 	output:
 		"scores/{fileName}_w{w}.lscr"
-	priority:
-		1
 	shell:
 		"python3 scripts/CalcGlobInterSim.py -p {input} -u {params} > {output}"
 

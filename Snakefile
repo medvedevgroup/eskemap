@@ -161,11 +161,24 @@ def genReadScoreFiles(wcs):
 
 	return scrFiles
 
+def genReadScoreFiles2(wcs):
+	scrFiles = []
+
+	for l in [125000]:
+		for i in range(config['randomSampleSize']):
+			sd = randrange(maxsize)
+			scrFiles.append(f"../simulations/expValExp/scores/randSeq_l{l}_rid{i}GlobIntSecScore_se{sd}_cP6C4_ep6:50:54_d1_l{l}-" + \
+				f"{l}_c1_u1.txt")
+
+	return scrFiles
+
 rule all:
 	input:
 		#Expectation value estimation
 		# genSampleFileNames,
 		genReadScoreFiles,
+		#Testing
+		# genReadScoreFiles2,
 		#Tests for DP script
 		# expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_pPy.txt", gn=\
 		# 	config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\

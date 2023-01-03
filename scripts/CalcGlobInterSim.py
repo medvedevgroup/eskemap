@@ -11,13 +11,13 @@ if __name__ == '__main__':
 	parser = args.ArgumentParser(description="This script calculates the global intersection similarity between a pair of " + \
 		"sketches.")
 	parser.add_argument('-p', metavar='Pair', type=str, required=True, help="The sketch pair (.sk format) file)")
-	parser.add_argument('-c', metavar='CommonWeight', type=int, default=1, help="Weight to reward common hashes (default 1)")
-	parser.add_argument('-u', metavar='UniqueWeight', type=int, default=1, help="Weight to punish unique hashes (default 1)")
+	parser.add_argument('-c', metavar='CommonWeight', type=float, default=1, help="Weight to reward common hashes (default 1)")
+	parser.add_argument('-u', metavar='UniqueWeight', type=float, default=1, help="Weight to punish unique hashes (default 1)")
 
 	arguments = parser.parse_args()
 
 	#Check if given weights are positive
-	if arguments.c < 1 or arguments.u < 1:
+	if arguments.c <= 0 or arguments.u <= 0:
 		print("ERROR: Weights must be positive!", file=stderr)
 		exit(-1)
 
@@ -34,12 +34,16 @@ if __name__ == '__main__':
 
 			continue
 
+		l = l.strip()
+
 		for k in l.split(' '):
+			if k == "":
+				continue
+				
+			k = int(k)
+
 			if not k in occ:
 				occ[k] = [0, 0]
-
-			#Testing
-			print("sketchCount:", sketchCount)
 
 			occ[k][sketchCount] += 1
 
