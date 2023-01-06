@@ -156,15 +156,15 @@ def genReadScoreFiles(wcs):
 	for l in config['readLens']:
 		for i in range(config['randomSampleSize']):
 			sd = randrange(maxsize)
-			scrFiles.append(f"../simulations/expValExp/scores/randSeq_l{l}_rid{i}GlobIntSecScore_se{sd}_cP6C4_ep6:50:54_d1_l{l}-" + \
-				f"{l}_c1_u1.txt")
+			scrFiles.append(f"../simulations/expValExp/scores/randSeq_l{int(l * config['refRdRatio'])}_rid{i}GlobIntSecScore_se" + \
+				f"{sd}_cP6C4_ep6:50:54_d1_l{l}-{l}_c1_u1.txt")
 
 	return scrFiles
 
 def genReadScoreFiles2(wcs):
 	scrFiles = []
 
-	for l in [125000]:
+	for l in [1600, 3200, 6400]:
 		for i in range(config['randomSampleSize']):
 			sd = randrange(maxsize)
 			scrFiles.append(f"../simulations/expValExp/scores/randSeq_l{l}_rid{i}GlobIntSecScore_se{sd}_cP6C4_ep6:50:54_d1_l{l}-" + \

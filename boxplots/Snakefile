@@ -44,7 +44,7 @@ rule createlinScoreBoxplot:
 	output:
 		"plots/boxplot_l{seqLen}_n{nReps}_w{wght}.pdf"
 	shell:
-		"python3 scripts/CreateBoxplot.py -l {params.l} -n {params.n} -w {params.w} -s {params.sRs} -d {params.dRs} -i " + \
+		"python3 ../scripts/CreateBoxplot.py -l {params.l} -n {params.n} -w {params.w} -s {params.sRs} -d {params.dRs} -i " + \
 		"{params.iLs} -o {output}"
 
 rule createJaccardBoxplot:
@@ -61,7 +61,7 @@ rule createJaccardBoxplot:
 	wildcard_constraints:
 		nReps="[0-9]+"
 	shell:
-		"python3 scripts/CreateBoxplot.py -l {params.l} -n {params.n} -s {params.sRs} -d {params.dRs} -i " + \
+		"python3 ../scripts/CreateBoxplot.py -l {params.l} -n {params.n} -s {params.sRs} -d {params.dRs} -i " + \
 		"{params.iLs} -o {output}"
 
 rule calculateWeightedJaccard:
@@ -70,7 +70,7 @@ rule calculateWeightedJaccard:
 	output:
 		"scores/{fileName}.jscr"
 	shell:
-		"python3 scripts/CalcWeightedJaccard.py -p {input} > {output}"
+		"python3 ../scripts/CalcWeightedJaccard.py -p {input} > {output}"
 
 rule calculateLinScore:
 	input:
@@ -80,7 +80,7 @@ rule calculateLinScore:
 	output:
 		"scores/{fileName}_w{w}.lscr"
 	shell:
-		"python3 scripts/CalcGlobInterSim.py -p {input} -u {params} > {output}"
+		"python3 ../scripts/CalcGlobInterSim.py -p {input} -u {params} > {output}"
 
 rule generateSketchPairs:
 	input:
@@ -92,7 +92,7 @@ rule generateSketchPairs:
 	output:
 		temp("sketches/sketchPair_fm{fMateDesc}_sm{sMateDesc}_k{k}_r{r}.sk")
 	shell:
-		"python3 scripts/GenSketches.py -s {input} -k {params.k} -r {params.r} > {output}"
+		"python3 ../scripts/GenSketches.py -s {input} -k {params.k} -r {params.r} > {output}"
 
 rule mutateSeq:
 	input:
@@ -105,7 +105,7 @@ rule mutateSeq:
 	output:
 		temp("simSeqs/mutSeq_{tmplNm}_sr{subR}_d{delR}_i{iLen}_ms{mSd}.fasta")
 	shell:
-		"python3 scripts/MutateSeq.py -m {params.m} -d {params.d} -i {params.i} -t {input} -o {output} -s {params.s}"
+		"python3 ../scripts/MutateSeq.py -m {params.m} -d {params.d} -i {params.i} -t {input} -o {output} -s {params.s}"
 
 rule genRandSeq:
 	params:
@@ -114,4 +114,4 @@ rule genRandSeq:
 	output:
 		temp("simSeqs/randSeq_l{len}_ts{sd}.fasta")
 	shell:
-		"python3 scripts/GenRandSeq.py -l {params.l} -s {params.s} -o {output}"
+		"python3 ../scripts/GenRandSeq.py -l {params.l} -s {params.s} -o {output}"

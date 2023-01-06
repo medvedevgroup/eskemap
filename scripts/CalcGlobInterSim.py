@@ -49,8 +49,14 @@ if __name__ == '__main__':
 
 	score = 0
 
+	#Testing
+	# print(occ)
+
 	for k in occ:
 		kMin = min(occ[k][:2])
 		score += kMin - arguments.u * (max(occ[k][:2]) - kMin)
+
+		#Testing
+		# print("score after k:", score)
 
 	print(score)

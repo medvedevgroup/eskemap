@@ -51,7 +51,7 @@ void fndMtchngCrds(const char* cigStr, const int32_t &strLen, uint32_t &start, u
 //This function parses a parasail cigar and counts the number of leading and trailing deletion, the length of the alignment in bet-
 //ween and the total number of matched bases
 void prsCgr(const parasail_cigar_t &cgr, uint32_t &start, uint32_t &end, float &aLen, float &nMtchs){
-	uint32_t i;
+	int32_t i;
 
 	if(cgr.len > 0 && parasail_cigar_decode_op(cgr.seq[0]) == 'D'){
 		start = parasail_cigar_decode_len(cgr.seq[0]);
@@ -76,7 +76,7 @@ void prsCgr(const parasail_cigar_t &cgr, uint32_t &start, uint32_t &end, float &
 	//Testing
 	// cout << "prsCgr: aLen: " << aLen << endl;
 
-	if(parasail_cigar_decode_op(cgr.seq[cgr.len - 1]) != 'D'){
+	if(parasail_cigar_decode_op(cgr.seq[cgr.len - 1]) != 'D' && parasail_cigar_decode_op(cgr.seq[cgr.len - 1]) != 'I'){
 		aLen += parasail_cigar_decode_len(cgr.seq[cgr.len - 1]);
 
 		if(parasail_cigar_decode_op(cgr.seq[cgr.len - 1]) == '=') nMtchs += parasail_cigar_decode_len(cgr.seq[cgr.len - 1]);

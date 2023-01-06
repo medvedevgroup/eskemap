@@ -14,7 +14,7 @@ int main(int argc, char **argv){
 	const int32_t e = 1;
 	const parasail_matrix_t *subMat = parasail_matrix_create("ACGT", 1, -1);
 	//Some other fixed constants
-	const float MIN_SID = 0.5;
+	const float MIN_SID = 0.95;
 	//Input sequences
 	uint32_t tPLen;
 	char *tPSeq, *tSubP;
@@ -22,8 +22,6 @@ int main(int argc, char **argv){
 	parasail_sequence_t q, t;
 	//Piece sequence, sequence length, start in target
 	vector<tuple<char*, uint32_t, uint32_t>> targetPieces;
-	//Query profile
-	parasail_profile_t *qP;
 	//Alignment results
 	uint32_t start, end, globOffs;
 	float aLen, nMtchs;
@@ -99,35 +97,37 @@ int main(int argc, char **argv){
 		prsCgr(*cig, start, end, aLen, nMtchs);
 
 		//Testing
-		char* cigStr = parasail_cigar_decode(cig);
-		cout << "Cigar string: " << cigStr << endl;
-		// cout << "targetPieces.size(): " << targetPieces.size() << endl;
-		cout << "tPSeq: " << tPSeq << endl;
-		cout << "tPLen: " << tPLen << endl;
-		cout << "aLen: " << aLen << endl;
-		cout << "nMtchs: " << nMtchs << endl;
+		// char* cigStr = parasail_cigar_decode(cig);
+		// cout << "Cigar string: " << cigStr << endl;
+		// // cout << "targetPieces.size(): " << targetPieces.size() << endl;
+		// if(globOffs == 2997){
+		// 	cout << "tPSeq: " << tPSeq << endl;
+		// 	cout << "tPLen: " << tPLen << endl;
+		// }
+		// cout << "aLen: " << aLen << endl;
+		// cout << "nMtchs: " << nMtchs << endl;
 
 		//Check if result is good enough
-		if(nMtchs / aLen >= MIN_SID){
+		if(nMtchs / max(aLen, (float) q.seq.l) >= MIN_SID){
 			//Report result
 			cout << globOffs + start << " " << globOffs + end << " " << parasail_cigar_decode(cig) << endl;
 
 			//Subdivide target piece
 
 			//Testing
-			cout << "tPLen: " << tPLen << endl;
-			cout << "globOffs: " << globOffs << endl;
-			cout << "end: " << end << endl;
-			cout << "start: " << start << endl;
+			// cout << "tPLen: " << tPLen << endl;
+			// cout << "globOffs: " << globOffs << endl;
+			// cout << "end: " << end << endl;
+			// cout << "start: " << start << endl;
 
 			if(start > 0){
 				tSubP = (char*) malloc(start + 1);
-				memcpy(tSubP, &tPSeq, start);
+				memcpy(tSubP, &tPSeq[0], start);
 				tSubP[start] = '\0';
 				targetPieces.push_back(make_tuple(tSubP, start, globOffs));
 
 				//Testing
-				cout << "tSubP: " << tSubP << endl;
+				// cout << "tSubP: " << tSubP << endl;
 				// char *a = "T";
 				// targetPieces.push_back(make_tuple(a, 1, 0));
 			}
@@ -146,8 +146,11 @@ int main(int argc, char **argv){
 		}
 
 		//Testing
-		cout << "Sequence identity: " << nMtchs / aLen << endl;
-		parasail_traceback_generic(q.seq.s, q.seq.l, tPSeq, tPLen, "Query:", "Target:", subMat, res, '|', '*', 'X', 60, 7, 1);
+		// cout << "Sequence identity: " << nMtchs / max(aLen, (float) q.seq.l) << endl;
+		// if(globOffs == 2997){
+		// 	cout << "globOffs: " << globOffs << endl;
+		// parasail_traceback_generic(q.seq.s, q.seq.l, tPSeq, tPLen, "Query:", "Target:", subMat, res, '|', '*', 'X', 60, 7, 1);
+		// }
 
 		// free(tPSeq);
 		parasail_cigar_free(cig);
