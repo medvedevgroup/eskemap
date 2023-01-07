@@ -91,7 +91,7 @@ int main(int argc, char **argv){
 		globOffs = get<2>(targetPieces.back());
 		targetPieces.pop_back();
 		//Calculate alignment
-		res = parasail_sg_dx_trace_striped_16(q.seq.s, q.seq.l, tPSeq, tPLen, d, e, subMat);
+		res = parasail_sg_dx_trace_striped_sat(q.seq.s, q.seq.l, tPSeq, tPLen, d, e, subMat);
 		//Analyse result
 		cig = parasail_result_get_cigar(res, q.seq.s, q.seq.l, tPSeq, tPLen, subMat);
 		prsCgr(*cig, start, end, aLen, nMtchs);

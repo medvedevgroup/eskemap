@@ -29,3 +29,4 @@ homologyThresholds: [0, -1000, -2000]
 benchRepRuns: 5
 readLens: [100, 250075, 500050, 750025, 1000000]
 refRdRatio: 1.1
+t2tChrYlen: 62460029

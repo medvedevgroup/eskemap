@@ -9,6 +9,7 @@ from sys import maxsize
 from glob import glob
 
 NB_RANDSEQS = (config['nbCpys'] + 1) * config['nbSimSeqs']
+T2T_READ_LEN = [len(r.seq) for r in SeqIO.parse(open(f"../simulations/reads/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966.fasta", 'r'), "fasta")]
 
 #Initialize random number generator with global seed for this workflow
 seed(config['globalSeed'])
@@ -156,8 +157,10 @@ def genReadScoreFiles(wcs):
 	for l in config['readLens']:
 		for i in range(config['randomSampleSize']):
 			sd = randrange(maxsize)
-			scrFiles.append(f"../simulations/expValExp/scores/randSeq_l{int(l * config['refRdRatio'])}_rid{i}GlobIntSecScore_se" + \
-				f"{sd}_cP6C4_ep6:50:54_d1_l{l}-{l}_c1_u1.txt")
+			scrFiles.append(f"../simulations/reads/randSeq_l{int(l * config['refRdRatio'])}_rid{i}" + \
+				f"_cP6C4_ep6:50:54_s{sd}_d1_l{l}-{l}.maf.gz")
+			# scrFiles.append(f"../simulations/expValExp/scores/randSeq_l{int(l * config['refRdRatio'])}_rid{i}GlobIntSecScore_se" + \
+			# 	f"{sd}_cP6C4_ep6:50:54_d1_l{l}-{l}_c1_u1.txt")
 
 	return scrFiles
 
@@ -169,8 +172,20 @@ def genReadScoreFiles2(wcs):
 			sd = randrange(maxsize)
 			scrFiles.append(f"../simulations/expValExp/scores/randSeq_l{l}_rid{i}GlobIntSecScore_se{sd}_cP6C4_ep6:50:54_d1_l{l}-" + \
 				f"{l}_c1_u1.txt")
-
 	return scrFiles
+
+def genParaSailResFiles(wcs):
+	rdLen = T2T_READ_LEN[int(wcs.readId) - 1]
+	refLen = config['t2tChrYlen']
+	maxPieceSize = 2000000
+	res = []
+
+	for ps in [s for s in range(0, 62460029, 2000000 - 2 * 70000) if s + 2 * rdLen < refLen]:
+		pe = ps + min(ps + maxPieceSize, refLen)
+
+		res += f"../simulations/parasailMappings/{wcs.gn}_ra{ps}-{pe}_c{wcs.ch}_ep{wcs.eP}_s{wcs.sd}_ri{wcs.rdId}.pr"
+
+	return res
 
 rule all:
 	input:
@@ -207,6 +222,7 @@ rule all:
 		# expand("../benchmarks/benchFindThoms_humanChr20_refined_onlyCapitalNucs_ep{e}_s1657921994_rr{i}_k15_c1_u1_t-1000.txt", e=\
 		# config['errorPatterns'], i=range(10)),
 		#Benchmark on real data
+		expand("../simulations/parasailMappings/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_ri{ri}.pr", ri=range(1, 69172))
 		expand("../benchmarks/benchFindThoms_t2thumanChrY_chP6C4_ep6:50:54_s322235950486831966_k15_hr0.2_c1_u1_t0_rep{i}.txt", i=\
 			range(config['benchRepRuns'])),
 		expand("../benchmarks/benchMinimap2_t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_k15_rep{i}.txt", i=\
@@ -217,6 +233,27 @@ rule all:
 		genHomFiles,
 		# genMinimap2Files,
 		# genWinnowmap2Files
+
+rule aggregateParasailRes:
+	input:
+		genParaSailResFiles
+	output:
+		"../simulations/parasailMappings/{gn}_c{ch}_ep{eP}_s{sd}_ri{rdId}.pr"
+	shell:
+	 	"python3 scripts/aggrParasailRes.py {input} > {output}"
+
+rule runParasail:
+	input:
+		ref = "../simulations/genomes/{genome}_ra{range}.fasta",
+		qry = "../simulations/reads/{genome}_c{rdDesc}_ri{rdId}.fasta"
+	output:
+		"../simulations/parasailMappings/{genome}_ra{range}_c{rdDesc}_ri{rdId}.pr"
+	shell:
+		"FindSimSeqs/FindSimSeqs {input.qry} {input.ref} > {output}"
+
+rule splitRef:
+	input:
+		
 
 rule calculateGlobalIntersectionSimilarity:
 	input:
@@ -243,11 +280,11 @@ rule generateNoDuplicateKmerSketchPairs:
 rule generateReadSketchPairs:
 	input:
 		tmpl = "../simulations/genomes/{genome}.fasta",
-		rds = "../simulations/reads/{genome}_c{desc}_s{sd}_d{desc1}.fasta"
+		maf = "../simulations/reads/{genome}_c{desc}_s{sd}_d{desc1}.maf.gz"
 	output:
 		"../simulations/expValExp/sketches/{genome}KskSeqPairs_se{sd}_c{desc}_d{desc1}.sk"
 	shell:
-		"python3 scripts/genRdSkPrs.py {input.tmpl} {input.rds} > {output}"
+		"python3 scripts/genRdSkPrs.py {input.tmpl} {input.maf} > {output}"
 
 rule convertMultiFastq2SinglFastq:
 	input:
