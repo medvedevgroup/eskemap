@@ -9,7 +9,7 @@
 #include "Alignment.cpp"
 
 int main(int argc, char **argv){
-	//Some fixed alignment parameters
+	//Some fixed alignment parars
 	const int32_t d = 2;
 	const int32_t e = 1;
 	const parasail_matrix_t *subMat = parasail_matrix_create("ACGT", 1, -1);
@@ -17,13 +17,13 @@ int main(int argc, char **argv){
 	const float MIN_SID = 0.95;
 	//Input sequences
 	uint32_t tPLen;
-	char *tPSeq, *tSubP;
+	char *tPSeq, *tSubP, *tPsubSeq;
 	parasail_sequences_t *qrys, *refs;
 	parasail_sequence_t q, t;
 	//Piece sequence, sequence length, start in target
 	vector<tuple<char*, uint32_t, uint32_t>> targetPieces;
 	//Alignment results
-	uint32_t start, end, globOffs;
+	uint32_t start, end, globOffs, subSeqLen, aEnd;
 	float aLen, nMtchs;
 	parasail_result_t* res;
 	parasail_cigar_t* cig;
@@ -82,7 +82,7 @@ int main(int argc, char **argv){
 
 	/* TODO: Make profile from query */
 	//no idea how this should work...
-	// qP = parasail_profile_create_16 (q.seq.s, q.seq.l, subMat);
+	// qP = parasail_profile_cr_16 (q.seq.s, q.seq.l, subMat);
 
 	while(!targetPieces.empty()){
 		//Get next target sequence piece
@@ -90,13 +90,43 @@ int main(int argc, char **argv){
 		tPLen = get<1>(targetPieces.back());
 		globOffs = get<2>(targetPieces.back());
 		targetPieces.pop_back();
-		//Calculate alignment
-		res = parasail_sg_dx_trace_striped_sat(q.seq.s, q.seq.l, tPSeq, tPLen, d, e, subMat);
-		//Analyse result
-		cig = parasail_result_get_cigar(res, q.seq.s, q.seq.l, tPSeq, tPLen, subMat);
-		prsCgr(*cig, start, end, aLen, nMtchs);
+		//Calcu alignment
+		res = parasail_sg_dx_stats_striped_sat(q.seq.s, q.seq.l, tPSeq, tPLen, d, e, subMat);
 
 		//Testing
+		// cout << "Alignment end in query: " << parasail_result_get_end_query(res) << endl;
+		// cout << "Alignment end in ref: " << parasail_result_get_end_ref(res) << endl;
+		// cout << "Alignment length: " << parasail_result_get_length(res) << endl;
+		// return 0;
+
+		//Analyse result
+		aEnd = parasail_result_get_end_ref(res);
+		subSeqLen = min(2 * parasail_result_get_length(res), (int32_t) aEnd + 1);
+		tPsubSeq = (char*) malloc(subSeqLen + 1);
+
+		//Testing
+		// cout << "(aEnd + 1) - subSeqLen: " << (aEnd + 1) - subSeqLen << endl;
+		// cout << "tPSeq[(aEnd + 1) - subSeqLen]: " << tPSeq[(aEnd + 1) - subSeqLen] << endl;
+
+		memcpy(tPsubSeq, &tPSeq[(aEnd + 1) - subSeqLen], subSeqLen);
+		tPsubSeq[subSeqLen] = '\0';
+
+		//Testing
+		// cout << "tPsubSeq: " << tPsubSeq << endl;
+		
+		parasail_result_free(res);
+		res = parasail_sg_dx_trace_striped_sat(q.seq.s, q.seq.l, tPsubSeq, subSeqLen, d, e, subMat);
+		cig = parasail_result_get_cigar(res, q.seq.s, q.seq.l, tPsubSeq, subSeqLen, subMat);
+		prsCgr(*cig, start, end, aLen, nMtchs);
+
+		if(subSeqLen < aEnd + 1){
+			start += (aEnd + 1) - subSeqLen;
+			end += (aEnd + 1) - subSeqLen;
+		}
+
+		//Testing
+		// cout << "Alignment end in query: " << parasail_result_get_end_query(res) << endl;
+		// cout << "Alignment end in ref: " << parasail_result_get_end_ref(res) << endl;
 		// char* cigStr = parasail_cigar_decode(cig);
 		// cout << "Cigar string: " << cigStr << endl;
 		// // cout << "targetPieces.size(): " << targetPieces.size() << endl;
@@ -149,13 +179,15 @@ int main(int argc, char **argv){
 		// cout << "Sequence identity: " << nMtchs / max(aLen, (float) q.seq.l) << endl;
 		// if(globOffs == 2997){
 		// 	cout << "globOffs: " << globOffs << endl;
-		// parasail_traceback_generic(q.seq.s, q.seq.l, tPSeq, tPLen, "Query:", "Target:", subMat, res, '|', '*', 'X', 60, 7, 1);
+		// parasail_traceback_generic(q.seq.s, q.seq.l, tPsubSeq, subSeqLen, "Query:", "Target:", subMat, res, '|', '*', 'X', 60, 7, 1);
 		// }
 
 		// free(tPSeq);
 		parasail_cigar_free(cig);
 		//Free alignment results
 		parasail_result_free(res);
+		free(tPsubSeq);
+		free(tPSeq);
 	}
 
 	//Testing
