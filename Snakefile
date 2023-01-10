@@ -175,15 +175,15 @@ def genReadScoreFiles2(wcs):
 	return scrFiles
 
 def genParaSailResFiles(wcs):
-	rdLen = T2T_READ_LEN[int(wcs.readId) - 1]
+	rdLen = T2T_READ_LEN[int(wcs.rdId) - 1]
 	refLen = config['t2tChrYlen']
 	maxPieceSize = 2000000
 	res = []
 
-	for ps in [s for s in range(0, 62460029, 2000000 - 2 * 70000) if s + 2 * rdLen < refLen]:
+	for ps in [s for s in range(0, refLen, 2000000 - 2 * rdLen) if s + 2 * rdLen < refLen]:
 		pe = ps + min(ps + maxPieceSize, refLen)
 
-		res += f"../simulations/parasailMappings/{wcs.gn}_ra{ps}-{pe}_c{wcs.ch}_ep{wcs.eP}_s{wcs.sd}_ri{wcs.rdId}.pr"
+		res.append(f"../simulations/parasailMappings/{wcs.gn}_ra{ps}-{pe}_c{wcs.ch}_ep{wcs.eP}_s{wcs.sd}_ri{wcs.rdId}.pr")
 
 	return res
 
@@ -191,7 +191,7 @@ rule all:
 	input:
 		#Expectation value estimation
 		# genSampleFileNames,
-		genReadScoreFiles,
+		# genReadScoreFiles,
 		#Testing
 		# genReadScoreFiles2,
 		#Tests for DP script
@@ -210,27 +210,28 @@ rule all:
 		# 	config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
 		# 	config['mutationRates'], i=range(config['nbSimSeqs'])),
 		#Tests for DP C++ implementation
-		expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
-			config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
-			config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=config['implType']),
-		expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
-			config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=\
-			config['implType']),
+		# expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
+		# 	config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
+		# 	config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=config['implType']),
+		# expand("../simulations/homologies/homologies_gn{gn}_rn200_gl{gl}_rl1000_o1_m{m}_i{m}_d{m}_{sp}_t0_n{n}_p{p}.uni", gn=\
+		# 	config['nbSimSeqs'], gl=config['geneLen'], m=config['mutationRates'], sp=config['scoringPatterns'], n=range(100), p=\
+		# 	config['implType']),
 		#minimap2 and bwamem runs
 		# matchProgCallToSeed,
 		#DP implementation benchmark on human data
 		# expand("../benchmarks/benchFindThoms_humanChr20_refined_onlyCapitalNucs_ep{e}_s1657921994_rr{i}_k15_c1_u1_t-1000.txt", e=\
 		# config['errorPatterns'], i=range(10)),
 		#Benchmark on real data
-		expand("../simulations/parasailMappings/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_ri{ri}.pr", ri=range(1, 69172))
-		expand("../benchmarks/benchFindThoms_t2thumanChrY_chP6C4_ep6:50:54_s322235950486831966_k15_hr0.2_c1_u1_t0_rep{i}.txt", i=\
-			range(config['benchRepRuns'])),
-		expand("../benchmarks/benchMinimap2_t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_k15_rep{i}.txt", i=\
-			range(config['benchRepRuns'])),
-		expand("../benchmarks/benchWinnowmap2_t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_k15_rep{i}.txt", i=\
-			range(config['benchRepRuns'])),
+		expand("../simulations/parasailMappings/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_ri{ri}.tpr", ri=range(1, 69142)),
+		# expand("../simulations/parasailMappings/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_ri{ri}.tpr", ri=range(1, 5))
+		# expand("../benchmarks/benchFindThoms_t2thumanChrY_chP6C4_ep6:50:54_s322235950486831966_k15_hr0.2_c1_u1_t0_rep{i}.txt", i=\
+		# 	range(config['benchRepRuns'])),
+		# expand("../benchmarks/benchMinimap2_t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_k15_rep{i}.txt", i=\
+		# 	range(config['benchRepRuns'])),
+		# expand("../benchmarks/benchWinnowmap2_t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_k15_rep{i}.txt", i=\
+		# 	range(config['benchRepRuns'])),
 		#
-		genHomFiles,
+		# genHomFiles,
 		# genMinimap2Files,
 		# genWinnowmap2Files
 
@@ -238,7 +239,7 @@ rule aggregateParasailRes:
 	input:
 		genParaSailResFiles
 	output:
-		"../simulations/parasailMappings/{gn}_c{ch}_ep{eP}_s{sd}_ri{rdId}.pr"
+		"../simulations/parasailMappings/{gn}_c{ch}_ep{eP}_s{sd}_ri{rdId}.tpr"
 	shell:
 	 	"python3 scripts/aggrParasailRes.py {input} > {output}"
 
@@ -253,7 +254,24 @@ rule runParasail:
 
 rule splitRef:
 	input:
-		
+		"../simulations/genomes/{genome}.fasta"
+	params:
+		start = "{s}",
+		end = "{e}"
+	output:
+		"../simulations/genomes/{genome}_ra{s}-{e}.fasta"
+	shell:
+		"python3 scripts/getSubstring.py -i {input} -s {params.start} -e {params.end} -o {output}"
+
+rule divideReads:
+	input:
+		"../simulations/reads/{rdFileName}.fasta"
+	params:
+		"{rdId}"
+	output:
+		"../simulations/reads/{rdFileName}_ri{rdId}.fasta"
+	shell:
+		"python3 scripts/getSeq.py -s {input} -i {params} -o {output}"
 
 rule calculateGlobalIntersectionSimilarity:
 	input:
@@ -682,16 +700,6 @@ rule searchHomologiesWthCppImpl:
 		"../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{i}_d{d}_c{c}_u{u}_t{t}_n{n}_pCpp.txt"
 	shell:
 		"src/FindThoms -p {input.pttn} -s {input.txt} -c {params.c} -u {params.u} -t {params.thres} > {output}"
-
-# rule uncompressZip:
-# 	input:
-# 		"{fileNameWithoutGz}.gz"
-# 	output:
-# 		temp("{fileNameWithoutGz}")
-# 	# wildcard_constraints:
-# 	# 	fileNameWithoutGz=".*(?<!gz)$"
-# 	shell:
-# 		"gunzip -c {input} > {output}"
 
 rule createFASTApairs:
 	input:
