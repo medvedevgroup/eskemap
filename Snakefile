@@ -114,40 +114,45 @@ def genWinnowmap2Files(wcs):
 
 def genSampleFileNames(wcs):
 	scoreFiles = []
-
-	for i in range(config['randomSampleSize']):
-		seed = randrange(maxsize)
-		scoreFiles.append(f"../simulations/expValExp/scores/noDupGlobIntSecScore_se{seed}_sl10000_sr0.01_ir0_dr0_k11_r0.1_c1" + \
-			"_u1.txt")
+	divR = 0.1
+	sr = 1-(1-divR / 3)*(1-(0.002 * 6 / 110.))
+	ir = 1-(1-divR / 3)*(1-(0.002 * 50 / 110.))
+	dr = 1-(1-divR / 3)*(1-(0.002 * 54 / 110.))
+	
+	for l in config['readLens']:
+		for i in range(config['randomSampleSize']):
+			seed = randrange(maxsize)
+			scoreFiles.append(f"../simulations/expValExp/scores/dupGlobIntSecScore_se{seed}_sl{l}_sr{sr}_ir{ir}_dr{dr}_k15_r0.1" + \
+				"_c1_u1.txt")
 
 	tl = config['templLen']
 	k = config['minimap2DefaultK']
 
-	for i in range(config['randomSampleSize']):
-		for d in config['divergenceRates']:
-			for s in config['substitutionIndelRates']:
-				sd = randrange(maxsize)
-				sr = f"{(d * s):.3f}"
-				scoreFiles.append(f"../simulations/expValExp/scores/noDupGlobIntSecScore_se{sd}_sl{tl}_sr{sr}_ir{d}_dr{d}_k{k}" + \
-					"_r0.1_c1_u1.txt")
+	# for i in range(config['randomSampleSize']):
+	# 	for d in config['divergenceRates']:
+	# 		for s in config['substitutionIndelRates']:
+	# 			sd = randrange(maxsize)
+	# 			sr = f"{(d * s):.3f}"
+	# 			scoreFiles.append(f"../simulations/expValExp/scores/noDupGlobIntSecScore_se{sd}_sl{tl}_sr{sr}_ir{d}_dr{d}_k{k}" + \
+	# 				"_r0.1_c1_u1.txt")
 
-	for i in range(config['randomSampleSize']):
-		for d in config['divergenceRates']:
-			for s in config['substitutionIndelRates']:
-				sd = randrange(maxsize)
-				sr = f"{(d * s):.3f}"
-				scoreFiles.append(f"../simulations/expValExp/scores/dupGlobIntSecScore_se{sd}_sl{tl}_sr{sr}_ir{d}_dr{d}_k{k}" + \
-					"_r0.1_c1_u1.txt")
+	# for i in range(config['randomSampleSize']):
+	# 	for d in config['divergenceRates']:
+	# 		for s in config['substitutionIndelRates']:
+	# 			sd = randrange(maxsize)
+	# 			sr = f"{(d * s):.3f}"
+	# 			scoreFiles.append(f"../simulations/expValExp/scores/dupGlobIntSecScore_se{sd}_sl{tl}_sr{sr}_ir{d}_dr{d}_k{k}" + \
+	# 				"_r0.1_c1_u1.txt")
 
-	for i in range(config['randomSampleSize']):
-		for d in config['divergenceRates']:
-			for s in config['substitutionIndelRates']:
-				sd = randrange(maxsize)
-				sr = f"{(d * s):.3f}"
-				scoreFiles.append(f"../simulations/expValExp/scores/noDupGlobIntSecScore_se{sd}_sl{config['readLength']}_sr{sr}" + \
-					f"_ir{d}_dr{d}_k{k}_r0.1_c1_u1.txt")
-				scoreFiles.append(f"../simulations/expValExp/scores/dupGlobIntSecScore_se{sd}_sl{config['readLength']}_sr{sr}" + \
-					f"_ir{d}_dr{d}_k{k}_r0.1_c1_u1.txt")
+	# for i in range(config['randomSampleSize']):
+	# 	for d in config['divergenceRates']:
+	# 		for s in config['substitutionIndelRates']:
+	# 			sd = randrange(maxsize)
+	# 			sr = f"{(d * s):.3f}"
+	# 			scoreFiles.append(f"../simulations/expValExp/scores/noDupGlobIntSecScore_se{sd}_sl{config['readLength']}_sr{sr}" + \
+	# 				f"_ir{d}_dr{d}_k{k}_r0.1_c1_u1.txt")
+	# 			scoreFiles.append(f"../simulations/expValExp/scores/dupGlobIntSecScore_se{sd}_sl{config['readLength']}_sr{sr}" + \
+	# 				f"_ir{d}_dr{d}_k{k}_r0.1_c1_u1.txt")
 
 	return scoreFiles
 
@@ -190,7 +195,7 @@ def genParaSailResFiles(wcs):
 rule all:
 	input:
 		#Expectation value estimation
-		# genSampleFileNames,
+		genSampleFileNames,
 		# genReadScoreFiles,
 		#Testing
 		# genReadScoreFiles2,
@@ -222,7 +227,7 @@ rule all:
 		# expand("../benchmarks/benchFindThoms_humanChr20_refined_onlyCapitalNucs_ep{e}_s1657921994_rr{i}_k15_c1_u1_t-1000.txt", e=\
 		# config['errorPatterns'], i=range(10)),
 		#Benchmark on real data
-		expand("../simulations/parasailMappings/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_ri{ri}.tpr", ri=range(1, 69142)),
+		# expand("../simulations/parasailMappings/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_ri{ri}.tpr", ri=range(1, 69142)),
 		# expand("../simulations/parasailMappings/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_ri{ri}.tpr", ri=range(1, 5))
 		# expand("../benchmarks/benchFindThoms_t2thumanChrY_chP6C4_ep6:50:54_s322235950486831966_k15_hr0.2_c1_u1_t0_rep{i}.txt", i=\
 		# 	range(config['benchRepRuns'])),
