@@ -9,7 +9,11 @@ from sys import maxsize
 from glob import glob
 
 NB_RANDSEQS = (config['nbCpys'] + 1) * config['nbSimSeqs']
-T2T_READ_LEN = [len(r.seq) for r in SeqIO.parse(open(f"../simulations/reads/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966.fasta", 'r'), "fasta")]
+# T2T_READ_LEN = [len(r.seq) for r in SeqIO.parse(open(f"../simulations/reads/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966.fasta", 'r'), "fasta")]
+DIV_RATE = 0.1
+SUB_ERR = 0.002 * 6 / 110.
+INS_ERR = 0.002 * 50 / 110.
+DEL_ERR = 0.002 * 54 / 110.
 
 #Initialize random number generator with global seed for this workflow
 seed(config['globalSeed'])
@@ -114,16 +118,18 @@ def genWinnowmap2Files(wcs):
 
 def genSampleFileNames(wcs):
 	scoreFiles = []
-	divR = 0.1
-	sr = 1-(1-divR / 3)*(1-(0.002 * 6 / 110.))
-	ir = 1-(1-divR / 3)*(1-(0.002 * 50 / 110.))
-	dr = 1-(1-divR / 3)*(1-(0.002 * 54 / 110.))
-	
+	sr = DIV_RATE / 3
+	ir = DIV_RATE / 3
+	dr = DIV_RATE / 3
+	ser = SUB_ERR
+	ier = INS_ERR
+	der = DEL_ERR
+
 	for l in config['readLens']:
 		for i in range(config['randomSampleSize']):
 			seed = randrange(maxsize)
-			scoreFiles.append(f"../simulations/expValExp/scores/dupGlobIntSecScore_se{seed}_sl{l}_sr{sr}_ir{ir}_dr{dr}_k15_r0.1" + \
-				"_c1_u1.txt")
+			scoreFiles.append(f"../simulations/expValExp/scores/readRefGlobIntSecScore_se{seed}_sl{l}_sr{sr}_ir{ir}_dr{dr}" + \
+				f"_ser{ser}_ier{ier}_der{der}_k15_r0.1_c1_u1.txt")
 
 	tl = config['templLen']
 	k = config['minimap2DefaultK']
@@ -227,6 +233,8 @@ rule all:
 		# expand("../benchmarks/benchFindThoms_humanChr20_refined_onlyCapitalNucs_ep{e}_s1657921994_rr{i}_k15_c1_u1_t-1000.txt", e=\
 		# config['errorPatterns'], i=range(10)),
 		#Benchmark on real data
+		f"../simulations/reads/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{randrange(maxsize)}_lmn" + \
+		f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10.fasta",
 		# expand("../simulations/parasailMappings/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_ri{ri}.tpr", ri=range(1, 69142)),
 		# expand("../simulations/parasailMappings/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_ri{ri}.tpr", ri=range(1, 5))
 		# expand("../benchmarks/benchFindThoms_t2thumanChrY_chP6C4_ep6:50:54_s322235950486831966_k15_hr0.2_c1_u1_t0_rep{i}.txt", i=\
@@ -285,6 +293,25 @@ rule calculateGlobalIntersectionSimilarity:
 		"../simulations/expValExp/scores/{dupInfo}GlobIntSecScore_se{desc}_c1_u1.txt"
 	shell:
 		"python3 scripts/CalcGlobInterSim.py -p {input} > {output}"
+
+rule generateReadRefSketchPairs:
+	params:
+		sd = "{sd}",
+		sl = "{sl}",
+		sr = "{sr}",
+		ir = "{ir}",
+		dr = "{dr}",
+		ser = "{ser}",
+		ier = "{ier}",
+		der = "{der}",
+		k = "{k}",
+		r = "{hRat}"
+	output:
+		"../simulations/expValExp/sketches/readRefKskSeqPairs_se{sd}_sl{sl}_sr{sr}_ir{ir}_dr{dr}_ser{ser}" + \
+		"_ier{ier}_der{der}_k{k}_r{hRat}.sk"
+	shell:
+		"python3 scripts/genRdRfSks.py -s {params.sd} -l {params.sl} -m {params.sr} -i {params.ir} -d {params.dr} -se " + \
+		"{params.ser} -ie {params.ier} -de {params.der} -k {params.k} -r {params.r} > {output}"
 
 rule generateKmerSketchPairs:
 	output:
@@ -533,6 +560,25 @@ rule simFixedLengthReads:
 		"--length-max {params.lmax} {input.ref} 2> {output.log}; cat $(echo {output.log} | sed 's/.log//g')_*.fastq | gzip -3 >" + \
 		" {output.rds}; cat $(echo {output.log} | sed 's/.log//g')_*.maf | gzip -3 > {output.maf}; rm $(echo {output.log} | sed" + \
 		" 's/.log//g')_*.{{maf,ref,fastq}}"
+
+rule simReadsOwnScript:
+	input:
+		ref = "../simulations/genomes/{genome}.fasta"
+	params:
+		dp = "{dp}",
+		lMin = "{lMin}",
+		lMax = "{lMax}",
+		lMean = "{lMn}",
+		lStd = "{lStd}",
+		subR = "{subR}",
+		delR = "{delR}",
+		insR = "{insR}",
+		sd = "{sd}"
+	output:
+		rds = "../simulations/reads/{genome}_sr{subR}_dr{delR}_i{insR}_sd{sd}_lmn{lMin}_lmx{lMax}_lavg{lMn}_ls{lStd}_dp{dp}.fasta"
+	shell:
+		"python3 scripts/simReads.py -dp {params.dp} -lmn {params.lMin} -lmx {params.lMax} -lavg {params.lMean} -ls " + \
+		"{params.lStd} -r {input} -sr {params.subR} -dr {params.delR} -ir {params.insR} -sd {params.sd} -o {output}"
 
 rule simReads:
 	input:
