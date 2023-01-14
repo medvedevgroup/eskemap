@@ -50,11 +50,22 @@ if __name__ == '__main__':
 	for i in range(arguments.l):
 		seq += choice(NUCL_ALPHABET)
 
-		sketch = calcSketch(seq, arguments.k, minHashThres)
+	sketch = calcSketch(seq, arguments.k, minHashThres)
+
+	#Testing
+	# print("Initial sequence generated")
 
 	#Mutate sequence
 	mutSeq = mutateSeq(seq, arguments.m, arguments.d, arguments.i)
+
+	#Testing
+	# print("First mutation process complete")
+
 	seqSeq = mutateSeq(mutSeq, arguments.se, arguments.de, arguments.ie)
+
+	#Testing
+	# print("Completed second mutation process")
+
 	mutSeqSketch = calcSketch(seqSeq, arguments.k, minHashThres)
 
 	#Output sketches

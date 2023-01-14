@@ -8,6 +8,7 @@ from math import ceil
 from numpy import random
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
+from Bio import SeqIO
 
 #This script simulates reads from a given reference sequence using a mutational model as described in the manuscript
 
@@ -30,7 +31,7 @@ if __name__ == '__main__':
 	#We assume that the reference sequence is a single continous sequence
 	refSeq = [r for r in SeqIO.parse(open(arguments.r, 'r'), "fasta")][0]
 	seed(arguments.sd)
-	random.seed(randrange(maxsize))
+	random.seed(randrange(2**32 - 1))
 	rds = []
 
 	#For each read

@@ -11,6 +11,9 @@ from glob import glob
 NB_RANDSEQS = (config['nbCpys'] + 1) * config['nbSimSeqs']
 # T2T_READ_LEN = [len(r.seq) for r in SeqIO.parse(open(f"../simulations/reads/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966.fasta", 'r'), "fasta")]
 DIV_RATE = 0.1
+SUB_RATE = DIV_RATE / 3
+INS_RATE = DIV_RATE / 3
+DEL_RATE = DIV_RATE / 3
 SUB_ERR = 0.002 * 6 / 110.
 INS_ERR = 0.002 * 50 / 110.
 DEL_ERR = 0.002 * 54 / 110.
@@ -118,9 +121,9 @@ def genWinnowmap2Files(wcs):
 
 def genSampleFileNames(wcs):
 	scoreFiles = []
-	sr = DIV_RATE / 3
-	ir = DIV_RATE / 3
-	dr = DIV_RATE / 3
+	sr = SUB_RATE
+	ir = INS_RATE
+	dr = DEL_RATE
 	ser = SUB_ERR
 	ier = INS_ERR
 	der = DEL_ERR
@@ -201,8 +204,11 @@ def genParaSailResFiles(wcs):
 rule all:
 	input:
 		#Expectation value estimation
-		genSampleFileNames,
+		# genSampleFileNames,
 		# genReadScoreFiles,
+		expand("../simulations/expValExp/dists/globEditDistance_srandSeq_l{l}_rid{n}_trandSeq_l{l}_rid{n}_m{m}_d{d}_i{i}_cn0_m" + \
+			"{se}_d{de}_i{ie}_cn0.txt", l=config['readLens'], n=range(config['randomSampleSize']), m=SUB_RATE, d=DEL_RATE, i=\
+			INS_RATE, se=SUB_ERR, de=DEL_ERR, ie=INS_ERR),
 		#Testing
 		# genReadScoreFiles2,
 		#Tests for DP script
@@ -233,8 +239,8 @@ rule all:
 		# expand("../benchmarks/benchFindThoms_humanChr20_refined_onlyCapitalNucs_ep{e}_s1657921994_rr{i}_k15_c1_u1_t-1000.txt", e=\
 		# config['errorPatterns'], i=range(10)),
 		#Benchmark on real data
-		f"../simulations/reads/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{randrange(maxsize)}_lmn" + \
-		f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10.fasta",
+		# f"../simulations/reads/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{randrange(maxsize)}_lmn" + \
+		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10.fasta",
 		# expand("../simulations/parasailMappings/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_ri{ri}.tpr", ri=range(1, 69142)),
 		# expand("../simulations/parasailMappings/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_ri{ri}.tpr", ri=range(1, 5))
 		# expand("../benchmarks/benchFindThoms_t2thumanChrY_chP6C4_ep6:50:54_s322235950486831966_k15_hr0.2_c1_u1_t0_rep{i}.txt", i=\
@@ -247,6 +253,15 @@ rule all:
 		# genHomFiles,
 		# genMinimap2Files,
 		# genWinnowmap2Files
+
+rule calcGlobEditDist:
+	input:
+		s = "../simulations/{sNm}.fasta",
+		t = "../simulations/{tNm}.fasta"
+	output:
+		"../simulations/expValExp/dists/globEditDistance_s{sNm}_t{tNm}.txt"
+	shell:
+		"FindSimSeqs/CalcGlobEditDistance {input.s} {input.t} > {output}"
 
 rule aggregateParasailRes:
 	input:
@@ -371,7 +386,7 @@ rule mutateTemplate:
 		iLen = "{l}",
 		rid = "{i}"
 	output:
-		"../simulations/randSeqCopy_{desc}_m{m}_d{d}_i{l}_cn{i}.fasta"
+		"../simulations/randSeq_{desc}_m{m}_d{d}_i{l}_cn{i}.fasta"
 	shell:
 		"python3 scripts/MutateSeq.py -m {params.subR} -d {params.delR} -i {params.iLen} -t {input} -o {output}"
 
@@ -380,7 +395,9 @@ rule genRandTemplate:
 		length = "{l}",
 		repId = "{i}"
 	output:
-		"../simulations/genomes/randSeq_l{l}_rid{i}.fasta"
+		"../simulations/randSeq_l{l}_rid{i}.fasta"
+	wildcard_constraints:
+		i="[0-9]+"
 	shell:
 		"python3 scripts/GenRandSeq.py -l {params.length} -o {output}"
 
