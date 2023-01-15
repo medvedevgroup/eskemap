@@ -199,16 +199,18 @@ def genParaSailResFiles(wcs):
 
 		res.append(f"../simulations/parasailMappings/{wcs.gn}_ra{ps}-{pe}_c{wcs.ch}_ep{wcs.eP}_s{wcs.sd}_ri{wcs.rdId}.pr")
 
-	return res
+	return res	
+
+READ_SEED = randrange(maxsize)
 
 rule all:
 	input:
 		#Expectation value estimation
 		# genSampleFileNames,
 		# genReadScoreFiles,
-		expand("../simulations/expValExp/dists/globEditDistance_srandSeq_l{l}_rid{n}_trandSeq_l{l}_rid{n}_m{m}_d{d}_i{i}_cn0_m" + \
-			"{se}_d{de}_i{ie}_cn0.txt", l=config['readLens'], n=range(config['randomSampleSize']), m=SUB_RATE, d=DEL_RATE, i=\
-			INS_RATE, se=SUB_ERR, de=DEL_ERR, ie=INS_ERR),
+		# expand("../simulations/expValExp/dists/globEditDistance_srandSeq_l{l}_rid{n}_trandSeq_l{l}_rid{n}_m{m}_d{d}_i{i}_cn0_m" + \
+		# 	"{se}_d{de}_i{ie}_cn0.txt", l=config['readLens'], n=range(config['randomSampleSize']), m=SUB_RATE, d=DEL_RATE, i=\
+		# 	INS_RATE, se=SUB_ERR, de=DEL_ERR, ie=INS_ERR),
 		#Testing
 		# genReadScoreFiles2,
 		#Tests for DP script
@@ -241,8 +243,19 @@ rule all:
 		#Benchmark on real data
 		# f"../simulations/reads/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{randrange(maxsize)}_lmn" + \
 		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10.fasta",
-		# expand("../simulations/parasailMappings/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_ri{ri}.tpr", ri=range(1, 69142)),
-		# expand("../simulations/parasailMappings/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_ri{ri}.tpr", ri=range(1, 5))
+		expand("../simulations/edlibMappings/t2thumanChrY_sr{sr}_dr{dr}_i{ir}_sd{s}_lmn" + \
+		"{mn}_lmx{mx}_lavg{m}_ls{sd}_dp10_ri{i}.er", \
+		sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, s=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
+		config['pbsimLenAvg'], sd=config['pbsimLenStd'], i=range(69401)),
+		# expand("../benchmarks/benchFindThoms_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_" + \
+		# 	"hr0.2_c1_u1_t0_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
+		# 	config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
+		# expand("../benchmarks/benchMinimap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_rep" + \
+		# 	"{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
+		# 	config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
+		# expand("../benchmarks/benchWinnowmap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15" + \
+		# 	"_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
+		# 	config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
 		# expand("../benchmarks/benchFindThoms_t2thumanChrY_chP6C4_ep6:50:54_s322235950486831966_k15_hr0.2_c1_u1_t0_rep{i}.txt", i=\
 		# 	range(config['benchRepRuns'])),
 		# expand("../benchmarks/benchMinimap2_t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_k15_rep{i}.txt", i=\
@@ -290,6 +303,15 @@ rule splitRef:
 		"../simulations/genomes/{genome}_ra{s}-{e}.fasta"
 	shell:
 		"python3 scripts/getSubstring.py -i {input} -s {params.start} -e {params.end} -o {output}"
+
+rule runEdlib:
+	input:
+		ref = "../simulations/genomes/{genome}.fasta",
+		qry = "../simulations/reads/{genome}_sr{rdDesc}_ri{rdId}.fasta"
+	output:
+		"../simulations/edlibMappings/{genome}_sr{rdDesc}_ri{rdId}.er"
+	shell:
+		"FindSimSeqs/FindSimSeqs {input.qry} {input.ref} > {output}"
 
 rule divideReads:
 	input:
@@ -429,6 +451,21 @@ rule runBWAmem:
 	shell:
 		"bwa mem {input.ref} {input.rds} | gzip -3 > {output}"
 
+rule runWinnowmap2onRealGenomeFASTA:
+	input:
+		ref = "../simulations/genomes/{genome}.fasta",
+		qry = "../simulations/reads/{genome}_sr{desc}.fasta",
+		cnts = "../simulations/repKmers_k{k}_{genome}.txt"
+	params:
+		k = "{k}",
+		r = "{r}"
+	output:
+		res = "../simulations/Winnowmap2Res/{genome}_sr{desc}_k{k}_rep{r}.sam.gz",
+		bench = "../benchmarks/benchWinnowmap2_{genome}_sr{desc}_k{k}_rep{r}.txt"
+	shell:
+		"/usr/bin/time -v ../software/Winnowmap/bin/winnowmap -W {input.cnts} -ax map-pb -k {params.k} {input.ref} {input.qry} " + \
+		"2> {output.bench} | gzip -3 > {output.res}"
+
 rule runWinnowmap2onRealGenome:
 	input:
 		ref = "../simulations/genomes/{genome}.fasta",
@@ -485,6 +522,19 @@ rule countKmers:
 		temp(directory("../simulations/merylDB_k{k}_rl{desc}"))
 	shell:
 		"../software/Winnowmap/bin/meryl count k={params} output {output} {input}"
+
+rule runMinimap2onRealGenomePacBioFASTA:
+	input:
+		ref = "../simulations/genomes/{genome}.fasta",
+		qry = "../simulations/reads/{genome}_sr{desc}.fasta"
+	params:
+		k = "{k}",
+		r = "{r}"
+	output:
+		res = "../simulations/minimap2Res/{genome}_sr{desc}_k{k}_rep{r}.sam.gz",
+		bench = "../benchmarks/benchMinimap2_{genome}_sr{desc}_k{k}_rep{r}.txt"
+	shell:
+		"/usr/bin/time -v minimap2 -ax map-hifi -k {params.k} {input.ref} {input.qry} 2> {output.bench} | gzip -3 > {output.res}"
 
 rule runMinimap2onRealGenomePacBio:
 	input:
@@ -593,6 +643,8 @@ rule simReadsOwnScript:
 		sd = "{sd}"
 	output:
 		rds = "../simulations/reads/{genome}_sr{subR}_dr{delR}_i{insR}_sd{sd}_lmn{lMin}_lmx{lMax}_lavg{lMn}_ls{lStd}_dp{dp}.fasta"
+	wildcard_constraints:
+		dp = "[0-9]+"
 	shell:
 		"python3 scripts/simReads.py -dp {params.dp} -lmn {params.lMin} -lmx {params.lMax} -lavg {params.lMean} -ls " + \
 		"{params.lStd} -r {input} -sr {params.subR} -dr {params.delR} -ir {params.insR} -sd {params.sd} -o {output}"
@@ -694,7 +746,7 @@ rule convertCompressedFastq2Fasta:
 
 rule searchReadHomologies:
 	input:
-		rds = "../simulations/reads/{genome}_c{chem}_ep{errorPattern}_s{seed}.fasta",
+		rds = "../simulations/reads/{genome}_{desc}.fasta",
 		txt = "../simulations/genomes/{genome}.fasta"
 	params:
 		c = "{c}",
@@ -704,9 +756,9 @@ rule searchReadHomologies:
 		r = "{r}",
 		hRat = "{hr}"
 	output:
-		homs = temp("../simulations/homologies/homologies_{genome}_ch{chem}_ep{errorPattern}_s{seed}_k{k}_hr{hr}_c{c}_u{u}_t{t}" + \
-			"_rep{r}.txt"),
-		bench = "../benchmarks/benchFindThoms_{genome}_ch{chem}_ep{errorPattern}_s{seed}_k{k}_hr{hr}_c{c}_u{u}_t{t}_rep{r}.txt"
+		homs = "../simulations/homologies/homologies_{genome}_{desc}_k{k}_hr{hr}_c{c}_u{u}_t{t}" + \
+			"_rep{r}.txt",
+		bench = "../benchmarks/benchFindThoms_{genome}_{desc}_k{k}_hr{hr}_c{c}_u{u}_t{t}_rep{r}.txt"
 	shell:
 		"/usr/bin/time -v src/FindThoms -p {input.rds} -s {input.txt} -k {params.k} -r {params.hRat} -c {params.c} -u " + \
 		"{params.u} -t {params.thres} > {output.homs} 2> {output.bench}"

@@ -5,7 +5,7 @@
 #include "Thomology.h"
 
 #define OPTIONS "a:b:ilh"
-#define T_HOM_OPTIONS "p:s:k:r:b:c:u:t:nh"
+#define T_HOM_OPTIONS "p:s:k:r:b:c:u:t:d:i:nh"
 #define MIN_PARAM_NB 6
 #define MAX_RATIO 1.0
 #define NORM_FLAG_DEFAULT false
@@ -41,6 +41,8 @@ inline void dsHlp(){
 	cerr << "   -c   --commonhashweight  Weight to reward common hashes (default " << DEFAULT_WEIGHT << ")" << endl;
 	cerr << "   -u   --uniquehashweight  Weight to punish unique hashes (default " << DEFAULT_WEIGHT << ")" << endl;
 	cerr << "   -t   --hom_thres         Homology threshold (default " << T << ")" << endl;
+	cerr << "   -d   --decent            Decent required for dynamic threshold selection" << endl;
+	cerr << "   -i   --intercept         Intercept required for dynamic threshold selection" << endl;
 	cerr << "Optional parameters without argument:" << endl;
 	cerr << "   -n   --normalize  Normalize scores by length" << endl;
 	cerr << "   -h   --help       Display this help message" << endl;
@@ -65,7 +67,7 @@ const bool prsArgs(int& nArgs, char** argList, string& seqa, string& seqb, Measu
 
 //This function parses the program parameters. Returns false if given arguments are not valid
 const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, double& hFrac, string& blFl, uint32_t& cw, 
-	uint32_t& uw, int32_t& tThres, bool& norm);
+	float& uw, float& tThres, bool& norm, float& dec, float& inter);
 
 //This function reads a file in FASTA format and returns true on success
 const bool readFASTA(const string& filePath, string& seq);
@@ -73,7 +75,7 @@ const bool readFASTA(const string& filePath, string& seq);
 //This function reads in batches of FASTA sequence entries from file and transforms them into sketches. Returns false if end of file
 //was reached.
 const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, const unordered_map<uint64_t, char>& bLstmers, 
-	vector<pair<string, Sketch>>& pSks);
+	vector<tuple<string, uint32_t, Sketch>>& pSks);
 
 //This function reads 64-bit numbers from file and returns them as a hash table
 const unordered_map<uint64_t, char> readBlstKmers(const string& fname);

@@ -13,9 +13,12 @@ int main(int argc, char **argv){
 	uint32_t kmerLen = K;
 	//Scoring weights
 	uint32_t comWght = DEFAULT_WEIGHT;
-	uint32_t uniWght = DEFAULT_WEIGHT;
+	float uniWght = DEFAULT_WEIGHT;
 	//The t-homology threshold
-	int32_t tThres = T;
+	float tThres = T;
+	//Intercept and decent to interpolate thresholds
+	float dec = 0;
+	float inter = 0;
 	//Input file names
 	string pFile, tFile, bLstFl;
 	//An input sequence
@@ -33,12 +36,12 @@ int main(int argc, char **argv){
 	//A pointer to the index
 	const mm_idx_t *tidx;
 	//A vector of pattern sketches
-	vector<pair<string, Sketch>> pSks;
+	vector<tuple<string, uint32_t, Sketch>> pSks;
 	//An iterator to iterate over pattern sketches
-	vector<pair<string, Sketch>>::const_iterator p;
+	vector<tuple<string, uint32_t, Sketch>>::const_iterator p;
 
 	//Parse arguments
-	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, hFrac, bLstFl, comWght, uniWght, tThres, normalize)){
+	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, hFrac, bLstFl, comWght, uniWght, tThres, normalize, dec, inter)){//TODO: Tests for this function need to be adapted!
 		//Display help message
 		dsHlp();
 		return 1;
@@ -91,7 +94,7 @@ int main(int argc, char **argv){
 	fStr.open(pFile);
 
 	//Load pattern sequences in batches
-	while(lPttnSks(fStr, kmerLen, hFrac, bLstmers, pSks) || !pSks.empty()){
+	while(lPttnSks(fStr, kmerLen, hFrac, bLstmers, pSks) || !pSks.empty()){//TODO: Test for this function need to be adaptated!
 		//Testing
 		// cout << "main: Do we return?" << endl;
 		// for(p = pSks.begin(); p != pSks.end(); ++p){
@@ -109,10 +112,17 @@ int main(int argc, char **argv){
 		//Iterate over pattern sketches
 		for(p = pSks.begin(); p != pSks.end(); ++p){
 			//Only output pattern sequence name if there is more than one sequence
-			if(pSks.size() > 1) cout << p->first << endl;
+			if(pSks.size() > 1) cout << get<0>(*p) << endl;
+
+			//Calculate an adapted threshold if we have the necessary informations
+			if(dec != 0 && inter != 0) tThres = dec * get<1>(*p) + inter;
+
+			//Testing
+			cout << "main: pattern length: " << get<1>(*p) << endl;
+			cout << "main: tThres: " << tThres << endl;
 
 			//Find t-homologies and output them
-			outputHoms(findThoms(p->second, tidx, comWght, uniWght, tThres), normalize, p->second.size());
+			outputHoms(findThoms(get<2>(*p), tidx, comWght, uniWght, tThres), normalize, get<2>(*p).size());//TODO: Tests for this function need to be adaptated!
 		}
 
 		//Remove processed pattern sketches

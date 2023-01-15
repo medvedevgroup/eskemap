@@ -68,7 +68,7 @@ const bool prsArgs(int& nArgs, char** argList, string& seqa, string& seqb, Measu
 
 //This function parses the program parameters. Returns false if given arguments are not valid
 const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, double& hFrac, string& blFl, uint32_t& cw, 
-	uint32_t& uw, int32_t& tThres, bool& norm){
+	float& uw, float& tThres, bool& norm, float& dec, float& inter){
 	int option_index = 0, a;
 
 	static struct option long_options[] = {
@@ -80,6 +80,8 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
         {"commonhashweight",   required_argument,  0, 'c'},
         {"uniquehashweight",   required_argument,  0, 'u'},
         {"hom_thres",          required_argument,  0, 't'},
+        {"decent",             required_argument,  0, 'd'},
+        {"intercept",          required_argument,  0, 'i'},
         {"normalize",          no_argument,        0, 'n'},
         {"help",               no_argument,        0, 'h'},
         {0,                    0,                  0,  0 }
@@ -132,16 +134,22 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 				break;
 			case 'u':
 				//Weights should be positive
-				if(atoi(optarg) <= 0){
+				if(atof(optarg) <= 0){
 					cerr << "ERROR: Unique hash weight not applicable" << endl;
 
 					return false;
 				}
 
-				uw = atoi(optarg);
+				uw = atof(optarg);
 				break;
 			case 't':
-				tThres = atoi(optarg);
+				tThres = atof(optarg);
+				break;
+			case 'd':
+				dec = atof(optarg);
+				break;
+			case 'i':
+				inter = atof(optarg);
 				break;
 			case 'n':
 				norm = true;
@@ -206,7 +214,7 @@ const bool readFASTA(const string& filePath, string& seq){
 //This function reads in batches of FASTA sequence entries from file and transforms them into sketches. Returns false if end of file
 //was reached.
 const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, const unordered_map<uint64_t, char>& bLstmers, 
-	vector<pair<string, Sketch>>& pSks){
+	vector<tuple<string, uint32_t, Sketch>>& pSks){
 	bool headerRead, idRead = false, lnBrkDiscvd = false;
 	char c;
 	string seq, seqID;
@@ -222,8 +230,8 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, cons
 		//An entry's sequence is complete if we find a second header (which can only start after at least one line break) in the 
 		//file
 		if(c == '>' && headerRead && lnBrkDiscvd){
-			//Add sequence's sketch and id to result vector
-			pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac, bLstmers)));
+			//Add sequence's sketch, length and id to result vector
+			pSks.push_back(make_tuple(seqID, seq.length(), buildSketch(seq, k, hFrac, bLstmers)));
 			//Clear sequence id
 			seqID.clear();
 			//Clear sequence
@@ -261,7 +269,7 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, cons
 	}
 
 	//Add last entry's sketch and sequence id to result vector if it is not empty
-	if(!seq.empty()) pSks.push_back(make_pair(seqID, buildSketch(seq, k, hFrac, bLstmers)));
+	if(!seq.empty()) pSks.push_back(make_tuple(seqID, seq.length(), buildSketch(seq, k, hFrac, bLstmers)));
 
 	return false;
 }

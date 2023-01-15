@@ -13,33 +13,25 @@
 using namespace std;
 
 int main(int argc, char **argv){
-	// Some fixed alignment parars
-	// const int32_t d = 2;
-	// const int32_t e = 1;
-	// const parasail_matrix_t *subMat = parasail_matrix_create("ACGT", 1, -1);
-
 	//Some other fixed constants
+	const float THRES = 0.13;
 
-	// const float MIN_SID = 0.95;
+	// const float dec = 0.09552835;
+	// const float inter = -73.15283528352302;
 
-	const float dec = 0.09552835;
-	const float inter = -73.15283528352302;
 	//Input sequences
 	uint32_t tPLen;
-	char *tPSeq, *tSubP;//, *tPsubSeq;
+	char *tPSeq, *tSubP;
 	parasail_sequences_t *qrys, *refs;
 	parasail_sequence_t q, t;
+	//The alignment algorithm's configuration
+	EdlibAlignConfig aConf;
 	//Piece sequence, sequence length, start in target
 	vector<tuple<char*, uint32_t, uint32_t>> targetPieces;
 	//Alignment results
 	char *cigar;
-	uint32_t globOffs;//start, end, subSeqLen, , aEnd
-	int32_t thres;
+	uint32_t globOffs;
 	EdlibAlignResult result;
-
-	// float aLen, nMtchs;
-	// parasail_result_t* res;
-	// parasail_cigar_t* cig;
 
 	/*IO sequences*/
 	if(argc != 3){
@@ -53,6 +45,11 @@ int main(int argc, char **argv){
 	if(qrys->l > 1) cerr << "WARNING: Multiple query sequences read. Going to process only first one!" << endl;
 
 	q = qrys->seqs[0];
+
+	//Testing
+	// cout << "(int32_t) (THRES * q.seq.l): " << (int32_t) (THRES * q.seq.l) << endl;
+
+	aConf = edlibNewAlignConfig((int32_t) (THRES * q.seq.l), EDLIB_MODE_HW, EDLIB_TASK_PATH, NULL, 0);
 	refs = parasail_sequences_from_file(argv[2]);
 
 	if(refs->l > 1){
@@ -64,30 +61,13 @@ int main(int argc, char **argv){
 	t = refs->seqs[0];
 	targetPieces.push_back(make_tuple(t.seq.s, t.seq.l, 0));
 
-	//Testing
-	// result = edlibAlign(q.seq.s, q.seq.l, t.seq.s, t.seq.l, edlibNewAlignConfig(1, EDLIB_MODE_HW, EDLIB_TASK_PATH, NULL, 0));
-	// if (result.status == EDLIB_STATUS_OK){
-	// 	cout << "Edit distance: " << result.editDistance << endl;
-	// 	for(int32_t i = 0; i < result.numLocations; ++i){
-	// 		cout << "Start in Reference: " << result.startLocations[i] << endl;
-	// 		cout << "End in Reference: " << result.endLocations[i] << endl;
-	// 	}
-	// 	cout << "Alignment length: " << result.alignmentLength << endl;
-	// 	cout << "Query: " << q.seq.s << endl;
-	// 	cout << "Reference: " << t.seq.s << endl;
-	// 	cout << "Cigar: " << edlibAlignmentToCigar(result.alignment, result.alignmentLength, EDLIB_CIGAR_STANDARD) << endl;
-	// }
-	// edlibFreeAlignResult(result);
-	// return 0;
-	// int32_t a = 32;
-	// cout << "a: " << a << endl;
-	// cout << "(int32_t) (-0.13 * a - 17.84): " << (int32_t) (-0.13 * a - 17.84) << endl;
-	// return 0;
-
-	thres = (int32_t) (dec * q.seq.l + inter);
+	// thres = (int32_t) (dec * q.seq.l + inter);
 
 	//Testing
-	cout << "thres: " << thres << endl;
+	// cout << "thres: " << thres << endl;
+	// int32_t a = 2, b = 3;
+	// cout << "(float) a / b: " << (float) a / b << endl;
+	// return 0;
 
 	while(!targetPieces.empty()){
 		//Get next target sequence piece
@@ -96,7 +76,7 @@ int main(int argc, char **argv){
 		globOffs = get<2>(targetPieces.back());
 		targetPieces.pop_back();
 		//Calculate alignment
-		result = edlibAlign(q.seq.s, q.seq.l, tPSeq, tPLen, edlibNewAlignConfig(thres, EDLIB_MODE_HW, EDLIB_TASK_PATH, NULL, 0));
+		result = edlibAlign(q.seq.s, q.seq.l, tPSeq, tPLen, aConf);
 
 		//Analyse result
 		if(result.status != EDLIB_STATUS_OK){
@@ -104,32 +84,8 @@ int main(int argc, char **argv){
 			return -1;
 		}
 
-		// aEnd = parasail_result_get_end_ref(res);
-		// subSeqLen = min(2 * parasail_result_get_length(res), (int32_t) aEnd + 1);
-		// tPsubSeq = (char*) malloc(subSeqLen + 1);
-
-		// //Testing
-		// // cout << "(aEnd + 1) - subSeqLen: " << (aEnd + 1) - subSeqLen << endl;
-		// // cout << "tPSeq[(aEnd + 1) - subSeqLen]: " << tPSeq[(aEnd + 1) - subSeqLen] << endl;
-
-		// memcpy(tPsubSeq, &tPSeq[(aEnd + 1) - subSeqLen], subSeqLen);
-		// tPsubSeq[subSeqLen] = '\0';
-
-		// //Testing
-		// // cout << "tPsubSeq: " << tPsubSeq << endl;
-		
-		// parasail_result_free(res);
-		// res = parasail_sg_dx_trace_striped_sat(q.seq.s, q.seq.l, tPsubSeq, subSeqLen, d, e, subMat);
-		// cig = parasail_result_get_cigar(res, q.seq.s, q.seq.l, tPsubSeq, subSeqLen, subMat);
-		// prsCgr(*cig, start, end, aLen, nMtchs);
-
-		// if(subSeqLen < aEnd + 1){
-		// 	start += (aEnd + 1) - subSeqLen;
-		// 	end += (aEnd + 1) - subSeqLen;
-		// }
-
 		//Check if result is good enough
-		if(result.editDistance <= thres){
+		if(result.editDistance > -1){
 			//Report result
 			cigar = edlibAlignmentToCigar(result.alignment, result.alignmentLength, EDLIB_CIGAR_STANDARD);
 
@@ -138,7 +94,6 @@ int main(int argc, char **argv){
 			free(cigar);
 
 			//Subdivide target piece
-
 			if(result.startLocations[0] > 0){
 				tSubP = (char*) malloc(result.startLocations[0] + 1);
 				memcpy(tSubP, &tPSeq[0], result.startLocations[0]);
@@ -156,9 +111,6 @@ int main(int argc, char **argv){
 
 		//Free alignment results
 		edlibFreeAlignResult(result);
-
-		// free(tPsubSeq);
-
 		free(tPSeq);
 	}
 
