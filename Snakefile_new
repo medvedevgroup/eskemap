@@ -254,16 +254,16 @@ rule all:
 		# 	"hr0.2_c1_u1_d{de}_in{it}_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
 		# 	config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], de=-0.13005461, it=-172.79453945395653, i=\
 		# 	range(config['benchRepRuns'])),
-		f"../simulations/minimap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
-		f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.sam.gz",
-		# expand("../benchmarks/benchMinimap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_rep" + \
-		# 	"{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
-		# 	config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
-		f"../simulations/Winnowmap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
-		f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.sam.gz",
-		# expand("../benchmarks/benchWinnowmap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15" + \
-		# 	"_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
-		# 	config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
+		# f"../simulations/minimap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
+		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.sam.gz",
+		expand("../benchmarks/benchMinimap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_rep" + \
+			"{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
+			config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
+		# f"../simulations/Winnowmap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
+		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.sam.gz",
+		expand("../benchmarks/benchWinnowmap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15" + \
+			"_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
+			config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
 		# expand("../benchmarks/benchFindThoms_t2thumanChrY_chP6C4_ep6:50:54_s322235950486831966_k15_hr0.2_c1_u1_t0_rep{i}.txt", i=\
 		# 	range(config['benchRepRuns'])),
 		# expand("../benchmarks/benchMinimap2_t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966_k15_rep{i}.txt", i=\
@@ -788,7 +788,7 @@ rule saveFindThomsResult:
 
 rule searchReadHomologies:
 	input:
-		rds = "../simulations/reads/{genome}_{desc}.fasta",
+		rds = "../simulations/reads/{genome}_sr{desc}.fasta",
 		txt = "../simulations/genomes/{genome}.fasta"
 	params:
 		c = "{c}",
@@ -799,9 +799,9 @@ rule searchReadHomologies:
 		d = "{d}",
 		i = "{i}"
 	output:
-		homs = temp("../simulations/homologies/homologies_{genome}_{desc}_k{k}_hr{hr}_c{c}_u{u}_de{d}_in{i}" + \
+		homs = temp("../simulations/homologies/homologies_{genome}_sr{desc}_k{k}_hr{hr}_c{c}_u{u}_de{d}_in{i}" + \
 			"_rep{r}.txt"),
-		bench = "../benchmarks/benchFindThoms_{genome}_{desc}_k{k}_hr{hr}_c{c}_u{u}_de{d}_in{i}_rep{r}.txt"
+		bench = "../benchmarks/benchFindThoms_{genome}_sr{desc}_k{k}_hr{hr}_c{c}_u{u}_de{d}_in{i}_rep{r}.txt"
 	shell:
 		"/usr/bin/time -v src/FindThoms -p {input.rds} -s {input.txt} -k {params.k} -r {params.hRat} -c {params.c} -u " + \
 		"{params.u} -d {params.d} -i {params.i} > {output.homs} 2> {output.bench}"
