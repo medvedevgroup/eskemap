@@ -95,31 +95,22 @@ int main(int argc, char **argv){
 
 	//Load pattern sequences in batches
 	while(lPttnSks(fStr, kmerLen, hFrac, bLstmers, pSks) || !pSks.empty()){//TODO: Test for this function need to be adaptated!
-		//Testing
-		// cout << "main: Do we return?" << endl;
-		// for(p = pSks.begin(); p != pSks.end(); ++p){
-		// 	if(p->first == "S1_4" || p->first == "S1_5" || p->first == "S1_15"){
-		// 		cout << p->first << endl;
-		// 		int nHits;
-		// 		for(Sketch::const_iterator hi = p->second.begin(); hi != p->second.end(); ++hi){
-		// 			const uint64_t *idx_p = mm_idx_get(tidx, *hi, &nHits);
-		// 			cout << *hi << " " << nHits << endl;
-		// 		}
-		// 	}
-		// }
-		// exit(0);
-
 		//Iterate over pattern sketches
 		for(p = pSks.begin(); p != pSks.end(); ++p){
 			//Only output pattern sequence name if there is more than one sequence
 			if(pSks.size() > 1) cout << get<0>(*p) << endl;
 
+			//Testing
+			// cout << "Pattern sketch:" << endl;
+			// for(Sketch::const_iterator k = get<2>(*p).begin(); k != get<2>(*p).end(); ++k) cout << *k << " ";
+			// cout << endl;
+
 			//Calculate an adapted threshold if we have the necessary informations
 			if(dec != 0 && inter != 0) tThres = dec * get<1>(*p) + inter;
 
 			//Testing
-			cout << "main: pattern length: " << get<1>(*p) << endl;
-			cout << "main: tThres: " << tThres << endl;
+			// cout << "main: pattern length: " << get<1>(*p) << endl;
+			// cout << "main: tThres: " << tThres << endl;
 
 			//Find t-homologies and output them
 			outputHoms(findThoms(get<2>(*p), tidx, comWght, uniWght, tThres), normalize, get<2>(*p).size());//TODO: Tests for this function need to be adaptated!

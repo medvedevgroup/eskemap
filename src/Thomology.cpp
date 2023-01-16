@@ -126,13 +126,17 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 
 		//Walk through column from top to bottom
 		for(vector<float>::const_iterator rowIt = colRit->begin(); rowIt != colRit->end(); ++rowIt){
-			//If the substring is a t-homology and its first and last hashes are identical this hash needs to occur at least twice 
-			//inside the pattern
-			if(i != j && fLit->first == rLit->first && occp[fLit->first] < 2){
+			//If the substring is a t-homology and its first and last hashes are identical this hash have lead to a positive contri-
+			//bution to the score, otherwise this homology is not "reasonable"
+			if(i != j && (scores[j - 1][i] < scores[j][i] - cw - uw + uw * (rLit->second - 
+							L[j - 1].second - 1) || scores[j][i + 1] > scores[j][i] - cw - uw + uw * (L[i + 1].second - fLit->second
+							 - 1))){
 				++i;
 				++fLit;
 				continue;
 			}
+
+
 
 			//Walk through the list to consider all relevant maximums seen so far
 			while(li != maxScores.end()){
