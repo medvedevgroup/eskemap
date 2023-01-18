@@ -10,7 +10,7 @@ from glob import glob
 
 NB_RANDSEQS = (config['nbCpys'] + 1) * config['nbSimSeqs']
 # T2T_READ_LEN = [len(r.seq) for r in SeqIO.parse(open(f"../simulations/reads/t2thumanChrY_cP6C4_ep6:50:54_s322235950486831966.fasta", 'r'), "fasta")]
-DIV_RATE = 0.1
+DIV_RATE = 0.01
 SUB_RATE = DIV_RATE / 3
 INS_RATE = DIV_RATE / 3
 DEL_RATE = DIV_RATE / 3
@@ -247,12 +247,20 @@ rule all:
 		"{mn}_lmx{mx}_lavg{m}_ls{sd}_dp10_ri{i}.er", \
 		sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, s=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
 		config['pbsimLenAvg'], sd=config['pbsimLenStd'], i=range(69401)),
+		# f"../simulations/homologies/homologies_t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn" + \
+		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15_" + \
+		# 	f"hr0.2_c1_u1_de{0.05226723}_in{-116.02672267226808}.txt",
 		# expand("../benchmarks/benchFindThoms_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_" + \
-		# 	"hr0.2_c1_u1_t0_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
-		# 	config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
+		# 	"hr0.2_c1_u1_d{de}_in{it}_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
+		# 	config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], de=0.05226723, it=-116.02672267226808, i=\
+		# 	range(config['benchRepRuns'])),
+		# f"../simulations/minimap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
+		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.sam.gz",
 		# expand("../benchmarks/benchMinimap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_rep" + \
 		# 	"{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
 		# 	config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
+		# f"../simulations/Winnowmap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
+		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.sam.gz",
 		# expand("../benchmarks/benchWinnowmap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15" + \
 		# 	"_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
 		# 	config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
@@ -319,7 +327,7 @@ rule divideReads:
 	params:
 		"{rdId}"
 	output:
-		"../simulations/reads/{rdFileName}_ri{rdId}.fasta"
+		temp("../simulations/reads/{rdFileName}_ri{rdId}.fasta")
 	shell:
 		"python3 scripts/getSeq.py -s {input} -i {params} -o {output}"
 
@@ -451,6 +459,16 @@ rule runBWAmem:
 	shell:
 		"bwa mem {input.ref} {input.rds} | gzip -3 > {output}"
 
+rule saveWinnowmap2Result:
+	input:
+		"../simulations/Winnowmap2Res/{genome}_sr{desc}_k{k}_rep0.sam.gz"
+	output:
+		"../simulations/Winnowmap2Res/{genome}_sr{desc}_k{k}.sam.gz"
+	wildcard_constraints:
+		k = "[0-9]+"
+	shell:
+		"mv {input} {output}"
+
 rule runWinnowmap2onRealGenomeFASTA:
 	input:
 		ref = "../simulations/genomes/{genome}.fasta",
@@ -460,8 +478,10 @@ rule runWinnowmap2onRealGenomeFASTA:
 		k = "{k}",
 		r = "{r}"
 	output:
-		res = "../simulations/Winnowmap2Res/{genome}_sr{desc}_k{k}_rep{r}.sam.gz",
+		res = temp("../simulations/Winnowmap2Res/{genome}_sr{desc}_k{k}_rep{r}.sam.gz"),
 		bench = "../benchmarks/benchWinnowmap2_{genome}_sr{desc}_k{k}_rep{r}.txt"
+	wildcard_constraints:
+		r = "[0-9]+"
 	shell:
 		"/usr/bin/time -v ../software/Winnowmap/bin/winnowmap -W {input.cnts} -ax map-pb -k {params.k} {input.ref} {input.qry} " + \
 		"2> {output.bench} | gzip -3 > {output.res}"
@@ -523,6 +543,16 @@ rule countKmers:
 	shell:
 		"../software/Winnowmap/bin/meryl count k={params} output {output} {input}"
 
+rule saveMinimap2Result:
+	input:
+		"../simulations/minimap2Res/{genome}_sr{desc}_k{k}_rep0.sam.gz"
+	output:
+		"../simulations/minimap2Res/{genome}_sr{desc}_k{k}.sam.gz"
+	wildcard_constraints:
+		k = "[0-9]+"
+	shell:
+		"mv {input} {output}"
+
 rule runMinimap2onRealGenomePacBioFASTA:
 	input:
 		ref = "../simulations/genomes/{genome}.fasta",
@@ -531,8 +561,10 @@ rule runMinimap2onRealGenomePacBioFASTA:
 		k = "{k}",
 		r = "{r}"
 	output:
-		res = "../simulations/minimap2Res/{genome}_sr{desc}_k{k}_rep{r}.sam.gz",
+		res = temp("../simulations/minimap2Res/{genome}_sr{desc}_k{k}_rep{r}.sam.gz"),
 		bench = "../benchmarks/benchMinimap2_{genome}_sr{desc}_k{k}_rep{r}.txt"
+	wildcard_constraints:
+		r = "[0-9]+"
 	shell:
 		"/usr/bin/time -v minimap2 -ax map-hifi -k {params.k} {input.ref} {input.qry} 2> {output.bench} | gzip -3 > {output.res}"
 
@@ -744,6 +776,16 @@ rule convertCompressedFastq2Fasta:
 		SeqIO.write(SeqIO.parse(fqName, "fastq"), open(output[0], 'w'), "fasta")
 		shell("rm %s" %fqName)
 
+rule saveFindThomsResult:
+	input:
+		"../simulations/homologies/homologies_{genome}_{desc}_k{k}_hr{hr}_c{c}_u{u}_de{d}_in{i}_rep0.txt"
+	output:
+		"../simulations/homologies/homologies_{genome}_{desc}_k{k}_hr{hr}_c{c}_u{u}_de{d}_in{i}.txt"
+	wildcard_constraints:
+		i = "-?[0-9]+\.?[0-9]*"
+	shell:
+		"mv {input} {output}"
+
 rule searchReadHomologies:
 	input:
 		rds = "../simulations/reads/{genome}_{desc}.fasta",
@@ -751,17 +793,20 @@ rule searchReadHomologies:
 	params:
 		c = "{c}",
 		u = "{u}",
-		thres = "{t}",
 		k = "{k}",
 		r = "{r}",
-		hRat = "{hr}"
+		hRat = "{hr}",
+		d = "{d}",
+		i = "{i}"
 	output:
-		homs = "../simulations/homologies/homologies_{genome}_{desc}_k{k}_hr{hr}_c{c}_u{u}_t{t}" + \
-			"_rep{r}.txt",
-		bench = "../benchmarks/benchFindThoms_{genome}_{desc}_k{k}_hr{hr}_c{c}_u{u}_t{t}_rep{r}.txt"
+		homs = temp("../simulations/homologies/homologies_{genome}_{desc}_k{k}_hr{hr}_c{c}_u{u}_de{d}_in{i}" + \
+			"_rep{r}.txt"),
+		bench = "../benchmarks/benchFindThoms_{genome}_{desc}_k{k}_hr{hr}_c{c}_u{u}_de{d}_in{i}_rep{r}.txt"
+	wildcard_constraints:
+		genome = "\w+",
 	shell:
 		"/usr/bin/time -v src/FindThoms -p {input.rds} -s {input.txt} -k {params.k} -r {params.hRat} -c {params.c} -u " + \
-		"{params.u} -t {params.thres} > {output.homs} 2> {output.bench}"
+		"{params.u} -d {params.d} -i {params.i} > {output.homs} 2> {output.bench}"
 
 rule searchHumanHomologies:
 	input:

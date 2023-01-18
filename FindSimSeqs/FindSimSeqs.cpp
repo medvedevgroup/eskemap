@@ -14,7 +14,7 @@ using namespace std;
 
 int main(int argc, char **argv){
 	//Some other fixed constants
-	const float THRES = 0.13;
+	const float THRES = 0.03;
 
 	// const float dec = 0.09552835;
 	// const float inter = -73.15283528352302;
@@ -50,6 +50,7 @@ int main(int argc, char **argv){
 	// cout << "(int32_t) (THRES * q.seq.l): " << (int32_t) (THRES * q.seq.l) << endl;
 
 	aConf = edlibNewAlignConfig((int32_t) (THRES * q.seq.l), EDLIB_MODE_HW, EDLIB_TASK_PATH, NULL, 0);
+	// aConf = edlibNewAlignConfig((int32_t) (THRES * q.seq.l), EDLIB_MODE_HW, EDLIB_TASK_DISTANCE, NULL, 0);
 	refs = parasail_sequences_from_file(argv[2]);
 
 	if(refs->l > 1){
@@ -90,6 +91,7 @@ int main(int argc, char **argv){
 			cigar = edlibAlignmentToCigar(result.alignment, result.alignmentLength, EDLIB_CIGAR_STANDARD);
 
 			cout << globOffs + result.startLocations[0] << " " << globOffs + result.endLocations[0] << " " << cigar << endl;
+			// cout << globOffs + result.startLocations[0] << " " << globOffs + result.endLocations[0] << endl;
 
 			free(cigar);
 
