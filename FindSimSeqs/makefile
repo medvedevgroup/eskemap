@@ -9,4 +9,4 @@ CC = g++
 CFLAGS = -std=c++2a -O3 -Wall -L edlib -lz -lpthread -ledlib -lparasail
 
 all:
-	$(CC) FindSimSeqs.cpp $(CFLAGS) -o FindSimSeqs
+	$(CC) FindSimSeqs_debug.cpp $(CFLAGS) -o FindSimSeqs_debug
