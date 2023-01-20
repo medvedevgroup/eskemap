@@ -3,9 +3,9 @@
 
 //This function finds all t-homologies of a text with respect to some pattern using dynamic programming
 const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, 
-	const float& uw, const float& t){
+	const float& uw, const float& t, const bool& noNesting){
 	//Some counter variables
-	uint32_t i, j, k, occ;
+	uint32_t i, j, k, occ, maxI;
 	//The maximum threshold to compare against
 	float maxThres;
 	vector<Thomology> res;
@@ -30,11 +30,6 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 	//Initialize pos (again, we assume there are no duplicates in t)
 	unordered_map<uint64_t, vector<uint32_t>> pos(skP.size());
 
-	//Testing
-	// cout << "findThoms: Pattern sketch:" << endl;
-	// for(fSkIt = skP.begin(); fSkIt != skP.end(); ++fSkIt) cout << *fSkIt << " ";
-	// cout << endl;
-
 	//Fill occp
 	for(fSkIt = skP.begin(); fSkIt != skP.end(); ++fSkIt){
 		if(occp.contains(*fSkIt)){
@@ -44,16 +39,8 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 		}
 	}
 
-	//Testing
-	// cout << "findThoms: Filling of occp done" << endl;
-
 	//Generate L
 	L = genL(occp, tidx);
-
-	//Testing
-	// cout << "findThoms: Generated L" << endl;
-	// cout << "findThoms: Its size is " << L.size() << endl;
-
 	//Set position counter
 	j = 0;
 
@@ -104,14 +91,12 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 		++j;
 	}
 
-	//Testing
-	// cout << "findThoms: Scores calculated" << endl;
-	// cout << "findThoms: Size of score matrix: " << scores.size() << "^2" << endl;
-
 	//Get a reverse iterator to iterate over L
 	rLit = L.rbegin();
 	//Get a counter for the column that we are at
 	j = scores.size() - 1;
+	//Initialize last interesting row
+	maxI = scores.size();
 
 	//Find maximum t-homologies
 	for(vector<vector<float>>::const_reverse_iterator colRit = scores.rbegin(); colRit != scores.rend(); ++colRit){
@@ -136,27 +121,36 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 				continue;
 			}
 
+			//We are not interested in any nested results
+			if(noNesting){
+				//There are no further interesting results in this column
+				if(i > maxI) continue;
 
-
-			//Walk through the list to consider all relevant maximums seen so far
-			while(li != maxScores.end()){
-				//Maximums found in rows > i are irrelevant at this point
-				if(i < li->first) break;
-
-				//Update maximum to compare with
-				maxThres = max(maxThres, li->second);
-				//Walk on
-				++li;
+				//Since we have no nested results we must not update our threshold
+				maxThres = t - 1;
+			} else{
+				//Walk through the list to consider all relevant maximums seen so far
+				while(li != maxScores.end()){
+					//Maximums found in rows > i are irrelevant at this point
+					if(i < li->first) break;
+			
+					//Update maximum to compare with
+					maxThres = max(maxThres, li->second);
+					//Walk on
+					++li;
+				}
 			}
-
+			
 			//Check if score is high enough
 			if(*rowIt > maxThres){
 				//Add t-homology to results
 				res.push_back(make_tuple(L[i].second, L[j].second, *rowIt));
 				//Add score to list with maximum scores
 				maxScores.insert(li, make_pair(i, *rowIt));
-				//Update maximum to comare with
+				//Update maximum to compare with (in case we want nested results)
 				maxThres = *rowIt;
+				//Update last interesting row (in case we do not want nested results)
+				maxI = i - 1;
 			}
 
 			++i;

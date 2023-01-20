@@ -68,7 +68,7 @@ const bool prsArgs(int& nArgs, char** argList, string& seqa, string& seqb, Measu
 
 //This function parses the program parameters. Returns false if given arguments are not valid
 const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, double& hFrac, string& blFl, uint32_t& cw, 
-	float& uw, float& tThres, bool& norm, float& dec, float& inter){
+	float& uw, float& tThres, bool& norm, float& dec, float& inter, bool& noNesting){
 	int option_index = 0, a;
 
 	static struct option long_options[] = {
@@ -83,6 +83,7 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
         {"decent",             required_argument,  0, 'd'},
         {"intercept",          required_argument,  0, 'i'},
         {"normalize",          no_argument,        0, 'n'},
+        {"nesting",            no_argument,        0, 'N'},
         {"help",               no_argument,        0, 'h'},
         {0,                    0,                  0,  0 }
     };
@@ -153,6 +154,9 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 				break;
 			case 'n':
 				norm = true;
+				break;
+			case 'N':
+				noNesting = false;
 				break;
 			case 'h':
 				return false;

@@ -9,6 +9,8 @@ double hFrac = HASH_RATIO;
 int main(int argc, char **argv){
 	//Flag to save that scores are to be normalized
 	bool normalize = NORM_FLAG_DEFAULT;
+	//Flag to state if we are interested in nested results
+	bool noNesting = NESTING_FLAG_DEFAULT;
 	//The k-mer length
 	uint32_t kmerLen = K;
 	//Scoring weights
@@ -41,7 +43,7 @@ int main(int argc, char **argv){
 	vector<tuple<string, uint32_t, Sketch>>::const_iterator p;
 
 	//Parse arguments
-	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, hFrac, bLstFl, comWght, uniWght, tThres, normalize, dec, inter)){//TODO: Tests for this function need to be adapted!
+	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, hFrac, bLstFl, comWght, uniWght, tThres, normalize, dec, inter, noNesting)){//TODO: Tests for this function need to be adapted!
 		//Display help message
 		dsHlp();
 		return 1;
@@ -114,7 +116,7 @@ int main(int argc, char **argv){
 			// cout << "main: tThres: " << tThres << endl;
 
 			//Find t-homologies and output them
-			outputHoms(findThoms(get<2>(*p), tidx, comWght, uniWght, tThres), normalize, get<2>(*p).size());//TODO: Tests for this function need to be adaptated!
+			outputHoms(findThoms(get<2>(*p), tidx, comWght, uniWght, tThres, noNesting), normalize, get<2>(*p).size());//TODO: Tests for this function need to be adaptated!
 		}
 
 		//Remove processed pattern sketches
