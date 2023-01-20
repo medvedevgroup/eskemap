@@ -83,13 +83,14 @@ int main(int argc, char **argv){
 	// 	if(!seenHashes.contains(*gi)){
 	// 		seenHashes[*gi] = 1;
 	// 		const uint64_t *idx_p = mm_idx_get(tidx, *gi, &nHits);
-	// 		if(nHits > 100)	cout << *gi << endl;
+	// 		// cout << nHits << endl;
+	// 		if(nHits <= 10)	cout << *gi << endl;
 	// 	}
 	// }
 	// return 0;
 
 	//Load high abundance k-mers
-	bLstmers = readBlstKmers("highAbundKmers.txt");
+	bLstmers = readBlstKmers("highAbundKmersLrgr10.txt");
 	//Open stream to read in patterns
 	fStr.open(pFile);
 

@@ -244,9 +244,11 @@ rule all:
 		# f"../simulations/reads/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{randrange(maxsize)}_lmn" + \
 		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10.fasta",
 		expand("../simulations/edlibMappings_debug/t2thumanChrY_sr{sr}_dr{dr}_i{ir}_sd{s}_lmn" + \
-		"{mn}_lmx{mx}_lavg{m}_ls{sd}_dp10.er", \
+		"{mn}_lmx{mx}_lavg{m}_ls{sd}_dp10_ri{r}.er", \
 		sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, s=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
-		config['pbsimLenAvg'], sd=config['pbsimLenStd']),
+		config['pbsimLenAvg'], sd=config['pbsimLenStd'], r=[n.split("_ri")[1].split(".fasta")[0] for n in glob("../simulations" + \
+			"/reads/t2thumanChrY_sr0.00010909090909090909_dr0.0009818181818181818_i0.0009090909090909091_sd7361077429744071834" + \
+			"_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri*-*.fasta")]),
 		# f"../simulations/homologies/homologies_t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn" + \
 		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15_" + \
 		# 	f"hr0.2_c1_u1_de{0.05226723}_in{-116.02672267226808}.txt",
