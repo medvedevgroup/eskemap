@@ -76,10 +76,11 @@ int main(int argc, char **argv){
 
 	//Testing
 	// string genome;
+	// cout << "main: tFile: " << tFile << endl;
 	// unordered_map<uint64_t, char> seenHashes;
 	// readFASTA(tFile, genome);
 	// Sketch tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
-	// // cout << "main: Length of text sketch: " << tsk.size() << endl;
+	// cout << "main: Length of unfiltered text sketch: " << tsk.size() << endl;
 	// int nHits;
 	// for(Sketch::const_iterator gi = tsk.begin(); gi != tsk.end(); ++gi){
 	// 	if(!seenHashes.contains(*gi)){
@@ -95,6 +96,11 @@ int main(int argc, char **argv){
 	bLstmers = readBlstKmers("highAbundKmersLrgr10.txt");
 	//Open stream to read in patterns
 	fStr.open(pFile);
+
+	//Testing
+	// tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
+	// cout << "main: Length of filtered text sketch: " << tsk.size() << endl;
+	// return 0;
 
 	//Load pattern sequences in batches
 	while(lPttnSks(fStr, kmerLen, hFrac, bLstmers, pSks) || !pSks.empty()){//TODO: Test for this function need to be adaptated!
@@ -114,6 +120,7 @@ int main(int argc, char **argv){
 			//Testing
 			// cout << "main: pattern length: " << get<1>(*p) << endl;
 			// cout << "main: tThres: " << tThres << endl;
+			// cout << "main: noNesting flag is " << (noNesting ? "" : "not ") << "set" << endl; 
 
 			//Find t-homologies and output them
 			outputHoms(findThoms(get<2>(*p), tidx, comWght, uniWght, tThres, noNesting), normalize, get<2>(*p).size());//TODO: Tests for this function need to be adaptated!

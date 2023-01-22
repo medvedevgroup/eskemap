@@ -123,8 +123,11 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 
 			//We are not interested in any nested results
 			if(noNesting){
+				//Testing
+				// cout << "findThoms: We are inside the no nesting branch" << endl;
+
 				//There are no further interesting results in this column
-				if(i > maxI) continue;
+				if(i >= maxI) continue;
 
 				//Since we have no nested results we must not update our threshold
 				maxThres = t - 1;
@@ -150,7 +153,7 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 				//Update maximum to compare with (in case we want nested results)
 				maxThres = *rowIt;
 				//Update last interesting row (in case we do not want nested results)
-				maxI = i - 1;
+				maxI = i;
 			}
 
 			++i;
