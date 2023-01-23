@@ -67,6 +67,7 @@ const vector<pair<uint64_t, uint32_t>> genL(const unordered_map<uint64_t, uint32
 		if(nHits > 0){
 			//Iterate over all occurrences
 		    for(i = 0; i < nHits; ++i){
+		    	//Push (hash value, k-mer position in sketch) pair
 		    	L.push_back(make_pair(sI->first, ((uint32_t)(*idx_p))>>1));
 		        //Move to next occurrence
 		        idx_p++;

@@ -26,5 +26,5 @@ if arguments.e >= len(orig.seq):
 	print("ERROR: Input sequence is too short", file=stderr)
 
 info = f"_substring{arguments.s}-{arguments.e}"
-oSeq = SeqRecord(Seq(orig.seq[arguments.s:arguments.e + 1]), id=orig.id + info, description=orig.description + info)
+oSeq = SeqRecord(orig.seq[arguments.s:arguments.e + 1], id=orig.id + info, description=orig.description + info)
 SeqIO.write(oSeq, open(arguments.o, 'w'), "fasta")

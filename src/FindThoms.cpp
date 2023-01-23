@@ -1,10 +1,38 @@
+// #include "mmpriv.h"
 #include "Sketch.cpp"
 #include "IO.cpp"
 #include "Thomology.cpp"
 #include "Index.cpp"
 
+// #include "options.c"
+// #include "kthread.c"
+// #include "misc.c"
+// #include "kalloc.c"
+// #include "bseq.c"
+// #include "index.c"
+// #include "map.c"
+
+// mm_idx_reader_t *mm_idx_reader_open(const char *fn, const mm_idxopt_t *opt, const char *fn_out)
+// {
+// 	int64_t is_idx;
+// 	mm_idx_reader_t *r;
+// 	is_idx = mm_idx_is_idx(fn);
+// 	if (is_idx < 0) return 0; // failed to open the index
+// 	r = (mm_idx_reader_t*)calloc(1, sizeof(mm_idx_reader_t));
+// 	r->is_idx = is_idx;
+// 	if (opt) r->opt = *opt;
+// 	else mm_idxopt_init(&r->opt);
+// 	if (r->is_idx) {
+// 		r->fp.idx = fopen(fn, "rb");
+// 		r->idx_size = is_idx;
+// 	} else r->fp.seq = mm_bseq_open(fn);
+// 	if (fn_out) r->fp_out = fopen(fn_out, "wb");
+// 	return r;
+// }
+
 //The FracMinHash ratio
 double hFrac = HASH_RATIO;
+unordered_map<uint64_t, char> bLstmers;
 
 int main(int argc, char **argv){
 	//Flag to save that scores are to be normalized
@@ -75,22 +103,32 @@ int main(int argc, char **argv){
 	}
 
 	//Testing
-	// string genome;
+	bLstmers[40064324] = 1;
+	bLstmers[8867545] = 1;
+	string genome;
 	// cout << "main: tFile: " << tFile << endl;
 	// unordered_map<uint64_t, char> seenHashes;
-	// readFASTA(tFile, genome);
-	// Sketch tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
+	readFASTA(tFile, genome);
+	Sketch tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
 	// cout << "main: Length of unfiltered text sketch: " << tsk.size() << endl;
-	// int nHits;
-	// for(Sketch::const_iterator gi = tsk.begin(); gi != tsk.end(); ++gi){
-	// 	if(!seenHashes.contains(*gi)){
-	// 		seenHashes[*gi] = 1;
-	// 		const uint64_t *idx_p = mm_idx_get(tidx, *gi, &nHits);
-	// 		// cout << nHits << endl;
-	// 		if(nHits <= 10)	cout << *gi << endl;
-	// 	}
-	// }
-	// return 0;
+	int nHits;
+	for(Sketch::const_iterator gi = tsk.begin(); gi != tsk.end(); ++gi){
+		// if(!seenHashes.contains(*gi)){
+		// 	seenHashes[*gi] = 1;
+			const uint64_t *idx_p = mm_idx_get(tidx, *gi, &nHits);
+		// 	// cout << nHits << endl;
+		// 	if(nHits <= 10)	cout << *gi << endl;
+		// }
+		if(nHits > 0){
+			//Iterate over all occurrences
+		    for(uint32_t i = 0; i < nHits; ++i){
+		    	cout << "Position of k-mer " << *gi << ":" << (((uint32_t)(*idx_p))>>1) << endl;
+		        //Move to next occurrence
+		        idx_p++;
+	        }
+		}
+	}
+	return 0;
 
 	//Load high abundance k-mers
 	bLstmers = readBlstKmers("highAbundKmersLrgr10.txt");
@@ -119,7 +157,7 @@ int main(int argc, char **argv){
 
 			//Testing
 			// cout << "main: pattern length: " << get<1>(*p) << endl;
-			// cout << "main: tThres: " << tThres << endl;
+			cout << "main: tThres: " << tThres << endl;
 			// cout << "main: noNesting flag is " << (noNesting ? "" : "not ") << "set" << endl; 
 
 			//Find t-homologies and output them
