@@ -26,7 +26,7 @@ readCoverage: 2
 readLength: 20000
 matchScores: [1, 5, 10, 15, 30]
 homologyThresholds: [0, -1000, -2000]
-benchRepRuns: 5
+benchRepRuns: 10
 readLens: [100, 250075, 500050, 750025, 1000000]
 refRdRatio: 1.1
 t2tChrYlen: 62460029
@@ -34,3 +34,4 @@ pbsimLenMin: 100
 pbsimLenMax: 1000000
 pbsimLenAvg: 9000
 pbsimLenStd: 7000
+hashRate: 0.3

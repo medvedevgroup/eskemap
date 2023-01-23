@@ -46,6 +46,9 @@ if __name__ == '__main__':
 
 	pattern = calcSketch(patternSeq, arguments.k, ht)
 
+	#Testing
+	print(pattern.remove(37199950))
+
 	if exists(arguments.s):
 		textSeq = [str(r.seq) for r in SeqIO.parse(open(arguments.s, 'r'), "fasta")][0]
 	else:
@@ -159,6 +162,7 @@ if __name__ == '__main__':
 	#Testing
 	# print("scores:", scores)
 	# print("occp:", occp)
+	# print(scores[15][15])
 	# exit(0)
 
 	#Walk through score matrix and find maximal t-homologies
@@ -182,7 +186,10 @@ if __name__ == '__main__':
 					# print("Potential t-homology starting at position 0 detected")
 
 					#If first and last hash are the same and it only occurs once inside the pattern this cannot be a t-homology
-					if text[i] == text[j] and occp[text[j]][0] <= 1:
+					if i != j and text[i] == text[j] and occp[text[j]][0] <= 1:
+						#Testing
+						# print(f"j: {j}, i: {i}")
+						
 						continue
 
 					#Check if we have already seen a relevant maximum
@@ -213,7 +220,10 @@ if __name__ == '__main__':
 					# print("Potential t-homology starting at position i>0 detected")
 
 					#If first and last hash are the same and it only occurs once inside the pattern this cannot be a t-homology
-					if text[i] == text[j] and occp[text[j]][0] <= 1:
+					if i != j and text[i] == text[j] and occp[text[j]][0] <= 1:
+						#Testing
+						# print(f"j: {j}, i: {i}")
+
 						continue
 					
 					if i in maxScores:
