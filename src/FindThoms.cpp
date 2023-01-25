@@ -139,7 +139,7 @@ int main(int argc, char **argv){
 
 			//Testing
 			// cout << "main: pattern length: " << get<1>(*p) << endl;
-			cout << "main: tThres: " << tThres << endl;
+			// cout << "main: tThres: " << tThres << endl;
 			// cout << "main: noNesting flag is " << (noNesting ? "" : "not ") << "set" << endl; 
 
 			//Find t-homologies and output them
