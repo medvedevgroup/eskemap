@@ -38,8 +38,10 @@ int main(int argc, char **argv){
 	mm_mapopt_t mopt;
 	//An index reader
 	mm_idx_reader_t *r;
-	//A pointer to the index
+	//A pointer to the text index
 	const mm_idx_t *tidx;
+	//A pointer to the pattern index
+	const mm_idx_t *pidx;
 	//A vector of pattern sketches
 	vector<tuple<string, uint32_t, Sketch>> pSks;
 	//An iterator to iterate over pattern sketches
@@ -56,6 +58,7 @@ int main(int argc, char **argv){
 	mm_set_opt(0, &iopt, &mopt);
 	//Adjust k if necessary
 	iopt.k = kmerLen;
+	iopt.w = 19;
 	//Open an index reader //TODO: We do not allow yet to use a prebuilt index
 	r = mm_idx_reader_open(tFile.c_str(), &iopt, INDEX_DEFAULT_DUMP_FILE);
 
@@ -66,7 +69,8 @@ int main(int argc, char **argv){
 	}
 
 	//Load high abundance k-mers
-	bLstmers = readBlstKmers("highAbundKmersLrgr10.txt");
+	// bLstmers = readBlstKmers("highAbundKmersLrgr10.txt");
+	bLstmers = readBlstKmers("");
 
 	//Testing
 	// bLstmers = readBlstKmers("testBlacklist.txt");
@@ -75,7 +79,7 @@ int main(int argc, char **argv){
 	// bLstmers[91250507] = 1;
 	// cout << "bLstmers.contains(40064324):" << bLstmers.contains(40064324) << endl;
 
-	//Construct index
+	//Construct index of reference
 	if((tidx = mm_idx_reader_read(r, 1)) == 0){//TODO: Make use of multithreading here!
 		cerr << "ERROR: Text index cannot be read" << endl;
 		return -1;
@@ -87,10 +91,31 @@ int main(int argc, char **argv){
 		return -1; 
 	}
 
+	//Open index reader to read pattern
+	r = mm_idx_reader_open(pFile.c_str(), &iopt, INDEX_DEFAULT_DUMP_FILE);
+
+	//Check if index could be opened successfully
+	if(r == NULL){
+		cerr << "ERROR: Pattern sequence file could not be read" << endl;
+		return -1;
+	}
+
+	//Construct index of reference
+	if((pidx = mm_idx_reader_read(r, 1)) == 0){//TODO: Make use of multithreading here!
+		cerr << "ERROR: Pattern index cannot be read" << endl;
+		return -1;
+	}
+
+	//For simplicity we assume that an index always consists of only one part
+	if(mm_idx_reader_read(r, 1) != 0){
+		cerr << "ERROR: Pattern index consists of several parts! We cannot handle this yet" << endl;
+		return -1; 
+	}
+
 	//Testing
 	// bLstmers = readBlstKmers("testBlacklist.txt");
 	// string genome;
-	// // cout << "main: tFile: " << tFile << endl;
+	// cout << "main: tFile: " << tFile << endl;
 	// // unordered_map<uint64_t, char> seenHashes;
 	// readFASTA(tFile, genome);
 	// Sketch tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
@@ -123,7 +148,8 @@ int main(int argc, char **argv){
 	// return 0;
 
 	//Load pattern sequences in batches
-	while(lPttnSks(fStr, kmerLen, hFrac, bLstmers, pSks) || !pSks.empty()){//TODO: Test for this function need to be adaptated!
+	// while(lPttnSks(fStr, kmerLen, hFrac, bLstmers, pSks) || !pSks.empty()){//TODO: Test for this function need to be adaptated!
+	while(lMiniPttnSks(fStr, pidx, pSks) || !pSks.empty()){//TODO: This function still needs to be tested!
 		//Iterate over pattern sketches
 		for(p = pSks.begin(); p != pSks.end(); ++p){
 			//Only output pattern sequence name if there is more than one sequence

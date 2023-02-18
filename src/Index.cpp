@@ -1,5 +1,4 @@
 #include "Index.h"
-#include "../../software/minimap2/index.c"
 
 //Index constructor
 Index::Index(const Sketch& sk){

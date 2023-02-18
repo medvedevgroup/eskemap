@@ -278,6 +278,68 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, cons
 	return false;
 }
 
+//This function reads in batches of FASTA sequence entries from file and transforms them into minimap sketches. Returns false if end
+// of file was reached.
+const bool lMiniPttnSks(ifstream& fStr, const mm_idx_t *pidx, vector<tuple<string, uint32_t, Sketch>>& pSks){
+	bool headerRead, idRead = false, lnBrkDiscvd = false;
+	char c;
+	string seq, seqID;
+
+	//Check if the file is open
+	if(!fStr.is_open()) return false;
+
+	//If this function is called iteratively, the '>' of the next entry has already been read
+	headerRead = fStr.gcount() != 0;
+
+	//Read in file character by character
+	while(fStr.get(c)){
+		//An entry's sequence is complete if we find a second header (which can only start after at least one line break) in the 
+		//file
+		if(c == '>' && headerRead && lnBrkDiscvd){
+			//Add sequence's sketch, length and id to result vector
+			pSks.push_back(make_tuple(seqID, seq.length(), buildMiniSketch(seq, pidx)));//TODO: This function still needs to be tested!
+			//Clear sequence id
+			seqID.clear();
+			//Clear sequence
+			seq.clear();
+
+			//Check if enough sequences have been read
+			if(pSks.size() == PATTERN_BATCH_SIZE) return true;
+
+			//Reset id-read flag
+			idRead = false;
+			//Reset line-break-discovered flag
+			lnBrkDiscvd = false;
+			continue;
+		}
+
+		//Note if we have completely read the sequence id
+		idRead = idRead || (headerRead && c == ' ' && !lnBrkDiscvd);
+		//Note if we have found the first line break after a new header started
+		lnBrkDiscvd = lnBrkDiscvd || c == '\n';
+
+		//Update sequence id if we are still reading it
+		if(headerRead && !lnBrkDiscvd && !idRead){
+			seqID += c;
+			continue;
+		}
+
+		//Note if we have found the beginning of a header
+		headerRead = headerRead || (c == '>');
+
+		//There is no sequence to load in the header line
+		if(headerRead && !lnBrkDiscvd) continue;
+
+		//We are only interested in unambigous, unmasked nucleotides
+		if(c == 'A' || c == 'C' || c == 'G' || c == 'T') seq += c;
+	}
+
+	//Add last entry's sketch and sequence id to result vector if it is not empty
+	if(!seq.empty()) pSks.push_back(make_tuple(seqID, seq.length(), buildMiniSketch(seq, pidx)));
+
+	return false;
+}
+
 //This function reads 64-bit numbers from file and returns them as a hash table
 const unordered_map<uint64_t, char> readBlstKmers(const string& fname){
 	char nb[STRING_BUFFER_SIZE_DEFAULT];

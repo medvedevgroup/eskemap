@@ -46,7 +46,7 @@ if __name__ == '__main__':
 		rs = randint(0, len(refSeq.seq) - rLen)
 		#Get read sequence
 		rdSeq = mutateSeq(str(refSeq.seq[rs:rs+rLen]), arguments.sr, arguments.dr, arguments.ir)
-		rds.append(SeqRecord(Seq(rdSeq), id='s_' + str(i), description=f"ref: {refSeq.id} sr: {arguments.sr} ir: {arguments.ir}" + \
+		rds.append(SeqRecord(Seq(rdSeq), id='s_' + str(i), description=f"ref: {refSeq.id}:{rs}-{rs+rLen-1} sr: {arguments.sr} ir: {arguments.ir}" + \
 			f" dr: {arguments.dr} sd: {arguments.sd}"))
 
 	#Output reads

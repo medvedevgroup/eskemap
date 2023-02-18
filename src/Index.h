@@ -2,7 +2,6 @@
 #define INDEX_HPP
 
 #include "Sketch.h"
-#include "../../software/minimap2/minimap.h"
 
 #define INDEX_DEFAULT_DUMP_FILE "indexDump.idx"
 

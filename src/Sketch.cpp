@@ -69,6 +69,45 @@ const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFr
 	return sk;
 }
 
+//This function builds a minimap2 sketch of a sequence by querying from a prebuilt minimap index
+const Sketch buildMiniSketch(const string& seq, const mm_idx_t *pidx){
+	int nHits;
+	const uint64_t mask = pow(ALPHABET_SIZE, pidx->k) - 1;
+	uint64_t kmerHash;
+	Sketch sk;
+
+	//If the sequence is smaller than k we are done
+	if(seq.length() < pidx->k){
+		cerr << "WARNING: Length of input sequence " << seq << " is smaller than k (k=" << pidx->k << ")" << endl;
+
+		return sk;
+	}
+
+	//Reserve as much space as is approximately needed to store the sketch (which hopefully saves some time)
+	sk.reserve(seq.length() * 0.03);
+
+	//Iterate over k-mer starting positions in sequence
+	for(uint32_t i = 0; i < seq.length() - pidx->k + 1; ++i){
+		//Calculate numerical k-mer representation and its hash
+		kmerHash = getHash(calcKmerNb(seq.substr(i, pidx->k)), mask);
+		//Query current hash in index
+		const uint64_t *idx_p = mm_idx_get(pidx, kmerHash, &nHits);
+
+		//Check if hash could be found
+		if(nHits > 0){
+			sk.push_back(kmerHash);
+
+			//Testing
+			cout << "buildMiniSketch: Read id is " << ((*idx_p)>>32) << endl;
+		} 
+	}
+
+	//Resize sketch (just for case we have allocated way too much memory)
+	sk.shrink_to_fit();
+
+	return sk;
+}
+
 //This function dereplicates elements from sketches sharing the same hash value (only the first one is kept). WARNING: It does not preserve elements'
 //initial ordering
 void remDuplHshs(PairSketch& sk){

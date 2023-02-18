@@ -9,6 +9,9 @@
 #include <vector>
 #include <unordered_map>
 
+#include "../../software/minimap2/minimap.h"
+#include "../../software/minimap2/index.c"
+
 //The k-mer size
 #define K 9
 //The hash value threshold
@@ -68,6 +71,9 @@ PairSketch buildSketch(const string& s, const uint64_t& ht);
 //This function builds a FracMinHash sketch of a sequence using a given hash threshold. K-mers occurring on the given black list are
 //ignored
 const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFrac, const unordered_map<uint64_t, char>& bLstmers);
+
+//This function builds a minimap2 sketch of a sequence by querying from a prebuilt minimap index
+const Sketch buildMiniSketch(const string& seq, const mm_idx_t *pidx);
 
 //This function dereplicates elements from sketches sharing the same hash value (only the first one is kept). WARNING: It does not preserve elements'
 //initial ordering
