@@ -297,7 +297,7 @@ const bool lMiniPttnSks(ifstream& fStr, const mm_idx_t *pidx, vector<tuple<strin
 		//file
 		if(c == '>' && headerRead && lnBrkDiscvd){
 			//Add sequence's sketch, length and id to result vector
-			pSks.push_back(make_tuple(seqID, seq.length(), buildMiniSketch(seq, pidx)));//TODO: This function still needs to be tested!
+			pSks.push_back(make_tuple(seqID, seq.length(), buildMiniSketch(seq, seqID, pidx)));//TODO: This function still needs to be tested!
 			//Clear sequence id
 			seqID.clear();
 			//Clear sequence
@@ -335,7 +335,7 @@ const bool lMiniPttnSks(ifstream& fStr, const mm_idx_t *pidx, vector<tuple<strin
 	}
 
 	//Add last entry's sketch and sequence id to result vector if it is not empty
-	if(!seq.empty()) pSks.push_back(make_tuple(seqID, seq.length(), buildMiniSketch(seq, pidx)));
+	if(!seq.empty()) pSks.push_back(make_tuple(seqID, seq.length(), buildMiniSketch(seq, seqID, pidx)));
 
 	return false;
 }

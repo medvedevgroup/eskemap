@@ -70,10 +70,12 @@ const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFr
 }
 
 //This function builds a minimap2 sketch of a sequence by querying from a prebuilt minimap index
-const Sketch buildMiniSketch(const string& seq, const mm_idx_t *pidx){
+const Sketch buildMiniSketch(const string& seq, const string& id, const mm_idx_t *pidx){
 	int nHits;
+	uint32_t sIdMini;
 	const uint64_t mask = pow(ALPHABET_SIZE, pidx->k) - 1;
 	uint64_t kmerHash;
+	const mm_idx_seq_t *seqFeats = pidx->seq;
 	Sketch sk;
 
 	//If the sequence is smaller than k we are done
@@ -86,6 +88,18 @@ const Sketch buildMiniSketch(const string& seq, const mm_idx_t *pidx){
 	//Reserve as much space as is approximately needed to store the sketch (which hopefully saves some time)
 	sk.reserve(seq.length() * 0.03);
 
+	//Find index internal reference id of our sequence
+	for(uint32_t i = 0; i < pidx->n_seq; ++i){
+		if(!strcmp((seqFeats+i)->name, id.c_str())){
+			sIdMini = i;
+
+			//Testing
+			// cout << "buildMiniSketch: read " << id << " has the internal id " << sIdMini << endl;
+
+			break;
+		}
+	}
+
 	//Iterate over k-mer starting positions in sequence
 	for(uint32_t i = 0; i < seq.length() - pidx->k + 1; ++i){
 		//Calculate numerical k-mer representation and its hash
@@ -95,12 +109,46 @@ const Sketch buildMiniSketch(const string& seq, const mm_idx_t *pidx){
 
 		//Check if hash could be found
 		if(nHits > 0){
-			sk.push_back(kmerHash);
+			//Iterate over all occurrences
+		    for(uint32_t j = 0; j < nHits; ++j){
+		    	if((uint32_t) ((*idx_p)>>32) == sIdMini){
+		    		sk.push_back(kmerHash);
+		    		break;
+		    	}
 
-			//Testing
-			cout << "buildMiniSketch: Read id is " << ((*idx_p)>>32) << endl;
-		} 
+		        //Move to next occurrence
+		        idx_p++;
+	        }
+	    }
+
+	    //Do the same for the reverse complement
+	    kmerHash = getHash(calcKmerNb(revComp(seq.substr(i, pidx->k))), mask);
+		const uint64_t *idx_q = mm_idx_get(pidx, kmerHash, &nHits);
+
+		//Check if hash could be found
+		if(nHits > 0){
+			//Iterate over all occurrences
+		    for(uint32_t j = 0; j < nHits; ++j){
+		    	if((uint32_t) ((*idx_q)>>32) == sIdMini){
+		    		sk.push_back(kmerHash);
+		    		break;
+		    	}
+
+		        //Move to next occurrence
+		        idx_q++;
+	        }
+	    }
+
+		//Testing
+		// cout << "buildMiniSketch: Read id is " << ((*idx_p)>>32) << endl;
+		// cout << "buildMiniSketch: Searching for k-mer hash " << kmerHash << endl;
+		// cout << "buildMiniSketch: i: " << i << 
 	}
+
+	//Testing
+	// const mm_idx_seq_t *s = pidx->seq;
+	// cout << s->name << endl;
+	// cout << (s+1)->name << endl;
 
 	//Resize sketch (just for case we have allocated way too much memory)
 	sk.shrink_to_fit();
@@ -134,4 +182,34 @@ void remDuplHshs(PairSketch& sk){
 			++j;
 		}
 	}
+}
+
+//This function calculates the reverse complement of a DNA sequence
+string revComp(const string &seq){
+	//The result string
+	string revSeq;
+
+	//Go through the query from the end to the beginning
+	for(int32_t i = seq.length() - 1; i >= 0; --i){
+		//Check which base we are dealing with and append its complement
+		switch(seq[i]){
+			case NUCL_BASE_A:
+				revSeq += CMPL_BASE_A;
+				break;
+			case NUCL_BASE_C:
+				revSeq += CMPL_BASE_C;
+				break;
+			case NUCL_BASE_G:
+				revSeq += CMPL_BASE_G;
+				break;
+			case NUCL_BASE_T:
+				revSeq += CMPL_BASE_T;
+				break;
+			default:
+				revSeq += "N";
+				break;
+		}
+	}
+
+	return revSeq;
 }

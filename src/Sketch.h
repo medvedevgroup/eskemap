@@ -22,6 +22,16 @@
 #define ALPHABET_SIZE 4
 //Number of times we expect p to occur in t
 #define P_MULTIPLICITY 2
+//Character constants used for nucleotide bases
+#define NUCL_BASE_A 'A'
+#define NUCL_BASE_C 'C'
+#define NUCL_BASE_G 'G'
+#define NUCL_BASE_T 'T'
+//Complements of nucleotide bases
+#define CMPL_BASE_A 'T'
+#define CMPL_BASE_C 'G'
+#define CMPL_BASE_G 'C'
+#define CMPL_BASE_T 'A'
 
 using namespace std;
 //A PairSketch is a list of offset hash pairs
@@ -73,10 +83,13 @@ PairSketch buildSketch(const string& s, const uint64_t& ht);
 const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFrac, const unordered_map<uint64_t, char>& bLstmers);
 
 //This function builds a minimap2 sketch of a sequence by querying from a prebuilt minimap index
-const Sketch buildMiniSketch(const string& seq, const mm_idx_t *pidx);
+const Sketch buildMiniSketch(const string& seq, const string& id, const mm_idx_t *pidx);
 
 //This function dereplicates elements from sketches sharing the same hash value (only the first one is kept). WARNING: It does not preserve elements'
 //initial ordering
 void remDuplHshs(PairSketch& sk);
+
+//This function calculates the reverse complement of a DNA sequence
+string revComp(const string &seq);
 
 #endif
