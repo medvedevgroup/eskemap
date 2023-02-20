@@ -35,3 +35,5 @@ pbsimLenMax: 1000000
 pbsimLenAvg: 9000
 pbsimLenStd: 7000
 hashRate: 0.3
+minimap2HifiK: 19
+minimap2HifiW: 19

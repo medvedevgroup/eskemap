@@ -70,8 +70,8 @@ int main(int argc, char **argv){
 
 	//Load high abundance k-mers
 	// bLstmers = readBlstKmers("highAbundKmersLrgr10.txt");
-	// bLstmers = readBlstKmers("highAbundKmersMiniDefault.txt");
-	bLstmers = readBlstKmers("testBlacklist.txt");
+	// bLstmers = readBlstKmers("highAbundKmersMiniDefaultBtStrnds.txt");
+	// bLstmers = readBlstKmers("testBlacklist.txt");
 
 	//Testing
 	// bLstmers = readBlstKmers("testBlacklist.txt");
@@ -116,29 +116,31 @@ int main(int argc, char **argv){
 	//Testing
 	// bLstmers = readBlstKmers("testBlacklist.txt");
 	string genome;
-	cout << "main: tFile: " << tFile << endl;
+	// // cout << "main: tFile: " << tFile << endl;
 	unordered_map<uint64_t, char> seenHashes;
 	readFASTA(tFile, genome);
-	// Sketch tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
-	Sketch tsk = buildMiniSketch(genome, "s_28536", tidx);
-	// // cout << "main: Length of unfiltered text sketch: " << tsk.size() << endl;
+	// // Sketch tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
+	// // Sketch tsk = buildMiniSketch(genome, "s_28536", tidx);
+	// Sketch tsk = buildMiniSketch(genome, "NC_060948.1", tidx);
+	Sketch tsk = buildMiniSketch(genome, "seq", tidx);
+	// // // cout << "main: Length of unfiltered text sketch: " << tsk.size() << endl;
 	int nHits;
 	for(Sketch::const_iterator gi = tsk.begin(); gi != tsk.end(); ++gi){
 		// if(!seenHashes.contains(*gi)){
 		// 	seenHashes[*gi] = 1;
 		const uint64_t *idx_p = mm_idx_get(tidx, *gi, &nHits);
-		// 	cout << nHits << endl;
-		// 	// if(nHits < 5050)	cout << *gi << endl;
+	// 		cout << nHits << endl;
+		if(nHits > 0)	cout << *gi << endl;
 		// }
-		if(nHits > 0){
-			//Iterate over all occurrences
-		    for(uint32_t i = 0; i < nHits; ++i){
-		    	cout << "Position of k-mer " << *gi << ":" << (((uint32_t)(*idx_p))>>1) << endl;
-		    	// cout << "Strand: " << (((uint32_t)((*idx_p))<<31)>>31) << endl;
-		        //Move to next occurrence
-		        idx_p++;
-	        }
-		}
+	// 	if(nHits > 0){
+	// 		//Iterate over all occurrences
+	// 	    for(uint32_t i = 0; i < nHits; ++i){
+	// 	    	cout << "Position of k-mer " << *gi << ":" << (((uint32_t)(*idx_p))>>1) << endl;
+	// // 	//     	// cout << "Strand: " << (((uint32_t)((*idx_p))<<31)>>31) << endl;
+	// 	        //Move to next occurrence
+	// 	        idx_p++;
+	//         }
+	// 	}
 	}
 	return 0;
 

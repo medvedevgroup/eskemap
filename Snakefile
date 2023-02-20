@@ -131,8 +131,14 @@ def genSampleFileNames(wcs):
 	for l in config['readLens']:
 		for i in range(config['randomSampleSize']):
 			seed = randrange(maxsize)
+			# scoreFiles.append(f"../simulations/expValExp/scores/readRefGlobIntSecScore_se{seed}_sl{l}_sr{sr}_ir{ir}_dr{dr}" + \
+			# 	f"_ser{ser}_ier{ier}_der{der}_k15_r0.1_c1_u1.txt")
+
+	for l in [30]:
+		for i in range(3):
+			seed = randrange(maxsize)
 			scoreFiles.append(f"../simulations/expValExp/scores/readRefGlobIntSecScore_se{seed}_sl{l}_sr{sr}_ir{ir}_dr{dr}" + \
-				f"_ser{ser}_ier{ier}_der{der}_k15_r0.1_c1_u1.txt")
+				f"_ser{ser}_ier{ier}_der{der}_k{config['minimap2HifiK']}_w{config['minimap2HifiW']}_c1_u1.txt")
 
 	tl = config['templLen']
 	k = config['minimap2DefaultK']
@@ -206,7 +212,7 @@ READ_SEED = randrange(maxsize)
 rule all:
 	input:
 		#Expectation value estimation
-		# genSampleFileNames,
+		genSampleFileNames,
 		# genReadScoreFiles,
 		# expand("../simulations/expValExp/dists/globEditDistance_srandSeq_l{l}_rid{n}_trandSeq_l{l}_rid{n}_m{m}_d{d}_i{i}_cn0_m" + \
 		# 	"{se}_d{de}_i{ie}_cn0.txt", l=config['readLens'], n=range(config['randomSampleSize']), m=SUB_RATE, d=DEL_RATE, i=\
@@ -247,13 +253,13 @@ rule all:
 		# "{mn}_lmx{mx}_lavg{m}_ls{sd}_dp10_ri{i}.er", \
 		# sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, s=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
 		# config['pbsimLenAvg'], sd=config['pbsimLenStd'], i=range(69401)),
-		f"../simulations/homologies/homologies_t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn" + \
-		f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15_" + \
-			f"hr{config['hashRate']}_c1_u1_de{0.05226723}_in{-116.02672267226808}.txt",
-		expand("../benchmarks/benchFindThoms_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_" + \
-			"hr{hr}_c1_u1_de{de}_in{it}_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
-			config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], hr=config['hashRate'], de=0.05226723, it=\
-			-116.02672267226808, i=range(config['benchRepRuns'])),
+		# f"../simulations/homologies/homologies_t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn" + \
+		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15_" + \
+		# 	f"hr{config['hashRate']}_c1_u1_de{0.05226723}_in{-116.02672267226808}.txt",
+		# expand("../benchmarks/benchFindThoms_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_" + \
+		# 	"hr{hr}_c1_u1_de{de}_in{it}_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
+		# 	config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], hr=config['hashRate'], de=0.05226723, it=\
+		# 	-116.02672267226808, i=range(config['benchRepRuns'])),
 		# f"../simulations/minimap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
 		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.sam.gz",
 		# expand("../benchmarks/benchMinimap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_rep" + \
@@ -338,6 +344,25 @@ rule calculateGlobalIntersectionSimilarity:
 		"../simulations/expValExp/scores/{dupInfo}GlobIntSecScore_se{desc}_c1_u1.txt"
 	shell:
 		"python3 scripts/CalcGlobInterSim.py -p {input} > {output}"
+
+rule generateReadRefMiniSketchPairs:
+	params:
+		sd = "{sd}",
+		sl = "{sl}",
+		sr = "{sr}",
+		ir = "{ir}",
+		dr = "{dr}",
+		ser = "{ser}",
+		ier = "{ier}",
+		der = "{der}",
+		k = "{k}",
+		w = "{w}"
+	output:
+		"../simulations/expValExp/sketches/readRefKskSeqPairs_se{sd}_sl{sl}_sr{sr}_ir{ir}_dr{dr}_ser{ser}" + \
+		"_ier{ier}_der{der}_k{k}_w{w}.sk"
+	shell:
+		"python3 scripts/genRdRfSks.py -s {params.sd} -l {params.sl} -m {params.sr} -i {params.ir} -d {params.dr} -se " + \
+		"{params.ser} -ie {params.ier} -de {params.der} -k {params.k} -H Mini -w {params.w} > {output} 2> testout_se{params.sd}.fasta"
 
 rule generateReadRefSketchPairs:
 	params:
