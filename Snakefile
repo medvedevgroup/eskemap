@@ -134,7 +134,7 @@ def genSampleFileNames(wcs):
 			# scoreFiles.append(f"../simulations/expValExp/scores/readRefGlobIntSecScore_se{seed}_sl{l}_sr{sr}_ir{ir}_dr{dr}" + \
 			# 	f"_ser{ser}_ier{ier}_der{der}_k15_r0.1_c1_u1.txt")
 
-	for l in [30]:
+	for l in [1000000]:
 		for i in range(3):
 			seed = randrange(maxsize)
 			scoreFiles.append(f"../simulations/expValExp/scores/readRefGlobIntSecScore_se{seed}_sl{l}_sr{sr}_ir{ir}_dr{dr}" + \

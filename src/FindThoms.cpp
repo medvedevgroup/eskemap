@@ -123,7 +123,8 @@ int main(int argc, char **argv){
 	// // Sketch tsk = buildMiniSketch(genome, "s_28536", tidx);
 	// Sketch tsk = buildMiniSketch(genome, "NC_060948.1", tidx);
 	Sketch tsk = buildMiniSketch(genome, "seq", tidx);
-	// // // cout << "main: Length of unfiltered text sketch: " << tsk.size() << endl;
+	// cout << "main: Length of unfiltered text sketch: " << tsk.size() << endl;
+	return 0;
 	int nHits;
 	for(Sketch::const_iterator gi = tsk.begin(); gi != tsk.end(); ++gi){
 		// if(!seenHashes.contains(*gi)){
@@ -132,6 +133,7 @@ int main(int argc, char **argv){
 	// 		cout << nHits << endl;
 		if(nHits > 0)	cout << *gi << endl;
 		// }
+		// if(*gi == 16105810989) cout << "Interesting k-mer hash was searched" << endl;
 	// 	if(nHits > 0){
 	// 		//Iterate over all occurrences
 	// 	    for(uint32_t i = 0; i < nHits; ++i){

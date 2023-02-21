@@ -24,34 +24,60 @@ def calcMiniSketch(seq, k, w):
 	mask = (4 ** k) - 1
 	lastIdx = -1
 
+	#Testing 
+	logging = False
+
 	for i in range(len(seq) - k + 1):
 		kmerBits = 0
+		kmerBitsRevComp = 0
 		windowBorder = i - (w - 1)
 
 		#Get bit representation of k-mer
 		for c in seq[i:i+k]:
 			kmerBits = (kmerBits << 2) + NT_IN_BITS[c]
 
-		#A k-mer is a pair of k-mer's start position and its hash
-		kmer = (i, getHash(kmerBits, mask))
-		kmerBits = 0
+		#Testing
+		if logging:
+			print("calcMiniSketch: k-mer seq:", seq[i:i+k])
 
 		#Get bit representation of k-mer's reverse complement
 		for c in str(Seq(seq[i:i+k]).reverse_complement()):
-			kmerBits = (kmerBits << 2) + NT_IN_BITS[c]
+			kmerBitsRevComp = (kmerBitsRevComp << 2) + NT_IN_BITS[c]
 
-		revCompKmer = (i, getHash(kmerBits, mask))
+		#Testing
+		if logging:
+			print("calcMiniSketch: reverse complementary k-mer seq:", str(Seq(seq[i:i+k]).reverse_complement()))
 
 		#If a k-mer is its own reverse complement we skip it
-		if kmer[1] == revCompKmer[1]:
+		if kmerBits == kmerBitsRevComp:
+			#Testing
+			if logging:
+				print("calcMiniSketch: K-mers are equal")
+
 			continue
 
 		#Depending on which hash is smaller we consider either a k-mer or its reverse complement per position
-		if kmer[1] > revCompKmer[1]:
-			kmer = revCompKmer
+		if kmerBits < kmerBitsRevComp:
+			#Testing
+			if logging:
+				print("calcMiniSketch: K-mer on reverse strand has a smaller hash")
+
+			#A k-mer is a pair of k-mer's start position and its hash
+			kmer = (i, getHash(kmerBits, mask))
+		else:
+			#A k-mer is a pair of k-mer's start position and its hash
+			kmer = (i, getHash(kmerBitsRevComp, mask))
+
+		#Testing
+		if kmer[1] == 6060470696:
+			logging = True
 
 		#Remove all k-mers with a hash value larger than the newly calculated one
-		while (len(windowKmers) > 0) and (windowKmers[-1][1] > kmer[1]):
+		while (len(windowKmers) > 0) and (windowKmers[-1][1] >= kmer[1]):
+			#Testing
+			if logging:
+				print(f"calcMiniSketch: k-mer at the end of our window list: {windowKmers[-1]} -> remove it")
+
 			windowKmers.pop()
 
 		#Save new k-mer as window k-mer
@@ -59,14 +85,33 @@ def calcMiniSketch(seq, k, w):
 
 		#Remove k-mer if it is not any longer inside the window
 		while (len(windowKmers) > 0) and (windowKmers[0][0] < windowBorder):
+			#Testing
+			if logging:
+				print(f"calcMiniSketch: k-mer in front of the list that has left the window {windowKmers[0]} -> remove it")
+
 			windowKmers.popleft()
 
 		#As soon as we have seen a first full window of k-mers choose a minimizer
 		if (windowBorder >= 0) and (len(windowKmers) > 0):
+			#Testing
+			if logging:
+				print("calcMiniSketch: Found a minimizer:", windowKmers[0])
+
 			#We do not choose the same minimizer for a second time
 			if lastIdx != windowKmers[0][0]:
 				lastIdx = windowKmers[0][0]
+
+				#Testing
+				if logging:
+					print("calcMiniSketch: Adding hash to sketch:", windowKmers[0])
+					if windowKmers[0][1] == 2567431378:
+						exit(0)
+
 				sketch.append(windowKmers[0][1])
+
+	#If our sequence was too small to get a full window of k-mers to consider take the smallest one found so far
+	if windowBorder < 0 and len(windowKmers) > 0:
+		sketch.append(windowKmers[0][1])
 
 	return sketch
 

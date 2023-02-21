@@ -121,9 +121,21 @@ const Sketch buildMiniSketch(const string& seq, const string& id, const mm_idx_t
 	        }
 	    }
 
+	    //Testing
+	    if(kmerHash == 26942362073) cout << "Interesting hash queried in forward direction" << endl;
+	    uint64_t lastKmerHash = kmerHash;
+
 	    //Do the same for the reverse complement
 	    kmerHash = getHash(calcKmerNb(revComp(seq.substr(i, pidx->k))), mask);
+
+	    //Testing
+	    if(kmerHash == 26942362073) cout << "Interesting hash queried in backward direction" << endl;
+	    if(kmerHash == lastKmerHash) cerr << "buildMiniSketch: We hash for k-mer and its reverse complement are the same" << endl;
+
 		const uint64_t *idx_q = mm_idx_get(pidx, kmerHash, &nHits);
+
+		//Testing
+	    // if(kmerHash == 16105810989 && nHits > 0) cout << "buildMiniSketch: ...and could be found" << endl;
 
 		//Check if hash could be found
 		if(nHits > 0){
