@@ -280,7 +280,8 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, cons
 
 //This function reads in batches of FASTA sequence entries from file and transforms them into minimap sketches. Returns false if end
 // of file was reached.
-const bool lMiniPttnSks(ifstream& fStr, const mm_idx_t *pidx, vector<tuple<string, uint32_t, Sketch>>& pSks){
+const bool lMiniPttnSks(ifstream& fStr, const uint32_t& k, const uint32_t& w, const unordered_map<uint64_t, char>& blmers, 
+	vector<tuple<string, uint32_t, Sketch>>& pSks){
 	bool headerRead, idRead = false, lnBrkDiscvd = false;
 	char c;
 	string seq, seqID;
@@ -297,7 +298,7 @@ const bool lMiniPttnSks(ifstream& fStr, const mm_idx_t *pidx, vector<tuple<strin
 		//file
 		if(c == '>' && headerRead && lnBrkDiscvd){
 			//Add sequence's sketch, length and id to result vector
-			pSks.push_back(make_tuple(seqID, seq.length(), buildMiniSketch(seq, seqID, pidx)));//TODO: This function still needs to be tested!
+			pSks.push_back(make_tuple(seqID, seq.length(), buildMiniSketch(seq, k, w, blmers)));//TODO: This function still needs to be tested!
 			//Clear sequence id
 			seqID.clear();
 			//Clear sequence
@@ -335,7 +336,7 @@ const bool lMiniPttnSks(ifstream& fStr, const mm_idx_t *pidx, vector<tuple<strin
 	}
 
 	//Add last entry's sketch and sequence id to result vector if it is not empty
-	if(!seq.empty()) pSks.push_back(make_tuple(seqID, seq.length(), buildMiniSketch(seq, seqID, pidx)));
+	if(!seq.empty()) pSks.push_back(make_tuple(seqID, seq.length(), buildMiniSketch(seq, k, w, blmers)));
 
 	return false;
 }

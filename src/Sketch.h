@@ -82,8 +82,10 @@ PairSketch buildSketch(const string& s, const uint64_t& ht);
 //ignored
 const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFrac, const unordered_map<uint64_t, char>& bLstmers);
 
-//This function builds a minimap2 sketch of a sequence by querying from a prebuilt minimap index
-const Sketch buildMiniSketch(const string& seq, const string& id, const mm_idx_t *pidx);
+//This function builds a minimap2 sketch of a sequence by querying from a prebuilt minimap index; this function is influenced by the
+// code of "The minimizer Jaccard estimator is biased and inconsistent." from Belbasi et al. (function 
+//"winnowed_minimizers_linear(perm,windowSize)" in file "winnowed_minimizers.py").
+const Sketch buildMiniSketch(const string& seq, const uint32_t& k, const uint32_t& w, const unordered_map<uint64_t, char>& blmers);
 
 //This function dereplicates elements from sketches sharing the same hash value (only the first one is kept). WARNING: It does not preserve elements'
 //initial ordering

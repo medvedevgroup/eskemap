@@ -69,18 +69,21 @@ const Sketch buildSketch(const string& seq, const uint32_t& k, const double& hFr
 	return sk;
 }
 
-//This function builds a minimap2 sketch of a sequence by querying from a prebuilt minimap index
-const Sketch buildMiniSketch(const string& seq, const string& id, const mm_idx_t *pidx){
-	int nHits;
-	uint32_t sIdMini;
-	const uint64_t mask = pow(ALPHABET_SIZE, pidx->k) - 1;
-	uint64_t kmerHash;
-	const mm_idx_seq_t *seqFeats = pidx->seq;
+//This function builds a minimap2 sketch of a sequence by querying from a prebuilt minimap index; this function is influenced by the
+// code of "The minimizer Jaccard estimator is biased and inconsistent." from Belbasi et al. (function 
+//"winnowed_minimizers_linear(perm,windowSize)" in file "winnowed_minimizers.py").
+const Sketch buildMiniSketch(const string& seq, const uint32_t& k, const uint32_t& w, const unordered_map<uint64_t, char>& blmers){
+	uint32_t lastIdx = UINT32_MAX;
+	int32_t windowBorder;
+	const uint64_t mask = pow(ALPHABET_SIZE, k) - 1;
+	uint64_t kmerHash, kmerBitSeq, revKmerBitSeq;
+	//This stores pairs of k-mer starting positions and their hashes within the current window
+	vector<pair<int32_t, uint64_t>> windowKmers;
 	Sketch sk;
 
 	//If the sequence is smaller than k we are done
-	if(seq.length() < pidx->k){
-		cerr << "WARNING: Length of input sequence " << seq << " is smaller than k (k=" << pidx->k << ")" << endl;
+	if(seq.length() < k){
+		cerr << "WARNING: Length of input sequence " << seq << " is smaller than k (k=" << k << ")" << endl;
 
 		return sk;
 	}
@@ -88,79 +91,45 @@ const Sketch buildMiniSketch(const string& seq, const string& id, const mm_idx_t
 	//Reserve as much space as is approximately needed to store the sketch (which hopefully saves some time)
 	sk.reserve(seq.length() * 0.03);
 
-	//Find index internal reference id of our sequence
-	for(uint32_t i = 0; i < pidx->n_seq; ++i){
-		if(!strcmp((seqFeats+i)->name, id.c_str())){
-			sIdMini = i;
+	//Iterate over k-mer starting positions in sequence
+	for(int32_t i = 0; i < seq.length() - k + 1; ++i){
+		kmerBitSeq = calcKmerNb(seq.substr(i, k));
+		revKmerBitSeq = calcKmerNb(revComp(seq.substr(i, k)));
+		windowBorder = i - (w - 1);
 
-			//Testing
-			// cout << "buildMiniSketch: read " << id << " has the internal id " << sIdMini << endl;
+		//We do not consider k-mers which are their own reverse complement
+		if(kmerBitSeq == revKmerBitSeq) continue;
 
-			break;
+		//Depending on which is lexicographically smaller, we consider either the k-mer or its reverse complement
+		if(kmerBitSeq < revKmerBitSeq){
+			//Calculate k-mer's hash
+			kmerHash = getHash(kmerBitSeq, mask);
+		} else{
+			//Calculate k-mer's hash
+			kmerHash = getHash(revKmerBitSeq, mask);
+		}
+		
+		//Remove all pairs with a larger hash from the back
+		while(!windowKmers.empty() && windowKmers.back().second >= kmerHash) windowKmers.pop_back();
+
+		//Add current k-mer hash to windowKmers
+		windowKmers.push_back(make_pair(i, kmerHash));
+
+		//Remove pairs of k-mers which are no longer inside the window
+		while(!windowKmers.empty() && windowKmers.front().first < windowBorder) windowKmers.erase(windowKmers.begin());
+
+		//Choose a minimizer as soon as we have the first full window of k-mers and make sure we do not choose a blacklisted k-mer 
+		//or the same minimizer a second time
+		if(windowBorder >= 0 && !windowKmers.empty() && lastIdx != windowKmers.front().first && !blmers.contains(
+			windowKmers.front().second)){
+			lastIdx = windowKmers.front().first;
+			sk.push_back(windowKmers.front().second);
 		}
 	}
 
-	//Iterate over k-mer starting positions in sequence
-	for(uint32_t i = 0; i < seq.length() - pidx->k + 1; ++i){
-		//Calculate numerical k-mer representation and its hash
-		kmerHash = getHash(calcKmerNb(seq.substr(i, pidx->k)), mask);
-		//Query current hash in index
-		const uint64_t *idx_p = mm_idx_get(pidx, kmerHash, &nHits);
-
-		//Check if hash could be found
-		if(nHits > 0){
-			//Iterate over all occurrences
-		    for(uint32_t j = 0; j < nHits; ++j){
-		    	if((uint32_t) ((*idx_p)>>32) == sIdMini){
-		    		sk.push_back(kmerHash);
-		    		break;
-		    	}
-
-		        //Move to next occurrence
-		        idx_p++;
-	        }
-	    }
-
-	    //Testing
-	    if(kmerHash == 26942362073) cout << "Interesting hash queried in forward direction" << endl;
-	    uint64_t lastKmerHash = kmerHash;
-
-	    //Do the same for the reverse complement
-	    kmerHash = getHash(calcKmerNb(revComp(seq.substr(i, pidx->k))), mask);
-
-	    //Testing
-	    if(kmerHash == 26942362073) cout << "Interesting hash queried in backward direction" << endl;
-	    if(kmerHash == lastKmerHash) cerr << "buildMiniSketch: We hash for k-mer and its reverse complement are the same" << endl;
-
-		const uint64_t *idx_q = mm_idx_get(pidx, kmerHash, &nHits);
-
-		//Testing
-	    // if(kmerHash == 16105810989 && nHits > 0) cout << "buildMiniSketch: ...and could be found" << endl;
-
-		//Check if hash could be found
-		if(nHits > 0){
-			//Iterate over all occurrences
-		    for(uint32_t j = 0; j < nHits; ++j){
-		    	if((uint32_t) ((*idx_q)>>32) == sIdMini){
-		    		sk.push_back(kmerHash);
-		    		break;
-		    	}
-
-		        //Move to next occurrence
-		        idx_q++;
-	        }
-	    }
-
-		//Testing
-		// cout << "buildMiniSketch: Read id is " << ((*idx_p)>>32) << endl;
-		// cout << "buildMiniSketch: Searching for k-mer hash " << kmerHash << endl;
-		// cout << "buildMiniSketch: i: " << i << 
-	}
-
-	//Testing
-	// const mm_idx_seq_t *s = pidx->seq;
-	// cout << s->name << endl;
-	// cout << (s+1)->name << endl;
+	//In case we have never seen a full window of k-mers take the one with the smallest hash seen for the sketch
+	if(windowBorder < 0 && !windowKmers.empty() && !blmers.contains(windowKmers.front().second))
+		sk.push_back(windowKmers.front().second);
 
 	//Resize sketch (just for case we have allocated way too much memory)
 	sk.shrink_to_fit();

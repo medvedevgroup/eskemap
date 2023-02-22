@@ -133,12 +133,14 @@ def genSampleFileNames(wcs):
 			seed = randrange(maxsize)
 			# scoreFiles.append(f"../simulations/expValExp/scores/readRefGlobIntSecScore_se{seed}_sl{l}_sr{sr}_ir{ir}_dr{dr}" + \
 			# 	f"_ser{ser}_ier{ier}_der{der}_k15_r0.1_c1_u1.txt")
-
-	for l in [1000000]:
-		for i in range(3):
-			seed = randrange(maxsize)
 			scoreFiles.append(f"../simulations/expValExp/scores/readRefGlobIntSecScore_se{seed}_sl{l}_sr{sr}_ir{ir}_dr{dr}" + \
 				f"_ser{ser}_ier{ier}_der{der}_k{config['minimap2HifiK']}_w{config['minimap2HifiW']}_c1_u1.txt")
+
+	# for l in [1000000]:
+	# 	for i in range(3):
+	# 		seed = randrange(maxsize)
+	# 		scoreFiles.append(f"../simulations/expValExp/scores/readRefGlobIntSecScore_se{seed}_sl{l}_sr{sr}_ir{ir}_dr{dr}" + \
+	# 			f"_ser{ser}_ier{ier}_der{der}_k{config['minimap2HifiK']}_w{config['minimap2HifiW']}_c1_u1.txt")
 
 	tl = config['templLen']
 	k = config['minimap2DefaultK']
@@ -212,7 +214,7 @@ READ_SEED = randrange(maxsize)
 rule all:
 	input:
 		#Expectation value estimation
-		genSampleFileNames,
+		# genSampleFileNames,
 		# genReadScoreFiles,
 		# expand("../simulations/expValExp/dists/globEditDistance_srandSeq_l{l}_rid{n}_trandSeq_l{l}_rid{n}_m{m}_d{d}_i{i}_cn0_m" + \
 		# 	"{se}_d{de}_i{ie}_cn0.txt", l=config['readLens'], n=range(config['randomSampleSize']), m=SUB_RATE, d=DEL_RATE, i=\
@@ -253,9 +255,14 @@ rule all:
 		# "{mn}_lmx{mx}_lavg{m}_ls{sd}_dp10_ri{i}.er", \
 		# sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, s=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
 		# config['pbsimLenAvg'], sd=config['pbsimLenStd'], i=range(69401)),
+		# All simulated reads using FracMinHashSketches
 		# f"../simulations/homologies/homologies_t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn" + \
 		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15_" + \
 		# 	f"hr{config['hashRate']}_c1_u1_de{0.05226723}_in{-116.02672267226808}.txt",
+		# Rarely mapping reads using minimap2 sketches
+		f"../simulations/homologies/homologies_t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn" + \
+		f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_rm10_k " + \
+			f"{config['minimap2HifiK']}_w{config['minimap2HifiW']}_c1_u1_de{0.03075068}_in{-152.27506750675093}.txt",
 		# expand("../benchmarks/benchFindThoms_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_" + \
 		# 	"hr{hr}_c1_u1_de{de}_in{it}_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
 		# 	config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], hr=config['hashRate'], de=0.05226723, it=\
@@ -362,7 +369,7 @@ rule generateReadRefMiniSketchPairs:
 		"_ier{ier}_der{der}_k{k}_w{w}.sk"
 	shell:
 		"python3 scripts/genRdRfSks.py -s {params.sd} -l {params.sl} -m {params.sr} -i {params.ir} -d {params.dr} -se " + \
-		"{params.ser} -ie {params.ier} -de {params.der} -k {params.k} -H Mini -w {params.w} > {output} 2> testout_se{params.sd}.fasta"
+		"{params.ser} -ie {params.ier} -de {params.der} -k {params.k} -H Mini -w {params.w} > {output}"
 
 rule generateReadRefSketchPairs:
 	params:
@@ -803,13 +810,35 @@ rule convertCompressedFastq2Fasta:
 
 rule saveFindThomsResult:
 	input:
-		"../simulations/homologies/homologies_{genome}_{desc}_k{k}_hr{hr}_c{c}_u{u}_de{d}_in{i}_rep0.txt"
+		"../simulations/homologies/homologies_{genome}_{desc}_k{k}_{smp}_c{c}_u{u}_de{d}_in{i}_rep0.txt"
 	output:
-		"../simulations/homologies/homologies_{genome}_{desc}_k{k}_hr{hr}_c{c}_u{u}_de{d}_in{i}.txt"
+		"../simulations/homologies/homologies_{genome}_{desc}_k{k}_{smp}_c{c}_u{u}_de{d}_in{i}.txt"
 	wildcard_constraints:
 		i = "-?[0-9]+\.?[0-9]*"
 	shell:
 		"mv {input} {output}"
+
+rule searchMinimapSketchReadHomologies:
+	input:
+		rds = "../simulations/reads/{genome}_{desc}.fasta",
+		txt = "../simulations/genomes/{genome}.fasta"
+	params:
+		c = "{c}",
+		u = "{u}",
+		k = "{k}",
+		r = "{r}",
+		w = "{w}",
+		d = "{d}",
+		i = "{i}"
+	output:
+		homs = temp("../simulations/homologies/homologies_{genome}_{desc}_k{k}_w{w}_c{c}_u{u}_de{d}_in{i}" + \
+			"_rep{r}.txt"),
+		bench = "../benchmarks/benchFindThoms_{genome}_{desc}_k{k}_w{w}_c{c}_u{u}_de{d}_in{i}_rep{r}.txt"
+	wildcard_constraints:
+		genome = "\w+",
+	shell:
+		"/usr/bin/time -v src/FindThoms -p {input.rds} -s {input.txt} -k {params.k} -w {params.w} -c {params.c} -u " + \
+		"{params.u} -d {params.d} -i {params.i} -N > {output.homs} 2> {output.bench}"
 
 rule searchReadHomologies:
 	input:

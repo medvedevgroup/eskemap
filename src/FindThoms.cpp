@@ -70,7 +70,7 @@ int main(int argc, char **argv){
 
 	//Load high abundance k-mers
 	// bLstmers = readBlstKmers("highAbundKmersLrgr10.txt");
-	// bLstmers = readBlstKmers("highAbundKmersMiniDefaultBtStrnds.txt");
+	bLstmers = readBlstKmers("highAbundKmersMiniDefaultBtStrnds.txt");
 	// bLstmers = readBlstKmers("testBlacklist.txt");
 
 	//Testing
@@ -115,36 +115,37 @@ int main(int argc, char **argv){
 
 	//Testing
 	// bLstmers = readBlstKmers("testBlacklist.txt");
-	string genome;
-	// // cout << "main: tFile: " << tFile << endl;
-	unordered_map<uint64_t, char> seenHashes;
-	readFASTA(tFile, genome);
-	// // Sketch tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
-	// // Sketch tsk = buildMiniSketch(genome, "s_28536", tidx);
-	// Sketch tsk = buildMiniSketch(genome, "NC_060948.1", tidx);
-	Sketch tsk = buildMiniSketch(genome, "seq", tidx);
-	// cout << "main: Length of unfiltered text sketch: " << tsk.size() << endl;
-	return 0;
-	int nHits;
-	for(Sketch::const_iterator gi = tsk.begin(); gi != tsk.end(); ++gi){
-		// if(!seenHashes.contains(*gi)){
-		// 	seenHashes[*gi] = 1;
-		const uint64_t *idx_p = mm_idx_get(tidx, *gi, &nHits);
-	// 		cout << nHits << endl;
-		if(nHits > 0)	cout << *gi << endl;
-		// }
-		// if(*gi == 16105810989) cout << "Interesting k-mer hash was searched" << endl;
-	// 	if(nHits > 0){
-	// 		//Iterate over all occurrences
-	// 	    for(uint32_t i = 0; i < nHits; ++i){
-	// 	    	cout << "Position of k-mer " << *gi << ":" << (((uint32_t)(*idx_p))>>1) << endl;
-	// // 	//     	// cout << "Strand: " << (((uint32_t)((*idx_p))<<31)>>31) << endl;
-	// 	        //Move to next occurrence
-	// 	        idx_p++;
-	//         }
+	// string genome;
+	// // // cout << "main: tFile: " << tFile << endl;
+	// unordered_map<uint64_t, char> seenHashes;
+	// readFASTA(tFile, genome);
+	// // // Sketch tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
+	// // // Sketch tsk = buildMiniSketch(genome, "s_28536", tidx);
+	// // Sketch tsk = buildMiniSketch(genome, "NC_060948.1", tidx);
+	// Sketch tsk = buildMiniSketch(genome, kmerLen, tidx->w, bLstmers);
+	// // cout << "main: Length of unfiltered text sketch: " << tsk.size() << endl;
+	// // return 0;
+	// int nHits;
+	// for(Sketch::const_iterator gi = tsk.begin(); gi != tsk.end(); ++gi){
+	// 	// cout << *gi << endl;
+	// 	if(!seenHashes.contains(*gi)){
+	// 		seenHashes[*gi] = 1;
+	// 		const uint64_t *idx_p = mm_idx_get(tidx, *gi, &nHits);
+	// 		// cout << nHits << endl;
+	// 		if(nHits >= 4725)	cout << *gi << endl;
 	// 	}
-	}
-	return 0;
+	// 	// if(*gi == 16105810989) cout << "Interesting k-mer hash was searched" << endl;
+	// // 	if(nHits > 0){
+	// // 		//Iterate over all occurrences
+	// // 	    for(uint32_t i = 0; i < nHits; ++i){
+	// // 	    	cout << "Position of k-mer " << *gi << ":" << (((uint32_t)(*idx_p))>>1) << endl;
+	// // // 	//     	// cout << "Strand: " << (((uint32_t)((*idx_p))<<31)>>31) << endl;
+	// // 	        //Move to next occurrence
+	// // 	        idx_p++;
+	// //         }
+	// // 	}
+	// }
+	// return 0;
 
 	//Open stream to read in patterns
 	fStr.open(pFile);
@@ -156,7 +157,7 @@ int main(int argc, char **argv){
 
 	//Load pattern sequences in batches
 	// while(lPttnSks(fStr, kmerLen, hFrac, bLstmers, pSks) || !pSks.empty()){//TODO: Test for this function need to be adaptated!
-	while(lMiniPttnSks(fStr, pidx, pSks) || !pSks.empty()){//TODO: This function still needs to be tested!
+	while(lMiniPttnSks(fStr, kmerLen, tidx->w, bLstmers, pSks) || !pSks.empty()){//TODO: This function still needs to be tested!
 		//Iterate over pattern sketches
 		for(p = pSks.begin(); p != pSks.end(); ++p){
 			//Only output pattern sequence name if there is more than one sequence

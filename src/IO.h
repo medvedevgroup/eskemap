@@ -81,7 +81,8 @@ const bool lPttnSks(ifstream& fStr, const uint32_t& k, const double& hFrac, cons
 
 //This function reads in batches of FASTA sequence entries from file and transforms them into minimap sketches. Returns false if end
 // of file was reached.
-const bool lMiniPttnSks(ifstream& fStr, const mm_idx_t *pidx, vector<tuple<string, uint32_t, Sketch>>& pSks);
+const bool lMiniPttnSks(ifstream& fStr, const uint32_t& k, const uint32_t& w, const unordered_map<uint64_t, char>& blmers, 
+	vector<tuple<string, uint32_t, Sketch>>& pSks);
 
 //This function reads 64-bit numbers from file and returns them as a hash table
 const unordered_map<uint64_t, char> readBlstKmers(const string& fname);
