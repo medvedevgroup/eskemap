@@ -261,7 +261,7 @@ rule all:
 		# 	f"hr{config['hashRate']}_c1_u1_de{0.05226723}_in{-116.02672267226808}.txt",
 		# Rarely mapping reads using minimap2 sketches
 		f"../simulations/homologies/homologies_t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn" + \
-		f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_rm10_k " + \
+		f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_rm10_k" + \
 			f"{config['minimap2HifiK']}_w{config['minimap2HifiW']}_c1_u1_de{0.03075068}_in{-152.27506750675093}.txt",
 		# expand("../benchmarks/benchFindThoms_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_" + \
 		# 	"hr{hr}_c1_u1_de{de}_in{it}_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
@@ -837,8 +837,8 @@ rule searchMinimapSketchReadHomologies:
 	wildcard_constraints:
 		genome = "\w+",
 	shell:
-		"/usr/bin/time -v src/FindThoms -p {input.rds} -s {input.txt} -k {params.k} -w {params.w} -c {params.c} -u " + \
-		"{params.u} -d {params.d} -i {params.i} -N > {output.homs} 2> {output.bench}"
+		"/usr/bin/time -v src/FindThoms -p {input.rds} -s {input.txt} -k {params.k} -c {params.c} -u " + \
+		"{params.u} -d {params.d} -i {params.i} -N > {output.homs} 2> {output.bench}" #-w {params.w} 
 
 rule searchReadHomologies:
 	input:
