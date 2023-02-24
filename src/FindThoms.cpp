@@ -58,7 +58,7 @@ int main(int argc, char **argv){
 	mm_set_opt(0, &iopt, &mopt);
 	//Adjust k if necessary
 	iopt.k = kmerLen;
-	iopt.w = 19;
+	iopt.w = 3;
 	//Open an index reader //TODO: We do not allow yet to use a prebuilt index
 	r = mm_idx_reader_open(tFile.c_str(), &iopt, INDEX_DEFAULT_DUMP_FILE);
 
@@ -70,9 +70,9 @@ int main(int argc, char **argv){
 
 	//Load high abundance k-mers
 	// bLstmers = readBlstKmers("highAbundKmersLrgr10.txt");
-	bLstmers = readBlstKmers("highAbundKmersMiniDefaultBtStrnds.txt");
+	// bLstmers = readBlstKmers("highAbundKmersMiniDefaultBtStrnds.txt");
 	// bLstmers = readBlstKmers("highAbundKmersMiniLrgr100BtStrnds.txt");
-	// bLstmers = readBlstKmers("testBlacklist.txt");
+	bLstmers = readBlstKmers("testBlacklist.txt");
 
 	//Testing
 	// bLstmers = readBlstKmers("testBlacklist.txt");
@@ -116,35 +116,35 @@ int main(int argc, char **argv){
 
 	//Testing
 	// bLstmers = readBlstKmers("testBlacklist.txt");
-	string genome;
-	// // // cout << "main: tFile: " << tFile << endl;
-	// unordered_map<uint64_t, char> seenHashes;
-	readFASTA(tFile, genome);
-	// // // Sketch tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
-	// // // Sketch tsk = buildMiniSketch(genome, "s_28536", tidx);
-	// // Sketch tsk = buildMiniSketch(genome, "NC_060948.1", tidx);
-	Sketch tsk = buildMiniSketch(genome, kmerLen, tidx->w, bLstmers);
-	cout << "main: Length of filtered text sketch: " << tsk.size() << endl;
-	return 0;
+	// string genome;
+	// // // // cout << "main: tFile: " << tFile << endl;
+	// // unordered_map<uint64_t, char> seenHashes;
+	// readFASTA(tFile, genome);
+	// // // // Sketch tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
+	// // // // Sketch tsk = buildMiniSketch(genome, "s_28536", tidx);
+	// // // Sketch tsk = buildMiniSketch(genome, "NC_060948.1", tidx);
+	// Sketch tsk = buildMiniSketch(genome, kmerLen, tidx->w, bLstmers);
+	// // cout << "main: Length of filtered text sketch: " << tsk.size() << endl;
+	// // return 0;
 	// int nHits;
 	// for(Sketch::const_iterator gi = tsk.begin(); gi != tsk.end(); ++gi){
 	// 	// cout << *gi << endl;
-	// 	if(!seenHashes.contains(*gi)){
-	// 		seenHashes[*gi] = 1;
+	// 	// if(!seenHashes.contains(*gi)){
+	// 	// 	seenHashes[*gi] = 1;
 	// 		const uint64_t *idx_p = mm_idx_get(tidx, *gi, &nHits);
-	// 		// cout << nHits << endl;
-	// 		if(nHits >= 100)	cout << *gi << endl;
-	// 	}
+	// 	// 	// cout << nHits << endl;
+	// 	// 	if(nHits >= 100)	cout << *gi << endl;
+	// 	// }
 	// 	// if(*gi == 16105810989) cout << "Interesting k-mer hash was searched" << endl;
-	// // 	if(nHits > 0){
-	// // 		//Iterate over all occurrences
-	// // 	    for(uint32_t i = 0; i < nHits; ++i){
-	// // 	    	cout << "Position of k-mer " << *gi << ":" << (((uint32_t)(*idx_p))>>1) << endl;
-	// // // 	//     	// cout << "Strand: " << (((uint32_t)((*idx_p))<<31)>>31) << endl;
-	// // 	        //Move to next occurrence
-	// // 	        idx_p++;
-	// //         }
-	// // 	}
+	// 	if(nHits > 0){
+	// 		//Iterate over all occurrences
+	// 	    for(uint32_t i = 0; i < nHits; ++i){
+	// 	    	cout << "Position of k-mer " << *gi << ":" << (((uint32_t)(*idx_p))>>1) << endl;
+	// // 	//     	// cout << "Strand: " << (((uint32_t)((*idx_p))<<31)>>31) << endl;
+	// 	        //Move to next occurrence
+	// 	        idx_p++;
+	//         }
+	// 	}
 	// }
 	// return 0;
 
