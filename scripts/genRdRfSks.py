@@ -73,7 +73,7 @@ def calcMiniSketch(seq, k, w):
 		# 	logging = True
 
 		#Remove all k-mers with a hash value larger than the newly calculated one
-		while (len(windowKmers) > 0) and (windowKmers[-1][1] >= kmer[1]):
+		while (len(windowKmers) > 0) and (windowKmers[-1][1] > kmer[1]):
 			#Testing
 			# if logging:
 			# 	print(f"calcMiniSketch: k-mer at the end of our window list: {windowKmers[-1]} -> remove it")
@@ -109,13 +109,30 @@ def calcMiniSketch(seq, k, w):
 
 				sketch.append(windowKmers[0][1])
 
+			while len(windowKmers) > 1 and windowKmers[0][1] == windowKmers[1][1]:
+				windowKmers.popleft()
+				sketch.append(windowKmers[0][1])
+				lastIdx = windowKmers[0][0]
+
 	#If our sequence was too small to get a full window of k-mers to consider take the smallest one found so far
 	if windowBorder < 0 and len(windowKmers) > 0:
 		sketch.append(windowKmers[0][1])
 
+		while len(windowKmers) > 1 and windowKmers[0][1] == windowKmers[1][1]:
+			windowKmers.popleft()
+			sketch.append(windowKmers[0][1])
+
 	return sketch
 
 if __name__ == '__main__':
+	#Testing
+	from Bio import SeqIO
+	refSeq = str([r for r in SeqIO.parse(open("../../simulations/genomes/t2thumanChrY.fasta", 'r'), "fasta")][0].seq)
+	blks = {int(l): None for l in open("../highAbundKmersMiniLrgr100BtStrnds.txt", 'r')}
+	for h in [k for k in calcMiniSketch(refSeq, 19, 19) if not k in blks]:
+		print(h)
+	exit(0)
+
 	#Setting up the argument parser
 	parser = args.ArgumentParser(description="This script generates sketches of a sequence and its mutated copy in .sk format.")
 	parser.add_argument('-l', metavar='SeqLen', type=int, required=True, help="Length of sequences")

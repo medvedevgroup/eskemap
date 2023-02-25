@@ -110,7 +110,7 @@ const Sketch buildMiniSketch(const string& seq, const uint32_t& k, const uint32_
 		}
 		
 		//Remove all pairs with a larger hash from the back
-		while(!windowKmers.empty() && windowKmers.back().second >= kmerHash) windowKmers.pop_back();
+		while(!windowKmers.empty() && windowKmers.back().second > kmerHash) windowKmers.pop_back();
 
 		//Add current k-mer hash to windowKmers
 		windowKmers.push_back(make_pair(i, kmerHash));
@@ -124,12 +124,26 @@ const Sketch buildMiniSketch(const string& seq, const uint32_t& k, const uint32_
 			windowKmers.front().second)){
 			lastIdx = windowKmers.front().first;
 			sk.push_back(windowKmers.front().second);
+
+			//If the same k-mer appears several times inside the window and it has the smallest hash we want to save all occurrences
+			while(windowKmers.size() > 1 && windowKmers.front().second == windowKmers[1].second){
+				windowKmers.erase(windowKmers.begin());
+				lastIdx = windowKmers.front().first;
+				sk.push_back(windowKmers.front().second);
+			}
 		}
 	}
 
 	//In case we have never seen a full window of k-mers take the one with the smallest hash seen for the sketch
-	if(windowBorder < 0 && !windowKmers.empty() && !blmers.contains(windowKmers.front().second))
+	if(windowBorder < 0 && !windowKmers.empty() && !blmers.contains(windowKmers.front().second)){
 		sk.push_back(windowKmers.front().second);
+
+		//If the same k-mer appears several times inside the window and it has the smallest hash we want to save all occurrences
+		while(windowKmers.size() > 1 && windowKmers.front().second == windowKmers[1].second){
+			windowKmers.erase(windowKmers.begin());
+			sk.push_back(windowKmers.front().second);
+		}
+	}
 
 	//Resize sketch (just for case we have allocated way too much memory)
 	sk.shrink_to_fit();
