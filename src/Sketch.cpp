@@ -118,30 +118,35 @@ const Sketch buildMiniSketch(const string& seq, const uint32_t& k, const uint32_
 		//Remove pairs of k-mers which are no longer inside the window
 		while(!windowKmers.empty() && windowKmers.front().first < windowBorder) windowKmers.erase(windowKmers.begin());
 
-		//Choose a minimizer as soon as we have the first full window of k-mers and make sure we do not choose a blacklisted k-mer 
-		//or the same minimizer a second time
-		if(windowBorder >= 0 && !windowKmers.empty() && lastIdx != windowKmers.front().first && !blmers.contains(
-			windowKmers.front().second)){
-			lastIdx = windowKmers.front().first;
-			sk.push_back(windowKmers.front().second);
+		//Choose a minimizer as soon as we have the first full window of k-mers and make sure we do the same minimizer a second time
+		if(windowBorder >= 0 && !windowKmers.empty()){
+			if(lastIdx != windowKmers.front().first && !blmers.contains(windowKmers.front().second)){
+				lastIdx = windowKmers.front().first;
+				sk.push_back(windowKmers.front().second);
+			}
 
 			//If the same k-mer appears several times inside the window and it has the smallest hash we want to save all occurrences
 			while(windowKmers.size() > 1 && windowKmers.front().second == windowKmers[1].second){
 				windowKmers.erase(windowKmers.begin());
 				lastIdx = windowKmers.front().first;
-				sk.push_back(windowKmers.front().second);
+
+				//Blacklisted k-mers are not added
+				if(!blmers.contains(windowKmers.front().second)) sk.push_back(windowKmers.front().second);
 			}
 		}
 	}
 
 	//In case we have never seen a full window of k-mers take the one with the smallest hash seen for the sketch
-	if(windowBorder < 0 && !windowKmers.empty() && !blmers.contains(windowKmers.front().second)){
-		sk.push_back(windowKmers.front().second);
+	if(windowBorder < 0 && !windowKmers.empty()){
+		//Blacklisted k-mers are not added
+		if(!blmers.contains(windowKmers.front().second)) sk.push_back(windowKmers.front().second);
 
 		//If the same k-mer appears several times inside the window and it has the smallest hash we want to save all occurrences
 		while(windowKmers.size() > 1 && windowKmers.front().second == windowKmers[1].second){
 			windowKmers.erase(windowKmers.begin());
-			sk.push_back(windowKmers.front().second);
+
+			//Blacklisted k-mers are not added
+			if(!blmers.contains(windowKmers.front().second)) sk.push_back(windowKmers.front().second);
 		}
 	}
 

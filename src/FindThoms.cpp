@@ -119,37 +119,37 @@ int main(int argc, char **argv){
 
 	//Testing
 	// bLstmers = readBlstKmers("testBlacklist.txt");
-	string genome;
-	// // // cout << "main: tFile: " << tFile << endl;
-	// unordered_map<uint64_t, char> seenHashes;
-	readFASTA(tFile, genome);
-	// // // Sketch tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
-	// // // Sketch tsk = buildMiniSketch(genome, "s_28536", tidx);
-	// // Sketch tsk = buildMiniSketch(genome, "NC_060948.1", tidx);
-	Sketch tsk = buildMiniSketch(genome, kmerLen, tidx->w, bLstmers);
-	// cout << "main: Length of filtered text sketch: " << tsk.size() << endl;
+	// string genome;
+	// // // // cout << "main: tFile: " << tFile << endl;
+	// // unordered_map<uint64_t, char> seenHashes;
+	// readFASTA(tFile, genome);
+	// // // // Sketch tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
+	// // // // Sketch tsk = buildMiniSketch(genome, "s_28536", tidx);
+	// // // Sketch tsk = buildMiniSketch(genome, "NC_060948.1", tidx);
+	// Sketch tsk = buildMiniSketch(genome, kmerLen, tidx->w, bLstmers);
+	// // cout << "main: Length of filtered text sketch: " << tsk.size() << endl;
+	// // return 0;
+	// int nHits;
+	// for(Sketch::const_iterator gi = tsk.begin(); gi != tsk.end(); ++gi){
+	// 	cout << *gi << endl;
+	// 	// if(!seenHashes.contains(*gi)){
+	// 	// 	seenHashes[*gi] = 1;
+	// 	// const uint64_t *idx_p = mm_idx_get(tidx, *gi, &nHits);
+	// 	// 	// cout << nHits << endl;
+	// 	// 	if(nHits >= 100)	cout << *gi << endl;
+	// 	// }
+	// 	// if(*gi == 16105810989) cout << "Interesting k-mer hash was searched" << endl;
+	// // 	if(nHits > 0){
+	// // 		//Iterate over all occurrences
+	// // 	    for(uint32_t i = 0; i < nHits; ++i){
+	// // 	    	cout << "Position of k-mer " << *gi << ":" << (((uint32_t)(*idx_p))>>1) << endl;
+	// // // 	//     	// cout << "Strand: " << (((uint32_t)((*idx_p))<<31)>>31) << endl;
+	// // 	        //Move to next occurrence
+	// // 	        idx_p++;
+	// //         }
+	// // 	}
+	// }
 	// return 0;
-	int nHits;
-	for(Sketch::const_iterator gi = tsk.begin(); gi != tsk.end(); ++gi){
-		cout << *gi << endl;
-		// if(!seenHashes.contains(*gi)){
-		// 	seenHashes[*gi] = 1;
-		// const uint64_t *idx_p = mm_idx_get(tidx, *gi, &nHits);
-		// 	// cout << nHits << endl;
-		// 	if(nHits >= 100)	cout << *gi << endl;
-		// }
-		// if(*gi == 16105810989) cout << "Interesting k-mer hash was searched" << endl;
-	// 	if(nHits > 0){
-	// 		//Iterate over all occurrences
-	// 	    for(uint32_t i = 0; i < nHits; ++i){
-	// 	    	cout << "Position of k-mer " << *gi << ":" << (((uint32_t)(*idx_p))>>1) << endl;
-	// // 	//     	// cout << "Strand: " << (((uint32_t)((*idx_p))<<31)>>31) << endl;
-	// 	        //Move to next occurrence
-	// 	        idx_p++;
-	//         }
-	// 	}
-	}
-	return 0;
 
 	//Open stream to read in patterns
 	fStr.open(pFile);

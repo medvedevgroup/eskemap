@@ -126,12 +126,12 @@ def calcMiniSketch(seq, k, w):
 
 if __name__ == '__main__':
 	#Testing
-	from Bio import SeqIO
-	refSeq = str([r for r in SeqIO.parse(open("../../simulations/genomes/t2thumanChrY.fasta", 'r'), "fasta")][0].seq)
-	blks = {int(l): None for l in open("../highAbundKmersMiniLrgr100BtStrnds.txt", 'r')}
-	for h in [k for k in calcMiniSketch(refSeq, 19, 19) if not k in blks]:
-		print(h)
-	exit(0)
+	# from Bio import SeqIO
+	# refSeq = str([r for r in SeqIO.parse(open("../../simulations/genomes/t2thumanChrY.fasta", 'r'), "fasta")][0].seq)
+	# blks = {int(l): None for l in open("../highAbundKmersMiniLrgr100BtStrnds.txt", 'r')}
+	# for h in [k for k in calcMiniSketch(refSeq, 19, 19) if not k in blks]:
+	# 	print(h)
+	# exit(0)
 
 	#Setting up the argument parser
 	parser = args.ArgumentParser(description="This script generates sketches of a sequence and its mutated copy in .sk format.")
