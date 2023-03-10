@@ -841,7 +841,7 @@ rule searchMinimapSketchReadHomologies:
 		genome = "\w+",
 	shell:
 		"/usr/bin/time -v src/FindThoms -p {input.rds} -s {input.txt} -k {params.k} -c {params.c} -u " + \
-		"{params.u} -d {params.d} -i {params.i} > {output.homs} 2> {output.bench}" #-w {params.w} -N
+		"{params.u} -d {params.d} -i {params.i} -N > {output.homs} 2> {output.bench}" #-w {params.w}
 
 rule searchReadHomologies:
 	input:
