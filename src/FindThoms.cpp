@@ -71,7 +71,7 @@ int main(int argc, char **argv){
 	//Load high abundance k-mers
 	// bLstmers = readBlstKmers("highAbundKmersLrgr10.txt");
 	// bLstmers = readBlstKmers("highAbundKmersMiniDefaultBtStrnds.txt");
-	bLstmers = readBlstKmers("highAbundKmersMiniLrgr100BtStrnds.txt");
+	// bLstmers = readBlstKmers("highAbundKmersMiniLrgr100BtStrnds.txt");
 	// bLstmers = readBlstKmers("testBlacklist.txt");
 
 	//Testing
@@ -120,15 +120,15 @@ int main(int argc, char **argv){
 	//Testing
 	// bLstmers = readBlstKmers("testBlacklist.txt");
 	// string genome;
-	// // // // cout << "main: tFile: " << tFile << endl;
-	// // unordered_map<uint64_t, char> seenHashes;
+	// // // cout << "main: tFile: " << tFile << endl;
+	// unordered_map<uint64_t, char> seenHashes;
 	// readFASTA(tFile, genome);
-	// // // // Sketch tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
-	// // // // Sketch tsk = buildMiniSketch(genome, "s_28536", tidx);
-	// // // Sketch tsk = buildMiniSketch(genome, "NC_060948.1", tidx);
+	// // // Sketch tsk = buildSketch(genome, kmerLen, hFrac, bLstmers);
+	// // // Sketch tsk = buildMiniSketch(genome, "s_28536", tidx);
+	// Sketch tsk = buildMiniSketch(genome, "NC_060948.1", tidx);
 	// Sketch tsk = buildMiniSketch(genome, kmerLen, tidx->w, bLstmers);
-	// // cout << "main: Length of filtered text sketch: " << tsk.size() << endl;
-	// // return 0;
+	// cout << "main: Length of filtered text sketch: " << tsk.size() << endl;
+	return 0;
 	// int nHits;
 	// for(Sketch::const_iterator gi = tsk.begin(); gi != tsk.end(); ++gi){
 	// 	cout << *gi << endl;

@@ -260,23 +260,27 @@ rule all:
 		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15_" + \
 		# 	f"hr{config['hashRate']}_c1_u1_de{0.05226723}_in{-116.02672267226808}.txt",
 		# Rarely mapping reads using minimap2 sketches
-		expand("../simulations/homologies/homologies_t2thumanChrY_sr{sr}_dr{dr}_i{i}_sd{sd}_lmn" + \
-		"{lmn}_lmx{lmx}_lavg{lavg}_ls{ls}_dp10_rm{rm}_k" + \
-			"{k}_w{w}_c1_u1_de{de}_in{iN}.txt", sr=SUB_ERR, \
-			dr=DEL_ERR, i=INS_ERR, sd=READ_SEED, lmn=config['pbsimLenMin'], lmx=config['pbsimLenMax'], lavg=config['pbsimLenAvg'], \
-			ls=config['pbsimLenStd'], rm=config['rlyMppdRdsThrs'], k=config['minimap2HifiK'], w=config['minimap2HifiW'], de=\
-			0.03075068, iN=-152.27506750675093),
+		# expand("../simulations/homologies/homologies_t2thumanChrY_sr{sr}_dr{dr}_i{i}_sd{sd}_lmn" + \
+		# "{lmn}_lmx{lmx}_lavg{lavg}_ls{ls}_dp10_rm{rm}_k" + \
+		# 	"{k}_w{w}_c1_u1_de{de}_in{iN}.txt", sr=SUB_ERR, \
+		# 	dr=DEL_ERR, i=INS_ERR, sd=READ_SEED, lmn=config['pbsimLenMin'], lmx=config['pbsimLenMax'], lavg=config['pbsimLenAvg'], \
+		# 	ls=config['pbsimLenStd'], rm=config['rlyMppdRdsThrs'], k=config['minimap2DefaultK'], w=config['minimap2DefaultK'], de=\
+		# 	0.03075068, iN=-152.27506750675093),
 		# expand("../benchmarks/benchFindThoms_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_" + \
 		# 	"hr{hr}_c1_u1_de{de}_in{it}_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
 		# 	config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], hr=config['hashRate'], de=0.05226723, it=\
 		# 	-116.02672267226808, i=range(config['benchRepRuns'])),
 		# f"../simulations/minimap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
 		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.sam.gz",
+		f"../simulations/minimap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
+		f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.paf.gz",
 		# expand("../benchmarks/benchMinimap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_rep" + \
 		# 	"{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
 		# 	config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
 		# f"../simulations/Winnowmap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
 		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.sam.gz",
+		f"../simulations/Winnowmap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
+		f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.paf.gz",
 		# expand("../benchmarks/benchWinnowmap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15" + \
 		# 	"_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
 		# 	config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
@@ -496,13 +500,30 @@ rule runBWAmem:
 
 rule saveWinnowmap2Result:
 	input:
-		"../simulations/Winnowmap2Res/{genome}_sr{desc}_k{k}_rep0.sam.gz"
+		"../simulations/Winnowmap2Res/{genome}_sr{desc}_k{k}_rep0.{frmt}.gz"
 	output:
-		"../simulations/Winnowmap2Res/{genome}_sr{desc}_k{k}.sam.gz"
+		"../simulations/Winnowmap2Res/{genome}_sr{desc}_k{k}.{frmt}.gz"
 	wildcard_constraints:
 		k = "[0-9]+"
 	shell:
 		"mv {input} {output}"
+
+rule runApprxMppngWinnowmap2onRealGenomeFASTA:
+	input:
+		ref = "../simulations/genomes/{genome}.fasta",
+		qry = "../simulations/reads/{genome}_sr{desc}.fasta",
+		cnts = "../simulations/repKmers_k{k}_{genome}.txt"
+	params:
+		k = "{k}",
+		r = "{r}"
+	output:
+		res = temp("../simulations/Winnowmap2Res/{genome}_sr{desc}_k{k}_rep{r}.paf.gz"),
+		bench = "../benchmarks/benchWinnowmap2ApprxMppng_{genome}_sr{desc}_k{k}_rep{r}.txt"
+	wildcard_constraints:
+		r = "[0-9]+"
+	shell:
+		"/usr/bin/time -v ../software/Winnowmap/bin/winnowmap -W {input.cnts} -k {params.k} {input.ref} {input.qry} " + \
+		"2> {output.bench} | gzip -3 > {output.res}"
 
 rule runWinnowmap2onRealGenomeFASTA:
 	input:
@@ -580,13 +601,28 @@ rule countKmers:
 
 rule saveMinimap2Result:
 	input:
-		"../simulations/minimap2Res/{genome}_sr{desc}_k{k}_rep0.sam.gz"
+		"../simulations/minimap2Res/{genome}_sr{desc}_k{k}_rep0.{frmt}.gz"
 	output:
-		"../simulations/minimap2Res/{genome}_sr{desc}_k{k}.sam.gz"
+		"../simulations/minimap2Res/{genome}_sr{desc}_k{k}.{frmt}.gz"
 	wildcard_constraints:
 		k = "[0-9]+"
 	shell:
 		"mv {input} {output}"
+
+rule runApprxMppngMinimap2onRealGenomePacBioFASTA:
+	input:
+		ref = "../simulations/genomes/{genome}.fasta",
+		qry = "../simulations/reads/{genome}_sr{desc}.fasta"
+	params:
+		k = "{k}",
+		r = "{r}"
+	output:
+		res = temp("../simulations/minimap2Res/{genome}_sr{desc}_k{k}_rep{r}.paf.gz"),
+		bench = "../benchmarks/benchMinimap2ApprxMppng_{genome}_sr{desc}_k{k}_rep{r}.txt"
+	wildcard_constraints:
+		r = "[0-9]+"
+	shell:
+		"/usr/bin/time -v minimap2 -k {params.k} {input.ref} {input.qry} 2> {output.bench} | gzip -3 > {output.res}"
 
 rule runMinimap2onRealGenomePacBioFASTA:
 	input:
