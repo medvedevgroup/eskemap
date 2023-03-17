@@ -24,9 +24,6 @@ def calcMiniSketch(seq, k, w):
 	mask = (4 ** k) - 1
 	lastIdx = -1
 
-	#Testing 
-	# logging = False
-
 	for i in range(len(seq) - k + 1):
 		kmerBits = 0
 		kmerBitsRevComp = 0
@@ -36,48 +33,24 @@ def calcMiniSketch(seq, k, w):
 		for c in seq[i:i+k]:
 			kmerBits = (kmerBits << 2) + NT_IN_BITS[c]
 
-		#Testing
-		# if logging:
-		# 	print("calcMiniSketch: k-mer seq:", seq[i:i+k])
-
 		#Get bit representation of k-mer's reverse complement
 		for c in str(Seq(seq[i:i+k]).reverse_complement()):
 			kmerBitsRevComp = (kmerBitsRevComp << 2) + NT_IN_BITS[c]
 
-		#Testing
-		# if logging:
-		# 	print("calcMiniSketch: reverse complementary k-mer seq:", str(Seq(seq[i:i+k]).reverse_complement()))
-
 		#If a k-mer is its own reverse complement we skip it
 		if kmerBits == kmerBitsRevComp:
-			#Testing
-			# if logging:
-			# 	print("calcMiniSketch: K-mers are equal")
-
 			continue
 
 		#Depending on which hash is smaller we consider either a k-mer or its reverse complement per position
 		if kmerBits < kmerBitsRevComp:
-			#Testing
-			# if logging:
-			# 	print("calcMiniSketch: K-mer on reverse strand has a smaller hash")
-
 			#A k-mer is a pair of k-mer's start position and its hash
 			kmer = (i, getHash(kmerBits, mask))
 		else:
 			#A k-mer is a pair of k-mer's start position and its hash
 			kmer = (i, getHash(kmerBitsRevComp, mask))
 
-		#Testing
-		# if kmer[1] == 6060470696:
-		# 	logging = True
-
 		#Remove all k-mers with a hash value larger than the newly calculated one
 		while (len(windowKmers) > 0) and (windowKmers[-1][1] > kmer[1]):
-			#Testing
-			# if logging:
-			# 	print(f"calcMiniSketch: k-mer at the end of our window list: {windowKmers[-1]} -> remove it")
-
 			windowKmers.pop()
 
 		#Save new k-mer as window k-mer
@@ -85,29 +58,14 @@ def calcMiniSketch(seq, k, w):
 
 		#Remove k-mer if it is not any longer inside the window
 		while (len(windowKmers) > 0) and (windowKmers[0][0] < windowBorder):
-			#Testing
-			# if logging:
-			# 	print(f"calcMiniSketch: k-mer in front of the list that has left the window {windowKmers[0]} -> remove it")
-
 			windowKmers.popleft()
 
 		#As soon as we have seen a first full window of k-mers choose a minimizer
 		if (windowBorder >= 0) and (len(windowKmers) > 0):
-			#Testing
-			# if logging:
-			# 	print("calcMiniSketch: Found a minimizer:", windowKmers[0])
-
 			#We do not choose the same minimizer for a second time
 			if lastIdx != windowKmers[0][0]:
-				lastIdx = windowKmers[0][0]
-
-				#Testing
-				# if logging:
-				# 	print("calcMiniSketch: Adding hash to sketch:", windowKmers[0])
-				# 	if windowKmers[0][1] == 2567431378:
-				# 		exit(0)
-
 				sketch.append(windowKmers[0][1])
+				lastIdx = windowKmers[0][0]
 
 			while len(windowKmers) > 1 and windowKmers[0][1] == windowKmers[1][1]:
 				windowKmers.popleft()
@@ -126,12 +84,12 @@ def calcMiniSketch(seq, k, w):
 
 if __name__ == '__main__':
 	#Testing
-	# from Bio import SeqIO
-	# refSeq = str([r for r in SeqIO.parse(open("../../simulations/genomes/t2thumanChrY.fasta", 'r'), "fasta")][0].seq)
-	# blks = {int(l): None for l in open("../highAbundKmersMiniLrgr100BtStrnds.txt", 'r')}
-	# for h in [k for k in calcMiniSketch(refSeq, 19, 19) if not k in blks]:
-	# 	print(h)
-	# exit(0)
+	from Bio import SeqIO
+	refSeq = str([r for r in SeqIO.parse(open("../../simulations/genomes/t2thumanChrY.fasta", 'r'), "fasta")][0].seq)
+	blks = {}#{int(l): None for l in open("../highAbundKmersMiniK15w10Lrgr100BtStrnds.txt", 'r')}
+	for h in [k for k in calcMiniSketch(refSeq, 15, 10) if not k in blks]:
+		print(h)
+	exit(0)
 
 	#Setting up the argument parser
 	parser = args.ArgumentParser(description="This script generates sketches of a sequence and its mutated copy in .sk format.")
@@ -148,6 +106,8 @@ if __name__ == '__main__':
 		"possible hash values to be included into a sketch")
 	parser.add_argument('-H', metavar='HashMode', type=str, default="FracMin", help="Hashing method to be used for sketches")
 	parser.add_argument('-w', metavar='WindowSize', type=int, default=10, help="Window size for minimizer sketching approach")
+	parser.add_argument('-b', metavar='Blacklist', type=args.FileType('r'), required=False, help="File containing blacklisted " + \
+		"k-mers not to appear inside the sketch")
 
 	arguments = parser.parse_args()
 
@@ -181,6 +141,14 @@ if __name__ == '__main__':
 		print("ERROR: Unrecognized sketching mode", file=stderr)
 		exit(-1)
 
+	#Check if blacklist was provided and apply filtering
+	if arguments.b:
+		blKmers = {int(l): None for l in arguments.b}
+		sketch = [k for k in sketch if not k in blKmers]
+
+		#Testing
+		print(sketch)
+
 	#Mutate sequence
 	mutSeq = mutateSeq(seq, arguments.m, arguments.d, arguments.i)
 	seqSeq = mutateSeq(mutSeq, arguments.se, arguments.de, arguments.ie)
@@ -189,12 +157,6 @@ if __name__ == '__main__':
 		mutSeqSketch = calcSketch(seqSeq, arguments.k, minHashThres)
 	else:
 		mutSeqSketch = calcMiniSketch(seqSeq, arguments.k, arguments.w)
-
-	#Testing
-	# print(">seq", file=stderr)
-	# print(seq, file=stderr)
-	# print(">seqSeq", file=stderr)
-	# print(seqSeq, file=stderr)
 
 	#Output sketches
 	print(f">SketchPair_{arguments.s} original template")
