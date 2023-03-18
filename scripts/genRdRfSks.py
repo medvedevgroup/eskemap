@@ -23,6 +23,11 @@ def calcMiniSketch(seq, k, w):
 	windowKmers = deque()
 	mask = (4 ** k) - 1
 	lastIdx = -1
+	#Since we may not enter the for loop we must initialize this variable here
+	windowBorder = 0 - (w - 1)
+
+	#Testing
+	print(len(seq))
 
 	for i in range(len(seq) - k + 1):
 		kmerBits = 0
@@ -84,12 +89,12 @@ def calcMiniSketch(seq, k, w):
 
 if __name__ == '__main__':
 	#Testing
-	from Bio import SeqIO
-	refSeq = str([r for r in SeqIO.parse(open("../../simulations/genomes/t2thumanChrY.fasta", 'r'), "fasta")][0].seq)
-	blks = {}#{int(l): None for l in open("../highAbundKmersMiniK15w10Lrgr100BtStrnds.txt", 'r')}
-	for h in [k for k in calcMiniSketch(refSeq, 15, 10) if not k in blks]:
-		print(h)
-	exit(0)
+	# from Bio import SeqIO
+	# refSeq = str([r for r in SeqIO.parse(open("../../simulations/genomes/t2thumanChrY.fasta", 'r'), "fasta")][0].seq)
+	# blks = {}#{int(l): None for l in open("../highAbundKmersMiniK15w10Lrgr100BtStrnds.txt", 'r')}
+	# for h in [k for k in calcMiniSketch(refSeq, 15, 10) if not k in blks]:
+	# 	print(h)
+	# exit(0)
 
 	#Setting up the argument parser
 	parser = args.ArgumentParser(description="This script generates sketches of a sequence and its mutated copy in .sk format.")
@@ -106,8 +111,9 @@ if __name__ == '__main__':
 		"possible hash values to be included into a sketch")
 	parser.add_argument('-H', metavar='HashMode', type=str, default="FracMin", help="Hashing method to be used for sketches")
 	parser.add_argument('-w', metavar='WindowSize', type=int, default=10, help="Window size for minimizer sketching approach")
-	parser.add_argument('-b', metavar='Blacklist', type=args.FileType('r'), required=False, help="File containing blacklisted " + \
-		"k-mers not to appear inside the sketch")
+
+	# parser.add_argument('-b', metavar='Blacklist', type=args.FileType('r'), required=False, help="File containing blacklisted " + \
+	# 	"k-mers not to appear inside the sketch")
 
 	arguments = parser.parse_args()
 
@@ -141,13 +147,10 @@ if __name__ == '__main__':
 		print("ERROR: Unrecognized sketching mode", file=stderr)
 		exit(-1)
 
-	#Check if blacklist was provided and apply filtering
-	if arguments.b:
-		blKmers = {int(l): None for l in arguments.b}
-		sketch = [k for k in sketch if not k in blKmers]
-
-		#Testing
-		print(sketch)
+	# #Check if blacklist was provided and apply filtering
+	# if arguments.b:
+	# 	blKmers = {int(l): None for l in arguments.b}
+	# 	sketch = [k for k in sketch if not k in blKmers]
 
 	#Mutate sequence
 	mutSeq = mutateSeq(seq, arguments.m, arguments.d, arguments.i)

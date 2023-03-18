@@ -214,7 +214,7 @@ READ_SEED = randrange(maxsize)
 rule all:
 	input:
 		#Expectation value estimation
-		genSampleFileNames,
+		# genSampleFileNames,
 		# genReadScoreFiles,
 		# expand("../simulations/expValExp/dists/globEditDistance_srandSeq_l{l}_rid{n}_trandSeq_l{l}_rid{n}_m{m}_d{d}_i{i}_cn0_m" + \
 		# 	"{se}_d{de}_i{ie}_cn0.txt", l=config['readLens'], n=range(config['randomSampleSize']), m=SUB_RATE, d=DEL_RATE, i=\
@@ -260,12 +260,12 @@ rule all:
 		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15_" + \
 		# 	f"hr{config['hashRate']}_c1_u1_de{0.05226723}_in{-116.02672267226808}.txt",
 		# Rarely mapping reads using minimap2 sketches
-		# expand("../simulations/homologies/homologies_t2thumanChrY_sr{sr}_dr{dr}_i{i}_sd{sd}_lmn" + \
-		# "{lmn}_lmx{lmx}_lavg{lavg}_ls{ls}_dp10_rm{rm}_k" + \
-		# 	"{k}_w{w}_c1_u1_de{de}_in{iN}.txt", sr=SUB_ERR, \
-		# 	dr=DEL_ERR, i=INS_ERR, sd=READ_SEED, lmn=config['pbsimLenMin'], lmx=config['pbsimLenMax'], lavg=config['pbsimLenAvg'], \
-		# 	ls=config['pbsimLenStd'], rm=config['rlyMppdRdsThrs'], k=config['minimap2DefaultK'], w=config['minimap2DefaultW'], de=\
-		# 	0.03075068, iN=-152.27506750675093),
+		expand("../simulations/homologies/homologies_t2thumanChrY_sr{sr}_dr{dr}_i{i}_sd{sd}_lmn" + \
+		"{lmn}_lmx{lmx}_lavg{lavg}_ls{ls}_dp10_rm{rm}_k" + \
+			"{k}_w{w}_c1_u1_de{de}_in{iN}.txt", sr=SUB_ERR, \
+			dr=DEL_ERR, i=INS_ERR, sd=READ_SEED, lmn=config['pbsimLenMin'], lmx=config['pbsimLenMax'], lavg=config['pbsimLenAvg'], \
+			ls=config['pbsimLenStd'], rm=config['rlyMppdRdsThrs'], k=config['minimap2DefaultK'], w=config['minimap2DefaultW'], de=\
+			0.08758516, iN=-231.1585158515809),
 		# expand("../benchmarks/benchFindThoms_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_" + \
 		# 	"hr{hr}_c1_u1_de{de}_in{it}_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
 		# 	config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], hr=config['hashRate'], de=0.05226723, it=\
@@ -877,7 +877,7 @@ rule searchMinimapSketchReadHomologies:
 		genome = "\w+",
 	shell:
 		"/usr/bin/time -v src/FindThoms -p {input.rds} -s {input.txt} -k {params.k} -c {params.c} -u " + \
-		"{params.u} -d {params.d} -i {params.i} -N > {output.homs} 2> {output.bench}" #-w {params.w}
+		"{params.u} -d {params.d} -i {params.i} > {output.homs} 2> {output.bench}" #-w {params.w} -N
 
 rule searchReadHomologies:
 	input:
