@@ -5,7 +5,7 @@
 #include "Thomology.h"
 
 #define OPTIONS "a:b:ilh"
-#define T_HOM_OPTIONS "p:s:k:r:b:c:u:t:d:i:nNh"
+#define T_HOM_OPTIONS "p:s:k:w:r:b:c:u:t:d:i:nNh"
 #define MIN_PARAM_NB 6
 #define MAX_RATIO 1.0
 #define NORM_FLAG_DEFAULT false
@@ -37,6 +37,7 @@ inline void dsHlp(){
 	cerr << "   -s   --text     Text sequence file (FASTA format)" << endl << endl;
 	cerr << "Optional parameters with required argument:" << endl;
 	cerr << "   -k   --ksize             K-mer length to be used for sketches (default " << K << ")" << endl;
+	cerr << "   -w   --windowsize        Window size for minimizer sketching approach (default " << W << ")" << endl;
 	cerr << "   -r   --hashratio         FracMin hash ratio to be used for sketches (default " << HASH_RATIO << ")" << endl;
 	cerr << "   -b   --blacklist         File containing hashes to ignore for sketch calculation" << endl;
 	cerr << "   -c   --commonhashweight  Weight to reward common hashes (default " << DEFAULT_WEIGHT << ")" << endl;
@@ -68,8 +69,8 @@ inline void outputHoms(const vector<Thomology>& homs, const bool& norm, const ui
 const bool prsArgs(int& nArgs, char** argList, string& seqa, string& seqb, Measure& msr);
 
 //This function parses the program parameters. Returns false if given arguments are not valid
-const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, double& hFrac, string& blFl, uint32_t& cw, 
-	float& uw, float& tThres, bool& norm, float& dec, float& inter, bool& noNesting);
+const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, uint32_t& w, double& hFrac, string& blFl, 
+	uint32_t& cw, float& uw, float& tThres, bool& norm, float& dec, float& inter, bool& noNesting);
 
 //This function reads a file in FASTA format and returns true on success
 const bool readFASTA(const string& filePath, string& seq);

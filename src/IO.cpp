@@ -67,14 +67,15 @@ const bool prsArgs(int& nArgs, char** argList, string& seqa, string& seqb, Measu
 }
 
 //This function parses the program parameters. Returns false if given arguments are not valid
-const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, double& hFrac, string& blFl, uint32_t& cw, 
-	float& uw, float& tThres, bool& norm, float& dec, float& inter, bool& noNesting){
+const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, uint32_t& w, double& hFrac, string& blFl, 
+	uint32_t& cw, float& uw, float& tThres, bool& norm, float& dec, float& inter, bool& noNesting){
 	int option_index = 0, a;
 
 	static struct option long_options[] = {
         {"pattern",            required_argument,  0, 'p'},
         {"text",               required_argument,  0, 's'},
         {"ksize",              required_argument,  0, 'k'},
+        {"windowsize",         required_argument,  0, 'w'},
         {"hashratio",          required_argument,  0, 'r'},
         {"blacklist",          required_argument,  0, 'b'},
         {"commonhashweight",   required_argument,  0, 'c'},
@@ -108,6 +109,15 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 				}
 
 				k = atoi(optarg);
+				break;
+			case 'w':
+				//Window size should be positive
+				if(atoi(optarg) <= 0){
+					cerr << "ERROR: Window size not applicable" << endl;
+					return false;
+				}
+
+				w = atoi(optarg);
 				break;
 			case 'r':
 				//Check if given value is reasonable to represent a ratio

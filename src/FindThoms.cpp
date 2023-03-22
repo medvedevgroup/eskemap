@@ -14,6 +14,8 @@ int main(int argc, char **argv){
 	bool noNesting = NESTING_FLAG_DEFAULT;
 	//The k-mer length
 	uint32_t kmerLen = K;
+	//The window size
+	uint32_t w = W;
 	//Scoring weights
 	uint32_t comWght = DEFAULT_WEIGHT;
 	float uniWght = DEFAULT_WEIGHT;
@@ -23,7 +25,7 @@ int main(int argc, char **argv){
 	float dec = 0;
 	float inter = 0;
 	//Input file names
-	string pFile, tFile, bLstFl;
+	string pFile, tFile, bLstFl = "highAbundKmersMiniK15w10Lrgr100BtStrnds.txt";
 	//An input sequence
 	string seq;
 	//A file stream
@@ -48,17 +50,21 @@ int main(int argc, char **argv){
 	vector<tuple<string, uint32_t, Sketch>>::const_iterator p;
 
 	//Parse arguments
-	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, hFrac, bLstFl, comWght, uniWght, tThres, normalize, dec, inter, noNesting)){//TODO: Tests for this function need to be adapted!
+	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, w, hFrac, bLstFl, comWght, uniWght, tThres, normalize, dec, inter, noNesting)){//TODO: Tests for this function need to be adapted!
 		//Display help message
 		dsHlp();
 		return 1;
 	}
 
+	//Testing
+	// cout << "w: " << w << " bLstFl: " << bLstFl << endl;
+	// return 0;
+
 	//Set index options to default
 	mm_set_opt(0, &iopt, &mopt);
 	//Adjust k if necessary
 	iopt.k = kmerLen;
-	iopt.w = 10;
+	iopt.w = w;
 	//Open an index reader //TODO: We do not allow yet to use a prebuilt index
 	r = mm_idx_reader_open(tFile.c_str(), &iopt, INDEX_DEFAULT_DUMP_FILE);
 
@@ -72,7 +78,7 @@ int main(int argc, char **argv){
 	// bLstmers = readBlstKmers("highAbundKmersLrgr10.txt");
 	// bLstmers = readBlstKmers("highAbundKmersMiniDefaultBtStrnds.txt");
 	// bLstmers = readBlstKmers("highAbundKmersMiniLrgr100BtStrnds.txt");
-	bLstmers = readBlstKmers("highAbundKmersMiniK15w10Lrgr100BtStrnds.txt");
+	bLstmers = readBlstKmers(bLstFl);
 	// bLstmers = readBlstKmers("testBlacklist.txt");
 
 	//Testing

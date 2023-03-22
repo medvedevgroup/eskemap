@@ -262,10 +262,10 @@ rule all:
 		# Rarely mapping reads using minimap2 sketches
 		expand("../simulations/homologies/homologies_t2thumanChrY_sr{sr}_dr{dr}_i{i}_sd{sd}_lmn" + \
 		"{lmn}_lmx{lmx}_lavg{lavg}_ls{ls}_dp10_rm{rm}_k" + \
-			"{k}_w{w}_c1_u1_de{de}_in{iN}.txt", sr=SUB_ERR, \
+			"{k}_w{w}_c1_u1_de{de}_in{iN}_bl{b}.txt", sr=SUB_ERR, \
 			dr=DEL_ERR, i=INS_ERR, sd=READ_SEED, lmn=config['pbsimLenMin'], lmx=config['pbsimLenMax'], lavg=config['pbsimLenAvg'], \
 			ls=config['pbsimLenStd'], rm=config['rlyMppdRdsThrs'], k=config['minimap2DefaultK'], w=config['minimap2DefaultW'], de=\
-			0.08758516, iN=-231.1585158515809),
+			0.08758516, iN=-231.1585158515809, b=config['kmerBlacklistName']),
 		# expand("../benchmarks/benchFindThoms_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_" + \
 		# 	"hr{hr}_c1_u1_de{de}_in{it}_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
 		# 	config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], hr=config['hashRate'], de=0.05226723, it=\
@@ -849,9 +849,9 @@ rule convertCompressedFastq2Fasta:
 
 rule saveFindThomsResult:
 	input:
-		"../simulations/homologies/homologies_{genome}_{desc}_k{k}_{smp}_c{c}_u{u}_de{d}_in{i}_rep0.txt"
+		"../simulations/homologies/homologies_{genome}_{desc}_k{k}_{smp}_c{c}_u{u}_de{d}_in{i}_bl{bl}_rep0.txt"
 	output:
-		"../simulations/homologies/homologies_{genome}_{desc}_k{k}_{smp}_c{c}_u{u}_de{d}_in{i}.txt"
+		"../simulations/homologies/homologies_{genome}_{desc}_k{k}_{smp}_c{c}_u{u}_de{d}_in{i}_bl{bl}.txt"
 	wildcard_constraints:
 		i = "-?[0-9]+\.?[0-9]*"
 	shell:
@@ -860,7 +860,8 @@ rule saveFindThomsResult:
 rule searchMinimapSketchReadHomologies:
 	input:
 		rds = "../simulations/reads/{genome}_{desc}.fasta",
-		txt = "../simulations/genomes/{genome}.fasta"
+		txt = "../simulations/genomes/{genome}.fasta",
+		bl = "{bl}.txt"
 	params:
 		c = "{c}",
 		u = "{u}",
@@ -871,13 +872,13 @@ rule searchMinimapSketchReadHomologies:
 		i = "{i}"
 	output:
 		homs = temp("../simulations/homologies/homologies_{genome}_{desc}_k{k}_w{w}_c{c}_u{u}_de{d}_in{i}" + \
-			"_rep{r}.txt"),
-		bench = "../benchmarks/benchFindThoms_{genome}_{desc}_k{k}_w{w}_c{c}_u{u}_de{d}_in{i}_rep{r}.txt"
+			"_bl{bl}_rep{r}.txt"),
+		bench = "../benchmarks/benchFindThoms_{genome}_{desc}_k{k}_w{w}_c{c}_u{u}_de{d}_in{i}_bl{bl}_rep{r}.txt"
 	wildcard_constraints:
 		genome = "\w+",
 	shell:
 		"/usr/bin/time -v src/FindThoms -p {input.rds} -s {input.txt} -k {params.k} -c {params.c} -u " + \
-		"{params.u} -d {params.d} -i {params.i} > {output.homs} 2> {output.bench}" #-w {params.w} -N
+		"{params.u} -d {params.d} -i {params.i} -w {params.w} -b {input.bl} > {output.homs} 2> {output.bench}" # -N
 
 rule searchReadHomologies:
 	input:

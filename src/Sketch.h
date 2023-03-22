@@ -14,6 +14,8 @@
 
 //The k-mer size
 #define K 9
+//The window size
+#define W 10
 //The hash value threshold
 #define MAX_HASH 26214
 //The FracMinHash ratio
