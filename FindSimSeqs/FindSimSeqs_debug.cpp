@@ -90,7 +90,7 @@ int main(int argc, char **argv){
 			targetPieces.pop_back();
 			//Calculate alignment
 			result = edlibAlign(q.seq.s, q.seq.l, tPSeq, tPLen, aConf);
-	
+
 			//Analyse result
 			if(result.status != EDLIB_STATUS_OK){
 				cerr << "ERROR: Alignment calculation failed!" << endl;

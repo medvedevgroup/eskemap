@@ -16,8 +16,15 @@ int main(int argc, char **argv){
 	//Some other fixed constants
 	const float THRES = 0.03;
 
+	//Testing
+	// const float THRES = 0.006;
+
 	// const float dec = 0.09552835;
 	// const float inter = -73.15283528352302;
+
+	//Testing
+	// const float dec = 0.09652925;
+	// const float inter = 81.34707470747526;
 
 	//Input sequences
 	uint32_t tPLen;
@@ -48,6 +55,8 @@ int main(int argc, char **argv){
 
 	//Testing
 	// cout << "(int32_t) (THRES * q.seq.l): " << (int32_t) (THRES * q.seq.l) << endl;
+	// int32_t thres = (int32_t) (dec * q.seq.l + inter);
+	// aConf = edlibNewAlignConfig(thres, EDLIB_MODE_HW, EDLIB_TASK_PATH, NULL, 0);
 
 	aConf = edlibNewAlignConfig((int32_t) (THRES * q.seq.l), EDLIB_MODE_HW, EDLIB_TASK_PATH, NULL, 0);
 	// aConf = edlibNewAlignConfig((int32_t) (THRES * q.seq.l), EDLIB_MODE_HW, EDLIB_TASK_DISTANCE, NULL, 0);
@@ -62,11 +71,10 @@ int main(int argc, char **argv){
 	t = refs->seqs[0];
 	targetPieces.push_back(make_tuple(t.seq.s, t.seq.l, 0));
 
-	// thres = (int32_t) (dec * q.seq.l + inter);
-
 	//Testing
 	// cout << "thres: " << thres << endl;
 	// int32_t a = 2, b = 3;
+	// uint32_t c = 0;
 	// cout << "(float) a / b: " << (float) a / b << endl;
 	// return 0;
 
@@ -78,6 +86,11 @@ int main(int argc, char **argv){
 		targetPieces.pop_back();
 		//Calculate alignment
 		result = edlibAlign(q.seq.s, q.seq.l, tPSeq, tPLen, aConf);
+
+		//Testing
+		// cout << "tPLen: " << tPLen << endl;
+		// if(++c > 1) cout << "c: " << c << " tPSeq: " << tPSeq << endl;
+		cout << "Distance: " << result.editDistance << endl;
 
 		//Analyse result
 		if(result.status != EDLIB_STATUS_OK){
