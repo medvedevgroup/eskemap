@@ -3,6 +3,7 @@
 import argparse as args
 from Bio import SeqIO
 from math import floor
+from genRdRfSks import calcMiniSketch
 
 #This script reads sequences from FASTA files and outputs their FracMinHash sketches
 
@@ -56,11 +57,17 @@ if __name__ == '__main__':
 	parser.add_argument('-s', metavar='Seqs', type=str, nargs='+', required=True, help="Sequences in FASTA format")
 	parser.add_argument('-k', metavar='KmerLen', type=int, default=15, help="Length of k-mers in sketch")
 	parser.add_argument('-r', metavar='SampPar', type=float, default=0.1, help="Sampling parameter")
+	parser.add_argument('-w', metavar='WindowSize', type=int, default=10, help="Window size for minimizer sketch")
+	parser.add_argument('-t', metavar='SketchType', type=str, choices=["FracMin", "Mini"], required=True, help="Type of sketches to be generated. Either 'FracMin' or 'Mini'")
 
 	arguments = parser.parse_args()
 	minHashThres = floor(((4 ** arguments.k) - 1) * arguments.r)
 
 	for s in arguments.s:
 		for r in SeqIO.parse(open(s, 'r'), "fasta"):
-			print(f">{r.description}")
-			print(' '.join([str(h) for h in calcSketch(r.seq, arguments.k, minHashThres)]))
+			print(f">{r.id} {r.description}")
+
+			if arguments.t == "FracMin":
+				print(' '.join([str(h) for h in calcSketch(r.seq, arguments.k, minHashThres)]))
+			else:
+				print(' '.join([str(h) for h in calcMiniSketch(str(r.seq), arguments.k, arguments.w)]))

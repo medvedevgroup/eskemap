@@ -134,7 +134,7 @@ def genSampleFileNames(wcs):
 			# scoreFiles.append(f"../simulations/expValExp/scores/readRefGlobIntSecScore_se{seed}_sl{l}_sr{sr}_ir{ir}_dr{dr}" + \
 			# 	f"_ser{ser}_ier{ier}_der{der}_k15_r0.1_c1_u1.txt")
 			scoreFiles.append(f"../simulations/expValExp/scores/readRefGlobIntSecScore_se{seed}_sl{l}_sr{sr}_ir{ir}_dr{dr}" + \
-				f"_ser{ser}_ier{ier}_der{der}_k{config['minimap2DefaultK']}_w{config['minimap2DefaultW']}_c1_u1.txt")
+				f"_ser{ser}_ier{ier}_der{der}_k{config['minimap2DefaultK']}_w{config['minimap2DefaultW']}_c1_u3.txt")
 
 	# for l in [1000000]:
 	# 	for i in range(3):
@@ -214,7 +214,7 @@ READ_SEED = randrange(maxsize)
 rule all:
 	input:
 		#Expectation value estimation
-		# genSampleFileNames,
+		genSampleFileNames,
 		# genReadScoreFiles,
 		# expand("../simulations/expValExp/dists/globEditDistance_srandSeq_l{l}_rid{n}_trandSeq_l{l}_rid{n}_m{m}_d{d}_i{i}_cn0_m" + \
 		# 	"{se}_d{de}_i{ie}_cn0.txt", l=config['readLens'], n=range(config['randomSampleSize']), m=SUB_RATE, d=DEL_RATE, i=\
@@ -260,12 +260,12 @@ rule all:
 		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15_" + \
 		# 	f"hr{config['hashRate']}_c1_u1_de{0.05226723}_in{-116.02672267226808}.txt",
 		# Rarely mapping reads using minimap2 sketches
-		expand("../simulations/homologies/homologies_t2thumanChrY_sr{sr}_dr{dr}_i{i}_sd{sd}_lmn" + \
-		"{lmn}_lmx{lmx}_lavg{lavg}_ls{ls}_dp10_rm{rm}_k" + \
-			"{k}_w{w}_c1_u1_de{de}_in{iN}_bl{b}.txt", sr=SUB_ERR, \
-			dr=DEL_ERR, i=INS_ERR, sd=READ_SEED, lmn=config['pbsimLenMin'], lmx=config['pbsimLenMax'], lavg=config['pbsimLenAvg'], \
-			ls=config['pbsimLenStd'], rm=config['rlyMppdRdsThrs'], k=config['minimap2DefaultK'], w=config['minimap2DefaultW'], de=\
-			0.08758516, iN=-231.1585158515809, b=config['kmerBlacklistName']),
+		# expand("../simulations/homologies/homologies_t2thumanChrY_sr{sr}_dr{dr}_i{i}_sd{sd}_lmn" + \
+		# "{lmn}_lmx{lmx}_lavg{lavg}_ls{ls}_dp10_rm{rm}_k" + \
+		# 	"{k}_w{w}_c1_u4_de{de}_in{iN}_bl{b}.txt", sr=SUB_ERR, \
+		# 	dr=DEL_ERR, i=INS_ERR, sd=READ_SEED, lmn=config['pbsimLenMin'], lmx=config['pbsimLenMax'], lavg=config['pbsimLenAvg'], \
+		# 	ls=config['pbsimLenStd'], rm=config['rlyMppdRdsThrs'], k=config['minimap2DefaultK'], w=config['minimap2DefaultW'], de=\
+		# 	0.08758516, iN=-231.1585158515809, b=config['kmerBlacklistName']),
 		# expand("../benchmarks/benchFindThoms_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_" + \
 		# 	"hr{hr}_c1_u1_de{de}_in{it}_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
 		# 	config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], hr=config['hashRate'], de=0.05226723, it=\
@@ -354,10 +354,13 @@ rule divideReads:
 rule calculateGlobalIntersectionSimilarity:
 	input:
 		"../simulations/expValExp/sketches/{dupInfo}KskSeqPairs_se{desc}.sk"
+	params:
+		c = "{c}",
+		u = "{u}"
 	output:
-		"../simulations/expValExp/scores/{dupInfo}GlobIntSecScore_se{desc}_c1_u1.txt"
+		"../simulations/expValExp/scores/{dupInfo}GlobIntSecScore_{desc}_c{c}_u{u}.txt"
 	shell:
-		"python3 scripts/CalcGlobInterSim.py -p {input} > {output}"
+		"python3 scripts/CalcGlobInterSim.py -p {input} -c {params.c} -u {params.u} > {output}"
 
 rule generateReadRefMiniSketchPairs:
 	params:
