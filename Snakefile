@@ -17,6 +17,7 @@ DEL_RATE = DIV_RATE / 3
 SUB_ERR = 0.002 * 6 / 110.
 INS_ERR = 0.002 * 50 / 110.
 DEL_ERR = 0.002 * 54 / 110.
+RD_IDS_RM10 = [l.strip().split('_')[1] for l in open("readIds_rm10.txt", 'r')]
 
 #Initialize random number generator with global seed for this workflow
 seed(config['globalSeed'])
@@ -134,7 +135,7 @@ def genSampleFileNames(wcs):
 			# scoreFiles.append(f"../simulations/expValExp/scores/readRefGlobIntSecScore_se{seed}_sl{l}_sr{sr}_ir{ir}_dr{dr}" + \
 			# 	f"_ser{ser}_ier{ier}_der{der}_k15_r0.1_c1_u1.txt")
 			scoreFiles.append(f"../simulations/expValExp/scores/readRefGlobIntSecScore_se{seed}_sl{l}_sr{sr}_ir{ir}_dr{dr}" + \
-				f"_ser{ser}_ier{ier}_der{der}_k{config['minimap2DefaultK']}_w{config['minimap2DefaultW']}_c1_u3.txt")
+				f"_ser{ser}_ier{ier}_der{der}_k{config['minimap2DefaultK']}_w{config['minimap2DefaultW']}_c1_u4.txt")
 
 	# for l in [1000000]:
 	# 	for i in range(3):
@@ -214,13 +215,16 @@ READ_SEED = randrange(maxsize)
 rule all:
 	input:
 		#Expectation value estimation
-		genSampleFileNames,
+		# genSampleFileNames,
 		# genReadScoreFiles,
 		# expand("../simulations/expValExp/dists/globEditDistance_srandSeq_l{l}_rid{n}_trandSeq_l{l}_rid{n}_m{m}_d{d}_i{i}_cn0_m" + \
 		# 	"{se}_d{de}_i{ie}_cn0.txt", l=config['readLens'], n=range(config['randomSampleSize']), m=SUB_RATE, d=DEL_RATE, i=\
 		# 	INS_RATE, se=SUB_ERR, de=DEL_ERR, ie=INS_ERR),
-		#Testing
-		# genReadScoreFiles2,
+		#Calculate global intersection homology scores for sketches of random sequences used to estimate edit distance distribution 
+		#for edlib
+		# expand("../simulations/expValExp/scores/miniGlobIntSecScore_s1randSeq_l{l}_rid{n}_s2randSeq_l{l}_rid{n}_m{m}_d{d}_i{i}_" + \
+		# 	"cn0_m{se}_d{de}_i{ie}_cn0_k15_w10_c1_u1.txt", l=config['readLens'], n=range(config['randomSampleSize']), m=SUB_RATE, \
+		# 	d=DEL_RATE, i=INS_RATE, se=SUB_ERR, de=DEL_ERR, ie=INS_ERR),
 		#Tests for DP script
 		# expand("../simulations/homologies/homologies_gn{gn}_rn{rn}_gl{gl}_rl{rl}_o{o}_m{m}_i{m}_d{m}_{sp}_t0_pPy.txt", gn=\
 		# 	config['nbSimSeqs'], rn=NB_RANDSEQS, gl=config['geneLen'], rl=config['randSeqLen'], o=config['nbCpys'], m=\
@@ -251,6 +255,9 @@ rule all:
 		#Benchmark on real data
 		# f"../simulations/reads/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{randrange(maxsize)}_lmn" + \
 		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10.fasta",
+		expand("../simulations/blastRes/blastRes_st2thumanChrY_qt2thumanChrY_sr0.00010909090909090909_dr0.0009818181818181818_i" + \
+				"0.0009090909090909091_sd7361077429744071834_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri{i}_e{e}.tsv", i=RD_IDS_RM10,\
+				 e=config['blastEvalue']),
 		# expand("../simulations/edlibMappings/t2thumanChrY_sr{sr}_dr{dr}_i{ir}_sd{s}_lmn" + \
 		# "{mn}_lmx{mx}_lavg{m}_ls{sd}_dp10_ri{i}.er", \
 		# sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, s=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
@@ -272,15 +279,15 @@ rule all:
 		# 	-116.02672267226808, i=range(config['benchRepRuns'])),
 		# f"../simulations/minimap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
 		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.sam.gz",
-		f"../simulations/minimap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
-		f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.paf.gz",
+		# f"../simulations/minimap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
+		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.paf.gz",
 		# expand("../benchmarks/benchMinimap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_rep" + \
 		# 	"{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
 		# 	config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
 		# f"../simulations/Winnowmap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
 		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.sam.gz",
-		f"../simulations/Winnowmap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
-		f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.paf.gz",
+		# f"../simulations/Winnowmap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
+		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.paf.gz",
 		# expand("../benchmarks/benchWinnowmap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15" + \
 		# 	"_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
 		# 	config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
@@ -294,6 +301,30 @@ rule all:
 		# genHomFiles,
 		# genMinimap2Files,
 		# genWinnowmap2Files
+
+rule blastReads:
+	input:
+		sub = "../simulations/blastdbs/{sdesc}.fasta",
+		qry = "../simulations/reads/{qdesc}.fasta"
+	params:
+		"{ev}"
+	output:
+		"../simulations/blastRes/blastRes_s{sdesc}_q{qdesc}_e{ev}.tsv"
+	shell:
+		"blastn -query {input.qry} -task blastn -db {input.sub} -out {output} -outfmt '6 qacc qstart qend sacc sstart send eval" + \
+		"ue length pident nident mismatch positive gaps sstrand qcovhsp' -evalue {params}"
+
+rule genMiniSketchPairs:
+	input:
+		s1 = "../simulations/randSeqs/{s1dsc}.fasta",
+		s2 = "../simulations/randSeqs/{s2dsc}.fasta"
+	params:
+		k = "{k}",
+		w = "{w}"
+	output:
+		"../simulations/expValExp/sketches/miniKskSeqPairs_s1{s1dsc}_s2{s2dsc}_k{k}_w{w}.sk"
+	shell:
+		"python3 scripts/GenSketches.py -s {input} -k {params.k} -w {params.w} -t Mini > {output}"
 
 rule calcGlobEditDist:
 	input:
@@ -353,7 +384,7 @@ rule divideReads:
 
 rule calculateGlobalIntersectionSimilarity:
 	input:
-		"../simulations/expValExp/sketches/{dupInfo}KskSeqPairs_se{desc}.sk"
+		"../simulations/expValExp/sketches/{dupInfo}KskSeqPairs_{desc}.sk"
 	params:
 		c = "{c}",
 		u = "{u}"

@@ -40,3 +40,4 @@ minimap2HifiK: 19
 minimap2HifiW: 19
 rlyMppdRdsThrs: [10, 20] 
 kmerBlacklistName: "highAbundKmersMiniK15w10Lrgr100BtStrnds"
+blastEvalue: 0.01

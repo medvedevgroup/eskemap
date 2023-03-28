@@ -27,7 +27,7 @@ def calcMiniSketch(seq, k, w):
 	windowBorder = 0 - (w - 1)
 
 	#Testing
-	print(len(seq))
+	# print(len(seq))
 
 	for i in range(len(seq) - k + 1):
 		kmerBits = 0
