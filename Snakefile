@@ -3,7 +3,7 @@ configfile: 'config.yaml'
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
-from os.path import exists
+from os.path import exists, basename
 from random import randrange, seed
 from sys import maxsize
 from glob import glob
@@ -255,9 +255,11 @@ rule all:
 		#Benchmark on real data
 		# f"../simulations/reads/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{randrange(maxsize)}_lmn" + \
 		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10.fasta",
-		expand("../simulations/blastRes/blastRes_st2thumanChrY_qt2thumanChrY_sr0.00010909090909090909_dr0.0009818181818181818_i" + \
-				"0.0009090909090909091_sd7361077429744071834_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri{i}_e{e}.tsv", i=RD_IDS_RM10,\
-				 e=config['blastEvalue']),
+		# expand("../simulations/blastRes/blastRes_st2thumanChrY_qt2thumanChrY_sr0.00010909090909090909_dr0.0009818181818181818_i" + \
+		# 		"0.0009090909090909091_sd7361077429744071834_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri{i}_e{e}.tsv", i=RD_IDS_RM10,\
+		# 		 e=config['blastEvalue']),
+		expand("../simulations/blastRes/{bname}_e0.01.tsv", bname=[basename(f).split(".fasta")[0] for f in glob("../simulations/blast" + \
+			"Input/sub_s_*")]),
 		# expand("../simulations/edlibMappings/t2thumanChrY_sr{sr}_dr{dr}_i{ir}_sd{s}_lmn" + \
 		# "{mn}_lmx{mx}_lavg{m}_ls{sd}_dp10_ri{i}.er", \
 		# sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, s=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
@@ -269,10 +271,10 @@ rule all:
 		# Rarely mapping reads using minimap2 sketches
 		# expand("../simulations/homologies/homologies_t2thumanChrY_sr{sr}_dr{dr}_i{i}_sd{sd}_lmn" + \
 		# "{lmn}_lmx{lmx}_lavg{lavg}_ls{ls}_dp10_rm{rm}_k" + \
-		# 	"{k}_w{w}_c1_u4_de{de}_in{iN}_bl{b}.txt", sr=SUB_ERR, \
+		# 	"{k}_w{w}_c1_u1_de{de}_in{iN}.txt", sr=SUB_ERR, \
 		# 	dr=DEL_ERR, i=INS_ERR, sd=READ_SEED, lmn=config['pbsimLenMin'], lmx=config['pbsimLenMax'], lavg=config['pbsimLenAvg'], \
 		# 	ls=config['pbsimLenStd'], rm=config['rlyMppdRdsThrs'], k=config['minimap2DefaultK'], w=config['minimap2DefaultW'], de=\
-		# 	0.08758516, iN=-231.1585158515809, b=config['kmerBlacklistName']),
+		# 	0.08758516, iN=-231.1585158515809),
 		# expand("../benchmarks/benchFindThoms_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_" + \
 		# 	"hr{hr}_c1_u1_de{de}_in{it}_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
 		# 	config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], hr=config['hashRate'], de=0.05226723, it=\
@@ -301,6 +303,19 @@ rule all:
 		# genHomFiles,
 		# genMinimap2Files,
 		# genWinnowmap2Files
+
+rule blastPairwise:
+	input:
+		sub = "../simulations/blastInput/sub_s_{ri}_ref{range}.fasta",
+		qry = "../simulations/reads/t2thumanChrY_sr0.00010909090909090909_dr0.0009818181818181818_i0.0009090909090909091_sd7361" + \
+		"077429744071834_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri{ri}.fasta"
+	params:
+		"{ev}"
+	output:#../simulations/blastRes/sub_s_58432_ref23696027-23711632.tsv
+		"../simulations/blastRes/sub_s_{ri}_ref{range}_e{ev}.tsv"
+	shell:
+		"blastn -query {input.qry} -task blastn -out {output} -subject {input.sub} -outfmt '6 qacc qstart qend sacc sstart send" + \
+		" evalue length pident nident mismatch positive gaps sstrand qcovhsp'"
 
 rule blastReads:
 	input:
@@ -883,9 +898,9 @@ rule convertCompressedFastq2Fasta:
 
 rule saveFindThomsResult:
 	input:
-		"../simulations/homologies/homologies_{genome}_{desc}_k{k}_{smp}_c{c}_u{u}_de{d}_in{i}_bl{bl}_rep0.txt"
+		"../simulations/homologies/homologies_{genome}_{desc}_k{k}_{smp}_c{c}_u{u}_de{d}_in{i}_rep0.txt"
 	output:
-		"../simulations/homologies/homologies_{genome}_{desc}_k{k}_{smp}_c{c}_u{u}_de{d}_in{i}_bl{bl}.txt"
+		"../simulations/homologies/homologies_{genome}_{desc}_k{k}_{smp}_c{c}_u{u}_de{d}_in{i}.txt"
 	wildcard_constraints:
 		i = "-?[0-9]+\.?[0-9]*"
 	shell:
@@ -895,7 +910,7 @@ rule searchMinimapSketchReadHomologies:
 	input:
 		rds = "../simulations/reads/{genome}_{desc}.fasta",
 		txt = "../simulations/genomes/{genome}.fasta",
-		bl = "{bl}.txt"
+		bl = "%s.txt" %config['kmerBlacklistName']
 	params:
 		c = "{c}",
 		u = "{u}",
@@ -906,13 +921,13 @@ rule searchMinimapSketchReadHomologies:
 		i = "{i}"
 	output:
 		homs = temp("../simulations/homologies/homologies_{genome}_{desc}_k{k}_w{w}_c{c}_u{u}_de{d}_in{i}" + \
-			"_bl{bl}_rep{r}.txt"),
-		bench = "../benchmarks/benchFindThoms_{genome}_{desc}_k{k}_w{w}_c{c}_u{u}_de{d}_in{i}_bl{bl}_rep{r}.txt"
+			"_rep{r}.txt"),
+		bench = "../benchmarks/benchFindThoms_{genome}_{desc}_k{k}_w{w}_c{c}_u{u}_de{d}_in{i}_rep{r}.txt"
 	wildcard_constraints:
 		genome = "\w+",
 	shell:
 		"/usr/bin/time -v src/FindThoms -p {input.rds} -s {input.txt} -k {params.k} -c {params.c} -u " + \
-		"{params.u} -d {params.d} -i {params.i} -w {params.w} -b {input.bl} > {output.homs} 2> {output.bench}" # -N
+		"{params.u} -d {params.d} -i {params.i} -w {params.w} -b {input.bl} -N > {output.homs} 2> {output.bench}" # 
 
 rule searchReadHomologies:
 	input:
