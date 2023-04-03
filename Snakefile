@@ -311,7 +311,7 @@ rule blastPairwise:
 		"077429744071834_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri{ri}.fasta"
 	params:
 		"{ev}"
-	output:#../simulations/blastRes/sub_s_58432_ref23696027-23711632.tsv
+	output:
 		"../simulations/blastRes/sub_s_{ri}_ref{range}_e{ev}.tsv"
 	shell:
 		"blastn -query {input.qry} -task blastn -out {output} -subject {input.sub} -outfmt '6 qacc qstart qend sacc sstart send" + \
