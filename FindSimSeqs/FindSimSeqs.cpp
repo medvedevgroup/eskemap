@@ -90,7 +90,7 @@ int main(int argc, char **argv){
 		//Testing
 		// cout << "tPLen: " << tPLen << endl;
 		// if(++c > 1) cout << "c: " << c << " tPSeq: " << tPSeq << endl;
-		cout << "Distance: " << result.editDistance << endl;
+		// cout << "Distance: " << result.editDistance << endl;
 
 		//Analyse result
 		if(result.status != EDLIB_STATUS_OK){
