@@ -258,12 +258,12 @@ rule all:
 		# expand("../simulations/blastRes/blastRes_st2thumanChrY_qt2thumanChrY_sr0.00010909090909090909_dr0.0009818181818181818_i" + \
 		# 		"0.0009090909090909091_sd7361077429744071834_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri{i}_e{e}.tsv", i=RD_IDS_RM10,\
 		# 		 e=config['blastEvalue']),
-		expand("../simulations/blastRes/{bname}_e0.01.tsv", bname=[basename(f).split(".fasta")[0] for f in glob("../simulations/blast" + \
-			"Input/sub_s_*")]),
-		# expand("../simulations/edlibMappings/t2thumanChrY_sr{sr}_dr{dr}_i{ir}_sd{s}_lmn" + \
-		# "{mn}_lmx{mx}_lavg{m}_ls{sd}_dp10_ri{i}.er", \
-		# sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, s=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
-		# config['pbsimLenAvg'], sd=config['pbsimLenStd'], i=range(69401)),
+		# expand("../simulations/blastRes/{bname}_e0.01.tsv", bname=[basename(f).split(".fasta")[0] for f in glob("../simulations/blast" + \
+		# 	"Input/sub_s_*")]),
+		expand("../simulations/edlibMappings/t2thumanChrY_sr{sr}_dr{dr}_i{ir}_sd{s}_lmn" + \
+		"{mn}_lmx{mx}_lavg{m}_ls{sd}_dp10_ri{i}.er", \
+		sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, s=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
+		config['pbsimLenAvg'], sd=config['pbsimLenStd'], i=range(69401)),
 		# All simulated reads using FracMinHashSketches
 		# f"../simulations/homologies/homologies_t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn" + \
 		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15_" + \

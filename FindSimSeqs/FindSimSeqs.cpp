@@ -103,7 +103,8 @@ int main(int argc, char **argv){
 			//Report result
 			cigar = edlibAlignmentToCigar(result.alignment, result.alignmentLength, EDLIB_CIGAR_STANDARD);
 
-			cout << globOffs + result.startLocations[0] << " " << globOffs + result.endLocations[0] << " " << cigar << endl;
+			cout << globOffs + result.startLocations[0] << " " << globOffs + result.endLocations[0] << " " << cigar << " " << 
+			result.editDistance << endl;
 			// cout << globOffs + result.startLocations[0] << " " << globOffs + result.endLocations[0] << endl;
 
 			free(cigar);
