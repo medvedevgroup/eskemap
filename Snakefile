@@ -255,15 +255,17 @@ rule all:
 		#Benchmark on real data
 		# f"../simulations/reads/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{randrange(maxsize)}_lmn" + \
 		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10.fasta",
-		# expand("../simulations/blastRes/blastRes_st2thumanChrY_qt2thumanChrY_sr0.00010909090909090909_dr0.0009818181818181818_i" + \
-		# 		"0.0009090909090909091_sd7361077429744071834_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri{i}_e{e}.tsv", i=RD_IDS_RM10,\
-		# 		 e=config['blastEvalue']),
-		# expand("../simulations/blastRes/{bname}_e0.01.tsv", bname=[basename(f).split(".fasta")[0] for f in glob("../simulations/blast" + \
-		# 	"Input/sub_s_*")]),
-		expand("../simulations/edlibMappings/t2thumanChrY_sr{sr}_dr{dr}_i{ir}_sd{s}_lmn" + \
-		"{mn}_lmx{mx}_lavg{m}_ls{sd}_dp10_ri{i}.er", \
-		sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, s=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
-		config['pbsimLenAvg'], sd=config['pbsimLenStd'], i=range(69401)),
+		# expand("../simulations/blastRes/blastRes_st2thumanChrY_qt2thumanChrY_sr0.00010909090909090909_dr0.0009818181818181818" + \
+		# 		"_i0.0009090909090909091_sd7361077429744071834_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri{i}_e{e}.tsv", i=\
+		# 		 RD_IDS_RM10, e=config['blastEvalue']),
+		# expand("../simulations/blastRes/{bname}_e0.01.tsv", bname=[basename(f).split(".fasta")[0] for f in glob("../simulatio" + \
+		# 	"ns/blastInput/sub_s_*")]),
+		# expand("../simulations/edlibMappings/t2thumanChrY_sr{sr}_dr{dr}_i{ir}_sd{s}_lmn" + \
+		# "{mn}_lmx{mx}_lavg{m}_ls{sd}_dp10_ri{i}.er", \
+		# sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, s=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
+		# config['pbsimLenAvg'], sd=config['pbsimLenStd'], i=range(69401)),
+		# expand("../simulations/mappingDists/sub_{rid}.edst", rid = ["s_" + basename(f).split("_ri")[1].split(".wotD")[0] for f in \
+		# 	glob("/prj/homsketch/simulations/edlibMappings/*.wotD")])
 		# All simulated reads using FracMinHashSketches
 		# f"../simulations/homologies/homologies_t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn" + \
 		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15_" + \
@@ -276,20 +278,29 @@ rule all:
 		# 	ls=config['pbsimLenStd'], rm=config['rlyMppdRdsThrs'], k=config['minimap2DefaultK'], w=config['minimap2DefaultW'], de=\
 		# 	0.08758516, iN=-231.1585158515809),
 		# expand("../benchmarks/benchFindThoms_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_" + \
-		# 	"hr{hr}_c1_u1_de{de}_in{it}_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
-		# 	config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], hr=config['hashRate'], de=0.05226723, it=\
+		# 	"hr{hr}_c1_u1_de{de}_in{it}_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx\
+		# 	=config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], hr=config['hashRate'], de=0.05226723, it=\
 		# 	-116.02672267226808, i=range(config['benchRepRuns'])),
 		# f"../simulations/minimap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
 		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.sam.gz",
 		# f"../simulations/minimap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
 		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.paf.gz",
-		# expand("../benchmarks/benchMinimap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_rep" + \
-		# 	"{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
+		expand("../benchmarks/benchMinimap2ApprxMppng_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp1" + \
+			"0_rm{rm}_k15_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
+			config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], rm=config["rlyMppdRdsThrs"], i=range(\
+				config['benchRepRuns'])),
+		# expand("../benchmarks/benchMinimap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15_re" + \
+		# 	"p{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
 		# 	config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
-		# f"../simulations/Winnowmap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
-		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.sam.gz",
+		# f"../simulations/Winnowmap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn" + \
+		# f"{config['pbsimLenMin']}_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.s" + \
+		# "am.gz",
 		# f"../simulations/Winnowmap2Res/t2thumanChrY_sr{SUB_ERR}_dr{DEL_ERR}_i{INS_ERR}_sd{READ_SEED}_lmn{config['pbsimLenMin']}" + \
 		# f"_lmx{config['pbsimLenMax']}_lavg{config['pbsimLenAvg']}_ls{config['pbsimLenStd']}_dp10_k15.paf.gz",
+		expand("../benchmarks/benchWinnowmap2ApprxMppng_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_d" + \
+			"p10_rm{rm}_k15_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=\
+			config['pbsimLenMax'], m=config['pbsimLenAvg'], s=config['pbsimLenStd'], rm=config["rlyMppdRdsThrs"], i=range(\
+				config['benchRepRuns'])),
 		# expand("../benchmarks/benchWinnowmap2_t2thumanChrY_sr{sr}_dr{dr}_i{ie}_sd{sd}_lmn{mn}_lmx{mx}_lavg{m}_ls{s}_dp10_k15" + \
 		# 	"_rep{i}.txt", sr=SUB_ERR, dr=DEL_ERR, ie=INS_ERR, sd=READ_SEED, mn=config['pbsimLenMin'], mx=config['pbsimLenMax'], m=\
 		# 	config['pbsimLenAvg'], s=config['pbsimLenStd'], i=range(config['benchRepRuns'])),
@@ -306,7 +317,7 @@ rule all:
 
 rule blastPairwise:
 	input:
-		sub = "../simulations/blastInput/sub_s_{ri}_ref{range}.fasta",
+		sub = "../simulations/mappedAreas/sub_s_{ri}_ref{range}.fasta",
 		qry = "../simulations/reads/t2thumanChrY_sr0.00010909090909090909_dr0.0009818181818181818_i0.0009090909090909091_sd7361" + \
 		"077429744071834_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri{ri}.fasta"
 	params:
@@ -341,7 +352,16 @@ rule genMiniSketchPairs:
 	shell:
 		"python3 scripts/GenSketches.py -s {input} -k {params.k} -w {params.w} -t Mini > {output}"
 
-rule calcGlobEditDist:
+rule calcMappingEditDist:
+	input:
+		"../simulations/reads/sfreads/{rid}.fasta",
+		"../simulations/mappedAreas/sub_{rid}.fasta"
+	output:
+		"../simulations/mappingDists/sub_{rid}.edst"
+	shell:
+		"FindSimSeqs/CalcGlobEditDistance {input} > {output}"
+
+rule calcRandSeqEditDist:
 	input:
 		s = "../simulations/randSeqs/{sNm}.fasta",
 		t = "../simulations/randSeqs/{tNm}.fasta"
@@ -393,7 +413,7 @@ rule divideReads:
 	params:
 		"{rdId}"
 	output:
-		temp("../simulations/reads/{rdFileName}_ri{rdId}.fasta")
+		"../simulations/reads/{rdFileName}_ri{rdId}.fasta"
 	shell:
 		"python3 scripts/getSeq.py -s {input} -i {params} -o {output}"
 
