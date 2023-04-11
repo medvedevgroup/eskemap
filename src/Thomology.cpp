@@ -103,7 +103,7 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 	// maxI = scores.size();
 
 	//Testing
-	cout << "Find maximum t-homologies" << endl;
+	// cout << "Find maximum t-homologies" << endl;
 
 	//Find maximum t-homologies
 	for(vector<vector<float>>::const_reverse_iterator colRit = scores.rbegin(); colRit != scores.rend(); ++colRit){
@@ -133,7 +133,7 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 			}
 
 			//Testing
-			if(j == 9230 && i == 6171) cout << "We are inside the relevant iteration" << endl;
+			// if(j == 9230 && i == 6171) cout << "We are inside the relevant iteration" << endl;
 
 			//Walk through the list to consider all relevant maximums seen so far
 			while(li != maxScores.end()){
@@ -147,7 +147,8 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 				++li;
 			}
 
-			if(j == 9230 && i == 6171) cout << "Search for relevant maximums done" << endl;
+			//Testing
+			// if(j == 9230 && i == 6171) cout << "Search for relevant maximums done" << endl;
 
 			//We are not interested in any nested results
 			if(noNesting && !maxScores.empty()){
@@ -189,7 +190,7 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 			// }
 
 			//Testing
-			if(j == 9230 && i == 6171) cout << "Checked length of existing intervals" << endl;
+			// if(j == 9230 && i == 6171) cout << "Checked length of existing intervals" << endl;
 			
 			//Check if score is high enough
 			if(*rowIt > maxThres){
@@ -198,14 +199,14 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 				maxScores.insert(li, make_tuple(i, *rowIt, lenDiff));
 
 				//Testing
-				if(j == 9230 && i == 6171) cout << "New maximum homology found; Deleting old stuff" << endl;
+				// if(j == 9230 && i == 6171) cout << "New maximum homology found; Deleting old stuff" << endl;
 
 				//Delete homologies with a larger difference to the read if necessary
 				if(noNesting){
 					for(rResIt = res.rbegin(); rResIt != res.rend(); ++rResIt){
 						if(get<0>(*rResIt) <= i){
 							//Testing
-							cout << "Deleting result?" << endl;
+							// cout << "Deleting result?" << endl;
 
 							res.erase(--(rResIt.base()));
 						} else{
@@ -213,14 +214,12 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 						}
 
 						//Testing
-						cout << "This is the last point where we get" << endl;
+						// cout << "This is the last point where we get" << endl;
 					}
 
 					//Testing
-					cout << "Leaving for" << endl;
-
-					//Testing
-					if(j == 9230 && i == 6171) cout << "Result list cleaned" << endl;
+					// cout << "Leaving for" << endl;
+					// if(j == 9230 && i == 6171) cout << "Result list cleaned" << endl;
 
 					li = maxScores.begin();
 
@@ -230,7 +229,7 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 				}
 
 				//Testing
-				if(j == 9230 && i == 6171) cout << "Everything deleted" << endl;
+				// if(j == 9230 && i == 6171) cout << "Everything deleted" << endl;
 
 				//Add t-homology to results
 				res.push_back(make_tuple(i, j, *rowIt));
@@ -252,19 +251,19 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 	}
 
 	//Testing
-	cout << "Finished maximum search" << endl;
+	// cout << "Finished maximum search" << endl;
 
 	//Map result coordinates to real positions inside the sketch
 	for(vector<Thomology>::iterator ri = res.begin(); ri != res.end(); ++ri){
 		//Testing
-		cout << "Correcting coordinates" << endl;
+		// cout << "Correcting coordinates" << endl;
 
 		get<0>(*ri) = L[get<0>(*ri)].second;
 		get<1>(*ri) = L[get<1>(*ri)].second;
 	}
 
 	//Testing
-	cout << "But we do not get here" << endl;
+	// cout << "But we do not get here" << endl;
 
 	return res;
 }
