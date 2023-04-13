@@ -5,13 +5,11 @@
 const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, 
 	const float& uw, const float& t, const bool& noNesting){
 	//Some counter variables
-	uint32_t i, j, k, occ; //, maxI;
-	//Length difference between the read's sketch and a homology interval
-	int32_t lenDiff, minDiff;
+	uint32_t i, j, k, occ, imin;//, maxI;
 	//The maximum threshold to compare against
 	float maxThres;
 	vector<Thomology> res;
-	vector<Thomology>::const_reverse_iterator rResIt;
+	vector<Thomology>::const_reverse_iterator ri;
 	//The score matrix
 	vector<vector<float>> scores;
 	//A sketch interator
@@ -25,9 +23,9 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 	//An iterator to iterate over lists in pos
 	vector<uint32_t>::const_iterator posIt;
 	//A list to store scores of maximum t-homologies along with their start position
-	list<tuple<uint32_t, float, int32_t>> maxScores;
+	list<pair<uint32_t, float>> maxScores;
 	//An iterator for the maximum scores list
-	list<tuple<uint32_t, float, int32_t>>::iterator li;
+	list<pair<uint32_t, float>>::iterator li;
 	//Initialize occp
 	unordered_map<uint64_t, uint32_t> occp(skP.size());
 	//Initialize pos (again, we assume there are no duplicates in t)
@@ -102,9 +100,6 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 	// //Initialize last interesting row
 	// maxI = scores.size();
 
-	//Testing
-	// cout << "Find maximum t-homologies" << endl;
-
 	//Find maximum t-homologies
 	for(vector<vector<float>>::const_reverse_iterator colRit = scores.rbegin(); colRit != scores.rend(); ++colRit){
 		//Reset row counter
@@ -115,10 +110,6 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 		maxThres = t - 1;
 		//Get a forward iterator to iterate over L
 		fLit = L.begin();
-		minDiff = INT32_MAX;
-
-		//Testing
-		// cout << "j: " << j << endl;
 
 		//Walk through column from top to bottom
 		for(vector<float>::const_iterator rowIt = colRit->begin(); rowIt != colRit->end(); ++rowIt){
@@ -132,114 +123,42 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 				continue;
 			}
 
-			//Testing
-			// if(j == 9230 && i == 6171) cout << "We are inside the relevant iteration" << endl;
+			// //We are not interested in any nested results
+			// if(noNesting){
+			// 	//Testing
+			// 	// cout << "findThoms: We are inside the no nesting branch" << endl;
+
+			// 	//There are no further interesting results in this column
+			// 	if(i >= maxI) continue;
+
+			// 	//Since we have no nested results we must not update our threshold
+			// 	maxThres = t - 1;
+			// } else{
 
 			//Walk through the list to consider all relevant maximums seen so far
 			while(li != maxScores.end()){
 				//Maximums found in rows > i are irrelevant at this point
-				if(i < get<0>(*li)) break;
+				if(i < li->first) break;
 			
 				//Update maximum to compare with
-				maxThres = max(maxThres, get<1>(*li));
-				minDiff = get<2>(*li);
+				maxThres = max(maxThres, li->second);
 				//Walk on
 				++li;
 			}
 
-			//Testing
-			// if(j == 9230 && i == 6171) cout << "Search for relevant maximums done" << endl;
-
-			//We are not interested in any nested results
-			if(noNesting && !maxScores.empty()){
-				lenDiff = abs((int32_t) (L[j].second - L[i].second + 1 - skP.size()));
-
-				//Testing
-				// cout << "L[j].second: " << L[j].second << endl;
-				// cout << "L[i].second: " << L[i].second << endl;
-				// cout << "skP.size(): " << skP.size() << endl;
-				// cout << "abs((int32_t) (L[j].second - L[i].second + 1 - skP.size())): " << abs((int32_t) (L[j].second - L[i].second + 1 - skP.size())) << endl;
-				// cout << "(int32_t) (L[j].second - L[i].second + 1 - skP.size()) << 1 >> 1: " << ((int32_t) (L[j].second - L[i].second + 1 - skP.size()) << 1 >> 1) << endl;
-				if(lenDiff < 0){
-					cerr << "ERROR: lenDiff < 0. Something went wrong" << endl;
-					exit(-1);
-				}
-
-				if(lenDiff > minDiff){
-					++i;
-					++fLit;
-					continue;
-				}
-
-				// //There are no further interesting results in this column
-				// if(i >= maxI) continue;
-
-				// //Since we have no nested results we must not update our threshold
-				// maxThres = t - 1;
-			} //else{
-			// 	//Walk through the list to consider all relevant maximums seen so far
-			// 	while(li != maxScores.end()){
-			// 		//Maximums found in rows > i are irrelevant at this point
-			// 		if(i < get<0>(*li)) break;
-			
-			// 		//Update maximum to compare with
-			// 		maxThres = max(maxThres, get<1>(*li));
-			// 		//Walk on
-			// 		++li;
-			// 	}
 			// }
-
-			//Testing
-			// if(j == 9230 && i == 6171) cout << "Checked length of existing intervals" << endl;
 			
 			//Check if score is high enough
 			if(*rowIt > maxThres){
-				lenDiff = abs((int32_t) (L[j].second - L[i].second + 1 - skP.size()));
-				//Add score to list with maximum scores
-				maxScores.insert(li, make_tuple(i, *rowIt, lenDiff));
-
-				//Testing
-				// if(j == 9230 && i == 6171) cout << "New maximum homology found; Deleting old stuff" << endl;
-
-				//Delete homologies with a larger difference to the read if necessary
-				if(noNesting){
-					for(rResIt = res.rbegin(); rResIt != res.rend(); ++rResIt){
-						if(get<0>(*rResIt) <= i){
-							//Testing
-							// cout << "Deleting result?" << endl;
-
-							res.erase(--(rResIt.base()));
-						} else{
-							break;
-						}
-
-						//Testing
-						// cout << "This is the last point where we get" << endl;
-					}
-
-					//Testing
-					// cout << "Leaving for" << endl;
-					// if(j == 9230 && i == 6171) cout << "Result list cleaned" << endl;
-
-					li = maxScores.begin();
-
-					while(li != maxScores.end() && !(get<0>(*li) == i && get<1>(*li) == *rowIt)){
-						li = maxScores.erase(li);
-					}
-				}
-
-				//Testing
-				// if(j == 9230 && i == 6171) cout << "Everything deleted" << endl;
-
 				//Add t-homology to results
-				res.push_back(make_tuple(i, j, *rowIt));
-				//Update maximum to compare with
+				res.push_back(make_tuple(L[i].second, L[j].second, *rowIt));//make_tuple(i, j, *rowIt)
+				//Add score to list with maximum scores
+				maxScores.insert(li, make_pair(i, *rowIt));
+				//Update maximum to compare with (in case we want nested results)
 				maxThres = *rowIt;
-
+				
 				// //Update last interesting row (in case we do not want nested results)
 				// maxI = i;
-
-				minDiff = lenDiff;
 			}
 
 			++i;
@@ -250,20 +169,22 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 		--j;
 	}
 
-	//Testing
-	// cout << "Finished maximum search" << endl;
+	//Delete all results that are not "best fitting"
+	if(noNesting && !res.empty()){
+		imin = get<0>(res.back());
+		get<0>(res.back()) = L[imin].second;
+		get<1>(res.back()) = L[get<1>(res.back())].second;
 
-	//Map result coordinates to real positions inside the sketch
-	for(vector<Thomology>::iterator ri = res.begin(); ri != res.end(); ++ri){
-		//Testing
-		// cout << "Correcting coordinates" << endl;
-
-		get<0>(*ri) = L[get<0>(*ri)].second;
-		get<1>(*ri) = L[get<1>(*ri)].second;
+		for(vector<Thomology>::reverse_iterator ri = res.rbegin() + 1, re = res.rend(); ri != re; ++ri){
+			if(get<0>(*ri) <= imin){
+				res.erase(--(ri.base()));
+			} else{
+				imin = get<0>(*ri);
+				get<0>(*ri) = L[get<0>(*ri)].second;
+				get<1>(*ri) = L[get<1>(*ri)].second;
+			}
+		}
 	}
-
-	//Testing
-	// cout << "But we do not get here" << endl;
 
 	return res;
 }
