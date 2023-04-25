@@ -100,6 +100,9 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 	// //Initialize last interesting row
 	// maxI = scores.size();
 
+	//Testing
+	// cout << "Starting detection of maximum t-homologies" << endl;
+
 	//Find maximum t-homologies
 	for(vector<vector<float>>::const_reverse_iterator colRit = scores.rbegin(); colRit != scores.rend(); ++colRit){
 		//Reset row counter
@@ -151,7 +154,7 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 			//Check if score is high enough
 			if(*rowIt > maxThres){
 				//Add t-homology to results
-				res.push_back(make_tuple(L[i].second, L[j].second, *rowIt));//make_tuple(i, j, *rowIt)
+				res.push_back(make_tuple(i, j, *rowIt));//make_tuple(L[i].second, L[j].second, *rowIt)
 				//Add score to list with maximum scores
 				maxScores.insert(li, make_pair(i, *rowIt));
 				//Update maximum to compare with (in case we want nested results)
@@ -185,6 +188,9 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 			}
 		}
 	}
+
+	//Testing
+	// cout << "Finished detection" << endl;
 
 	return res;
 }
