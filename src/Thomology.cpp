@@ -45,6 +45,9 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 	//Set position counter
 	j = 0;
 
+	//Testing
+	// cout << "L.size():" << L.size() << endl;
+
 	//Fill score matrix
 	for(fLit = L.begin(); fLit != L.end(); ++fLit){
 		//Add new column in score matrix...
@@ -100,9 +103,6 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 	// //Initialize last interesting row
 	// maxI = scores.size();
 
-	//Testing
-	// cout << "Starting detection of maximum t-homologies" << endl;
-
 	//Find maximum t-homologies
 	for(vector<vector<float>>::const_reverse_iterator colRit = scores.rbegin(); colRit != scores.rend(); ++colRit){
 		//Reset row counter
@@ -116,11 +116,18 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 
 		//Walk through column from top to bottom
 		for(vector<float>::const_iterator rowIt = colRit->begin(); rowIt != colRit->end(); ++rowIt){
+			//Testing
+			// cout << "i:" << i << "j:" << j << endl;
+
 			//If the substring is a t-homology and its first and last hashes are identical this hash have lead to a positive contri-
 			//bution to the score, otherwise this homology is not "reasonable"
-			if(i != j && (scores[j - 1][i] < scores[j][i] - cw - uw + uw * (rLit->second - 
+			if(i != j && (scores[j - 1][i] > scores[j][i] - cw - uw + uw * (rLit->second - 
 							L[j - 1].second - 1) || scores[j][i + 1] > scores[j][i] - cw - uw + uw * (L[i + 1].second - fLit->second
 							 - 1))){
+
+				//Testing
+				// cout << "We should go here once" << endl;
+
 				++i;
 				++fLit;
 				continue;
@@ -128,8 +135,8 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 
 			// //We are not interested in any nested results
 			// if(noNesting){
-			// 	//Testing
-			// 	// cout << "findThoms: We are inside the no nesting branch" << endl;
+			//Testing
+			// cout << "findThoms: We are inside the no nesting branch" << endl;
 
 			// 	//There are no further interesting results in this column
 			// 	if(i >= maxI) continue;
@@ -154,11 +161,14 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 			//Check if score is high enough
 			if(*rowIt > maxThres){
 				//Add t-homology to results
-				res.push_back(make_tuple(i, j, *rowIt));//make_tuple(L[i].second, L[j].second, *rowIt)
+				res.push_back(make_tuple(L[i].second, L[j].second, *rowIt));//make_tuple(i, j, *rowIt)
 				//Add score to list with maximum scores
 				maxScores.insert(li, make_pair(i, *rowIt));
 				//Update maximum to compare with (in case we want nested results)
 				maxThres = *rowIt;
+
+				//Testing
+				// cout << "Max found" << endl;
 				
 				// //Update last interesting row (in case we do not want nested results)
 				// maxI = i;
@@ -188,9 +198,6 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 			}
 		}
 	}
-
-	//Testing
-	// cout << "Finished detection" << endl;
 
 	return res;
 }
