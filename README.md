@@ -1,4 +1,4 @@
-# ESKEMAP - Exact sketch-based read mapping
+# ESKEMAP - Exact SKEtch-based read MAPping
 
 This directory contains the source code of ESKEMAP and the documentation of experiments we performed in our paper.
 
