@@ -29,9 +29,9 @@ inline void dspHlp(){
 
 //This function prints usage infos
 inline void dsHlp(){
-	cerr << "FindThoms [-hn] [-p PATTERN_FILE] [-s TEXT_FILE] [-k KMER_LEN] [-r HASH_RATIO] [-b BLACKLIST] [-c COM_HASH_WGHT] \
-[-u UNI_HASH_WGHT] [-t HOM_THRES] [-d DECENT] [-i INTERCEPT] [-N NESTING]" << endl << endl;
-	cerr << "Find sketch-based pattern homology in text." << endl << endl;
+	cerr << "eskemap [-hn] [-p PATTERN_FILE] [-s TEXT_FILE] [-k KMER_LEN] [-r HASH_RATIO] [-b BLACKLIST] [-c COM_HASH_WGHT] [-u UNI\
+	_HASH_WGHT] [-t HOM_THRES] [-d DECENT] [-i INTERCEPT] [-N NESTING]" << endl << endl;
+	cerr << "Find sketch-based pattern similarity in text." << endl << endl;
 	cerr << "Required parameters:" << endl;
 	cerr << "   -p   --pattern  Pattern sequences file (FASTA format)" << endl;
 	cerr << "   -s   --text     Text sequence file (FASTA format)" << endl << endl;
