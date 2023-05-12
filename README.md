@@ -70,9 +70,31 @@ This section documents how the experiments described in our paper can be reprodu
 
 **TODO...**
 
+* Snakemake
+* edlib
+* compilation of edlib script
+* Jupyter Notebook
+
 ### Data
 
+#### Human Chromosome Y
+
 The T2T reference assembly of human chromosome Y (Accession number NC_060948.1) was downloaded from [NCBI](https://www.ncbi.nlm.nih.gov).
+
+#### Simulated Reads
+
+In order to create the exact same set of reads we used for our experiments, run:
+
+```
+mkdir -p simulations/reads
+python3 scripts/simReads.py -dp 10 -lmn 100 -lmx 1000000 -lavg 9000 -ls 7000 -r simulations/genomes/t2thumanChrY.fasta -sr 0.00010909090909090909 -dr 0.0009818181818181818 -ir 0.0009090909090909091 -sd 7361077429744071834 -o simulations/reads/t2thumanChrY_sr0.00010909090909090909_dr0.0009818181818181818_i0.0009090909090909091_sd7361077429744071834_lmn100_lmx1000000_lavg9000_ls7000_dp10.fasta
+```
+
+This will create a subdirectory structure *simulations/reads* containing the unfiltered, whole set of reads stored as a FASTA file. 
+
+For filtering the read sets according to edlib's mapping results, these results first have to be generated. **TODO...**
+
+How to create a reads file only containing those reads for which edlib could find only up to 20 different, non-overlapping mapping positions is documented inside the [Jupyter Notebook](https://jupyter.org) *Experiments.ipynb* (Section *Read Filtering*). Rerunning the respective notebook cells will create a file ending with ...`_dp10_rm20.fasta` inside the directory *simulations/reads*.
 
 ### Reproduction Workflow
 
