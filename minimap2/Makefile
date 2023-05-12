@@ -4,7 +4,7 @@ INCLUDES=
 OBJS=		kthread.o kalloc.o misc.o bseq.o sketch.o sdust.o options.o index.o \
 			lchain.o align.o hit.o seed.o map.o format.o pe.o esterr.o splitidx.o \
 			ksw2_ll_sse.o
-PROG=		minimap2
+PROG=		libminimap2.a
 PROG_EXTRA=	sdust minimap2-lite
 LIBS=		-lm -lz -lpthread
 CC =        g++
