@@ -103,6 +103,10 @@ How to create a reads file only containing those reads for which edlib could fin
 
 ### Reproduction Workflow
 
+Exact program calls of each program we used for mapping the reads are documented inside a [snakemake](https://snakemake.readthedocs.io/en/stable/) workflow. The workflow may even be run to reproduce the whole experiment if all dependencies are satisfied (see [Requirements](#Requirements)) and the necessary input data is provided (see [Data](#Data)).
+
+Before running the workflow a few configuration steps need to be done to ensure that program binaries and input files are found.
+
 **TODO...**
 
 ### Notebook Analysis
