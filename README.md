@@ -68,13 +68,15 @@ This section documents how the experiments described in our paper can be reprodu
 
 ### Requirements
 
-**TODO...**
+Our experiments are partly documented as a [snakemake](https://snakemake.readthedocs.io/en/stable/) workflow that allows to rerun those parts using exact program calls.
+The remaining steps of our experiment including postprocessing for result analysis and plot generation can be deduced/rerun from a [Jupyter Notebook](https://jupyter.org). For a reproduction of the whole experiment, both tools need to be installed on your local system. Additionally, the Python package [Biopython](https://biopython.org) and a running version of [minimap2](https://github.com/lh3/minimap2/tree/master) and [Winnowmap2](https://github.com/marbl/Winnowmap) are also required.
 
-* Snakemake
-* edlib
-* compilation of edlib script
-* Jupyter Notebook
-* Biopython
+We also used the API of [Edlib](https://github.com/Martinsos/edlib#api-documentation) and [parasail](https://github.com/jeffdaily/parasail) to implement a small script to calculate read mapping positions on the basis of alignments. After Edlib and parasail are installed on your system, the script can be installed by changing into the subdirectory *FindSimSeqs* and executing `make`.
+
+```
+cd FindSimSeqs
+make
+```
 
 ### Data
 
@@ -109,6 +111,14 @@ Before running the workflow a few configuration steps need to be done to ensure 
 
 **TODO...**
 
+Afterwards, the workflow can be run by just typing:
+
+```
+snakemake
+```
+
+**TODO...**
+
 ### Notebook Analysis
 
 **TODO...**
@@ -120,5 +130,9 @@ For any questions, feedback or problem, please feel free to file an issue or con
 ## Licenses
 
 * minimap2 is licensed under the MIT license (https://github.com/lh3/minimap2)
+
+* edlib is licensed under the MIT license (https://github.com/Martinsos/edlib)
+
+* parasail is licensed by the Battelle Memorial Institute
 
 * ESKEMAP is GNU GPLv3 licensed 
