@@ -1,4 +1,7 @@
 globalSeed: 3096671072007954294
+kmerBlacklistName: "highAbundKmersMiniK15w10Lrgr100BtStrnds"
+eskemapDecent: 0.08758516
+eskemapIntercept: -231.1585158515809
 
 simMeasure: ["intersec", "algnWoutOffs"]
 nbSimSeqs: 100
@@ -40,5 +43,4 @@ hashRate: 0.3
 minimap2HifiK: 19
 minimap2HifiW: 19
 rlyMppdRdsThrs: [10, 20] 
-kmerBlacklistName: "highAbundKmersMiniK15w10Lrgr100BtStrnds"
 blastEvalue: 0.01

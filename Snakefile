@@ -2,6 +2,7 @@ configfile: 'config.yaml'
 
 from random import randrange, seed
 from sys import maxsize
+from glob import glob
 
 SUB_ERR = 0.002 * 6 / 110.
 INS_ERR = 0.002 * 50 / 110.
@@ -20,7 +21,133 @@ READ_SEED = randrange(maxsize)
 rule all:
 	"simulations/edlibMappings/t2thumanChrY_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri0-69401.er" \
 	%(SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
+	"simulations/homologies/homologies_t2thumanChrY_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k1" + \
+	"5_w10_c1_u1_de%.8f_in%.13f.txt" %(SUB_ERR, DEL_ERR, INS_ERR, READ_SEED, config['eskemapDecent'], config['eskemapIntercept']),
+	"benchmarks/benchEskemap_t2thumanChrY_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15_w10_c1_u" + \
+	"1_de%.8f_in%.13f_rep0.txt" %(SUB_ERR, DEL_ERR, INS_ERR, READ_SEED, config['eskemapDecent'], config['eskemapIntercept']),
+	"simulations/minimap2Res/t2thumanChrY_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15.paf.gz" \
+	%(SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
+	"benchmarks/benchMinimap2ApprxMppng_t2thumanChrY_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k1" + \
+	"5_rep0.txt" %(SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
+	"simulations/Winnowmap2Res/t2thumanChrY_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15.paf.gz" \
+	%(SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
+	"benchmarks/benchWinnowmap2ApprxMppng_t2thumanChrY_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_" + \
+	"k15_rep0.txt" %(SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
+	expand("simulations/blastRes/{bname}_e0.01.tsv", bname=[f.split("mappedAreas/")[1].split(".fasta")[0] for f in \
+			glob("simulations/mappedAreas/sub_s_*-s_*.fasta")])
 
+rule blastPairwiseMultFasta:
+	input:
+		"simulations/mappedAreas1/{desc}.fasta"
+	params:
+		"{eval}"
+	output:
+		"simulations/blastRes/{desc}_e{eval}.tsv"
+	shell:
+		"python3 scripts/BlastPairwiseMultiFasta.py -f {input} -e{params} -o {output}"
+
+rule saveWinnowmap2Result:
+	input:
+		"simulations/Winnowmap2Res/{genome}_sr{desc}_k{k}_rep0.{frmt}.gz"
+	output:
+		"simulations/Winnowmap2Res/{genome}_sr{desc}_k{k}.{frmt}.gz"
+	wildcard_constraints:
+		k = "[0-9]+"
+	shell:
+		"mv {input} {output}"
+
+rule runApprxMppngWinnowmap2onRealGenomeFASTA:
+	input:
+		ref = "simulations/genomes/{genome}.fasta",
+		qry = "simulations/reads/{genome}_sr{desc}.fasta",
+		cnts = "simulations/repKmers_k{k}_{genome}.txt"
+	params:
+		k = "{k}",
+		r = "{r}"
+	output:
+		res = temp("simulations/Winnowmap2Res/{genome}_sr{desc}_k{k}_rep{r}.paf.gz"),
+		bench = "benchmarks/benchWinnowmap2ApprxMppng_{genome}_sr{desc}_k{k}_rep{r}.txt"
+	wildcard_constraints:
+		r = "[0-9]+"
+	shell:
+		"/usr/bin/time -v winnowmap -W {input.cnts} -k {params.k} {input.ref} {input.qry} " + \
+		"2> {output.bench} | gzip -3 > {output.res}"
+
+rule printCounts:
+	input:
+		"simulations/merylDB_k{k}_{desc}"
+	output:
+		temp("simulations/repKmers_k{k}_{desc}.txt")
+	shell:
+		"software/Winnowmap/bin/meryl print greater-than distinct=0.9998 {input} > {output}"
+
+rule countGenomeKmers:
+	input:
+		"simulations/genomes/{genome}.fasta"
+	params:
+		"{k}"
+	output:
+		temp(directory("simulations/merylDB_k{k}_{genome}"))
+	shell:
+		"meryl count k={params} output {output} {input}"
+
+rule saveMinimap2Result:
+	input:
+		"simulations/minimap2Res/{genome}_sr{desc}_k{k}_rep0.{frmt}.gz"
+	output:
+		"simulations/minimap2Res/{genome}_sr{desc}_k{k}.{frmt}.gz"
+	wildcard_constraints:
+		k = "[0-9]+"
+	shell:
+		"mv {input} {output}"
+
+rule runApprxMppngMinimap2onRealGenomePacBioFASTA:
+	input:
+		ref = "simulations/genomes/{genome}.fasta",
+		qry = "simulations/reads/{genome}_sr{desc}.fasta"
+	params:
+		k = "{k}",
+		r = "{r}"
+	output:
+		res = temp("simulations/minimap2Res/{genome}_sr{desc}_k{k}_rep{r}.paf.gz"),
+		bench = "benchmarks/benchMinimap2ApprxMppng_{genome}_sr{desc}_k{k}_rep{r}.txt"
+	wildcard_constraints:
+		r = "[0-9]+"
+	shell:
+		"/usr/bin/time -v minimap2 -k {params.k} {input.ref} {input.qry} 2> {output.bench} | gzip -3 > {output.res}"
+
+rule saveFindThomsResult:
+	input:
+		"simulations/homologies/homologies_{genome}_{desc}_k{k}_{smp}_c{c}_u{u}_de{d}_in{i}_rep0.txt"
+	output:
+		"simulations/homologies/homologies_{genome}_{desc}_k{k}_{smp}_c{c}_u{u}_de{d}_in{i}.txt"
+	wildcard_constraints:
+		i = "-?[0-9]+\.?[0-9]*"
+	shell:
+		"mv {input} {output}"
+
+rule searchMinimapSketchReadHomologies:
+	input:
+		rds = "simulations/reads/{genome}_{desc}.fasta",
+		txt = "simulations/genomes/{genome}.fasta",
+		bl = "%s.txt" %config['kmerBlacklistName']
+	params:
+		c = "{c}",
+		u = "{u}",
+		k = "{k}",
+		r = "{r}",
+		w = "{w}",
+		d = "{d}",
+		i = "{i}"
+	output:
+		homs = temp("simulations/homologies/homologies_{genome}_{desc}_k{k}_w{w}_c{c}_u{u}_de{d}_in{i}" + \
+			"_rep{r}.txt"),
+		bench = "benchmarks/benchEskemap_{genome}_{desc}_k{k}_w{w}_c{c}_u{u}_de{d}_in{i}_rep{r}.txt"
+	wildcard_constraints:
+		genome = "\w+",
+	shell:
+		"/usr/bin/time -v src/eskemap -p {input.rds} -s {input.txt} -k {params.k} -c {params.c} -u " + \
+		"{params.u} -d {params.d} -i {params.i} -w {params.w} -b {input.bl} -N > {output.homs} 2> {output.bench}"
 
 #Simulate read set
 rule simReadsOwnScript:
