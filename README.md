@@ -71,6 +71,8 @@ This section documents how the experiments described in our paper can be reprodu
 Our experiments are partly documented as a [snakemake](https://snakemake.readthedocs.io/en/stable/) workflow that allows to rerun those parts using exact program calls.
 The remaining steps of our experiment including postprocessing for result analysis and plot generation can be deduced/rerun from a [Jupyter Notebook](https://jupyter.org). For a reproduction of the whole experiment, both tools need to be installed on your local system. Additionally, the Python package [Biopython](https://biopython.org) and a running version of [minimap2](https://github.com/lh3/minimap2/tree/master) and [Winnowmap2](https://github.com/marbl/Winnowmap) are also required.
 
+Accuracy evaluation also requires a running version of [BLAST](https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/) with binaries available from your environment.
+
 We also used the API of [Edlib](https://github.com/Martinsos/edlib#api-documentation) and [parasail](https://github.com/jeffdaily/parasail) to implement a small script to calculate read mapping positions on the basis of alignments. After Edlib and parasail are installed on your system, the script can be installed by changing into the subdirectory *FindSimSeqs* and executing `make`.
 
 ```
@@ -83,6 +85,8 @@ make
 #### Human Chromosome Y
 
 The T2T reference assembly of human chromosome Y (Accession number NC_060948.1) was downloaded from [NCBI](https://www.ncbi.nlm.nih.gov).
+
+It is expected to lie inside *simulations/genomes*. The subdirectory structure has to be initially created.
 
 #### Simulated Reads
 
@@ -107,9 +111,24 @@ How to create a reads file only containing those reads for which edlib could fin
 
 Exact program calls of each program we used for mapping the reads are documented inside a [snakemake](https://snakemake.readthedocs.io/en/stable/) workflow. The workflow may even be run to reproduce the whole experiment if all dependencies are satisfied (see [Requirements](#Requirements)) and the necessary input data is provided (see [Data](#Data)).
 
-Before running the workflow a few configuration steps need to be done to ensure that program binaries and input files are found.
+Before running the workflow a few configuration steps need to be done to ensure that program binaries and the input reference sequence are found. Dummy paths of program binaries for minimap2, Winnowmap2 and meryl the *k*-mer counter shipped with Winnowmap have to be replaced inside the file *config.yaml*:
 
-**TODO...**
+```
+# PLEASE ADJUST THE FOLLOWING PARAMETERS -------------------------------------------------------------------------------------------
+
+#Programs/binaries that shall be used
+minimap2Bin: "path/to/minimap2/binary"
+merylBin: "path/to/meryl/binary"
+WinnowmapBin: "path/to/Winnowmap2/binary"
+#Basename of reference file used for mapping (without path and file suffix)
+ref: "t2thumanChrY"
+
+#-----------------------------------------------------------------------------------------------------------------------------------
+
+[...]
+```
+
+The name of the reference sequence (human chromosome Y) is expected to be *t2thumanChrY*. If named differently, this also has to be adapted inside the configuration file.
 
 Afterwards, the workflow can be run by just typing:
 
@@ -117,11 +136,11 @@ Afterwards, the workflow can be run by just typing:
 snakemake
 ```
 
-**TODO...**
+Executing the workflow a second time will run BLAST on the result files produced by all mapping tools. Its output is required for the mapping accuracy evaluation (see below).
 
 ### Notebook Analysis
 
-**TODO...**
+After running the snakemake workflow, all remaining steps of the experiment can be performed by executing the Jupyter Notebook *Experiments.ipynb* (Section *Result Evaluation*).
 
 ## Support
 
