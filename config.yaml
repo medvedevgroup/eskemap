@@ -1,3 +1,17 @@
+# PLEASE ADJUST THE FOLLOWING PARAMETERS -------------------------------------------------------------------------------------------
+
+#Programs/binaries that shall be used
+minimap2Bin: "path/to/minimap2/binary"
+merylBin: "path/to/meryl/binary"
+WinnowmapBin: "path/to/Winnowmap2/binary"
+#Basename of reference file used for mapping (without path and file suffix)
+ref: "t2thumanChrY"
+
+#-----------------------------------------------------------------------------------------------------------------------------------
+
+
+# DO NOT ADJUST THE FOLLOWING PARAMETERS (unless you know what you are doing) -
+
 globalSeed: 3096671072007954294
 kmerBlacklistName: "highAbundKmersMiniK15w10Lrgr100BtStrnds"
 eskemapDecent: 0.08758516

@@ -19,20 +19,21 @@ def enumerateEdlibRes(wcs):
 READ_SEED = randrange(maxsize)
 
 rule all:
-	"simulations/edlibMappings/t2thumanChrY_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri0-69401.er" \
-	%(SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
-	"simulations/homologies/homologies_t2thumanChrY_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k1" + \
-	"5_w10_c1_u1_de%.8f_in%.13f.txt" %(SUB_ERR, DEL_ERR, INS_ERR, READ_SEED, config['eskemapDecent'], config['eskemapIntercept']),
-	"benchmarks/benchEskemap_t2thumanChrY_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15_w10_c1_u" + \
-	"1_de%.8f_in%.13f_rep0.txt" %(SUB_ERR, DEL_ERR, INS_ERR, READ_SEED, config['eskemapDecent'], config['eskemapIntercept']),
-	"simulations/minimap2Res/t2thumanChrY_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15.paf.gz" \
-	%(SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
-	"benchmarks/benchMinimap2ApprxMppng_t2thumanChrY_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k1" + \
-	"5_rep0.txt" %(SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
-	"simulations/Winnowmap2Res/t2thumanChrY_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15.paf.gz" \
-	%(SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
-	"benchmarks/benchWinnowmap2ApprxMppng_t2thumanChrY_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_" + \
-	"k15_rep0.txt" %(SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
+	"simulations/edlibMappings/%s_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri0-69401.er" \
+	%(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
+	"simulations/homologies/homologies_%s_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15_w10_c1_u1" + \
+	"_de%.8f_in%.13f.txt" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED, config['eskemapDecent'], \
+		config['eskemapIntercept']),
+	"benchmarks/benchEskemap_%s_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15_w10_c1_u1_de%.8f" + \
+	"_in%.13f_rep0.txt" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED, config['eskemapDecent'], config['eskemapIntercept']),
+	"simulations/minimap2Res/%s_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15.paf.gz" \
+	%(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
+	"benchmarks/benchMinimap2ApprxMppng_%s_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k1" + \
+	"5_rep0.txt" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
+	"simulations/Winnowmap2Res/%s_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15.paf.gz" \
+	%(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
+	"benchmarks/benchWinnowmap2ApprxMppng_%s_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_" + \
+	"k15_rep0.txt" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
 	expand("simulations/blastRes/{bname}_e0.01.tsv", bname=[f.split("mappedAreas/")[1].split(".fasta")[0] for f in \
 			glob("simulations/mappedAreas/sub_s_*-s_*.fasta")])
 
@@ -70,8 +71,8 @@ rule runApprxMppngWinnowmap2onRealGenomeFASTA:
 	wildcard_constraints:
 		r = "[0-9]+"
 	shell:
-		"/usr/bin/time -v winnowmap -W {input.cnts} -k {params.k} {input.ref} {input.qry} " + \
-		"2> {output.bench} | gzip -3 > {output.res}"
+		"/usr/bin/time -v %s -W {input.cnts} -k {params.k} {input.ref} {input.qry} " + \
+		"2> {output.bench} | gzip -3 > {output.res}" %config['WinnowmapBin']
 
 rule printCounts:
 	input:
@@ -79,7 +80,7 @@ rule printCounts:
 	output:
 		temp("simulations/repKmers_k{k}_{desc}.txt")
 	shell:
-		"software/Winnowmap/bin/meryl print greater-than distinct=0.9998 {input} > {output}"
+		"%s print greater-than distinct=0.9998 {input} > {output}" %config['merylBin']
 
 rule countGenomeKmers:
 	input:
@@ -89,7 +90,7 @@ rule countGenomeKmers:
 	output:
 		temp(directory("simulations/merylDB_k{k}_{genome}"))
 	shell:
-		"meryl count k={params} output {output} {input}"
+		"%s count k={params} output {output} {input}" %config['merylBin']
 
 rule saveMinimap2Result:
 	input:
@@ -114,7 +115,8 @@ rule runApprxMppngMinimap2onRealGenomePacBioFASTA:
 	wildcard_constraints:
 		r = "[0-9]+"
 	shell:
-		"/usr/bin/time -v minimap2 -k {params.k} {input.ref} {input.qry} 2> {output.bench} | gzip -3 > {output.res}"
+		"/usr/bin/time -v %s -k {params.k} {input.ref} {input.qry} 2> {output.bench} | gzip -3 > {output.res}" \
+		%config['minimap2Bin']
 
 rule saveFindThomsResult:
 	input:
