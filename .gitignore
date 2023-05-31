@@ -1,2 +1,7 @@
-src/eskemap
 .ipynb_checkpoints
+.snakemake
+FindSimSeqs/CalcGlobEditDistance
+FindSimSeqs/FindSimSeqs
+scripts/__pycache__
+simulations
+src/eskemap
