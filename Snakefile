@@ -14,7 +14,7 @@ seed(config['globalSeed'])
 def enumerateEdlibRes(wcs):
 	smallestId, largestId = [int(n) for n in wcs.rng.split('-')]
 
-	return expand("../simulations/edlibMappings/{d}_ri{i}.er", d=wcs.desc, i=[i for i in range(smallestId, largestId + 1)])
+	return expand("simulations/edlibMappings/{d}_ri{i}.er", d=wcs.desc, i=[i for i in range(smallestId, largestId + 1)])
 
 READ_SEED = randrange(maxsize)
 
