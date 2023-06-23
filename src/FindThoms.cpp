@@ -134,7 +134,7 @@ int main(int argc, char **argv){
 	// // // // Sketch tsk = buildMiniSketch(genome, "s_28536", tidx);
 	// // Sketch tsk = buildMiniSketch(genome, "NC_060948.1", tidx);
 	// Sketch tsk = buildMiniSketch(genome, kmerLen, tidx->w, bLstmers);
-	// // cout << "main: Length of filtered text sketch: " << tsk.size() << endl;
+	// cout << "main: Length of filtered text sketch: " << tsk.size() << endl;
 	// // return 0;
 	// int nHits;
 	// for(Sketch::const_iterator gi = tsk.begin(); gi != tsk.end(); ++gi){
@@ -185,7 +185,7 @@ int main(int argc, char **argv){
 			//Testing
 			// cout << "main: pattern length: " << get<1>(*p) << endl;
 			// cout << "main: tThres: " << tThres << endl;
-			// cout << "main: noNesting flag is " << (noNesting ? "" : "not ") << "set" << endl; 
+			// cout << "main: noNesting flag is " << (noNesting ? "" : "not ") << "set" << endl;
 
 			//Find t-homologies and output them
 			outputHoms(findThoms(get<2>(*p), tidx, comWght, uniWght, tThres, noNesting), normalize, get<2>(*p).size());//TODO: Tests for this function need to be adaptated!

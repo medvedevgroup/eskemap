@@ -208,7 +208,12 @@ def genParaSailResFiles(wcs):
 
 		res.append(f"../simulations/parasailMappings/{wcs.gn}_ra{ps}-{pe}_c{wcs.ch}_ep{wcs.eP}_s{wcs.sd}_ri{wcs.rdId}.pr")
 
-	return res	
+	return res
+
+def enumerateEdlibRes(wcs):
+	smallestId, largestId = [int(n) for n in wcs.rng.split('-')]
+	
+	return expand("../simulations/edlibMappings/{d}_ri{i}.er", d=wcs.desc, i=[i for i in range(smallestId, largestId + 1)])
 
 READ_SEED = randrange(maxsize)
 
@@ -315,6 +320,14 @@ rule all:
 		# genMinimap2Files,
 		# genWinnowmap2Files
 
+rule mergeEdlibRes:
+	input:
+		enumerateEdlibRes
+	output:
+		"../simulations/edlibMappings/{desc}_ri{rng, [0-9]+-[0-9]+}.er"
+	shell:
+		"for f in {input}; do echo $f; cat $f; done > {output}"
+
 rule blastPairwise:
 	input:
 		sub = "../simulations/mappedAreas/sub_s_{ri}_ref{range}.fasta",
@@ -403,7 +416,7 @@ rule runEdlib:
 		ref = "../simulations/genomes/{genome}.fasta",
 		qry = "../simulations/reads/{genome}_sr{rdDesc}_ri{rdId}.fasta"
 	output:
-		"../simulations/edlibMappings/{genome}_sr{rdDesc}_ri{rdId}.er"
+		temp("../simulations/edlibMappings/{genome}_sr{rdDesc}_ri{rdId, [0-9]+}.er")
 	shell:
 		"FindSimSeqs/FindSimSeqs {input.qry} {input.ref} > {output}"
 
@@ -947,7 +960,7 @@ rule searchMinimapSketchReadHomologies:
 		genome = "\w+",
 	shell:
 		"/usr/bin/time -v src/FindThoms -p {input.rds} -s {input.txt} -k {params.k} -c {params.c} -u " + \
-		"{params.u} -d {params.d} -i {params.i} -w {params.w} -b {input.bl} > {output.homs} 2> {output.bench}" #  -N
+		"{params.u} -d {params.d} -i {params.i} -w {params.w} -b {input.bl} > {output.homs} 2> {output.bench}" # 
 
 rule searchReadHomologies:
 	input:

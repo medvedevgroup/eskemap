@@ -47,6 +47,7 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 
 	//Testing
 	// cout << "L.size():" << L.size() << endl;
+	// return res;
 
 	//Fill score matrix
 	for(fLit = L.begin(); fLit != L.end(); ++fLit){
@@ -161,7 +162,7 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 			//Check if score is high enough
 			if(*rowIt > maxThres){
 				//Add t-homology to results
-				res.push_back(make_tuple(L[i].second, L[j].second, *rowIt));//make_tuple(i, j, *rowIt)
+				res.push_back(make_tuple(i, j, *rowIt));//make_tuple(L[i].second, L[j].second, *rowIt)
 				//Add score to list with maximum scores
 				maxScores.insert(li, make_pair(i, *rowIt));
 				//Update maximum to compare with (in case we want nested results)

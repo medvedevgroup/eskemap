@@ -61,6 +61,7 @@ const vector<pair<uint64_t, uint32_t>> genL(const unordered_map<uint64_t, uint32
 		// 	cout << "genL: Current hash is " << sI->first << endl;
 		// 	cout << "genL: Number of occurrences in text according to index: " << nHits << endl;
 		// }
+		// cout << "nHits:" << nHits << endl;
 
 		//Check if hash could be found
 		if(nHits > 0){
