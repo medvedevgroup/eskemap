@@ -20,7 +20,7 @@ READ_SEED = randrange(maxsize)
 
 rule all:
 	input:
-		"simulations/edlibMappings/%s_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri0-69401.er" \
+		"simulations/edlibMappings/%s_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri0-69400.er" \
 		%(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
 		"simulations/homologies/homologies_%s_sr%.19f_dr%.19f_i%.19f_sd" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR) + \
 		"%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15_w10_c1_u1_de%.8f_in%.13f.txt" %(READ_SEED, config['eskemapDecent'], \
@@ -199,5 +199,11 @@ rule mergeEdlibRes:
 		enumerateEdlibRes
 	output:
 		"simulations/edlibMappings/{desc}_ri{rng, [0-9]+-[0-9]+}.er"
-	shell:
-		"for f in {input}; do echo $f; cat $f; done > {output}"
+	run:
+		ofile = open(output[0], 'w')
+
+		for f in input:
+			for l in open(f, 'r'):
+				ofile.write(l)
+
+		ofile.close()
