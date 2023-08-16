@@ -203,6 +203,8 @@ rule mergeEdlibRes:
 		ofile = open(output[0], 'w')
 
 		for f in input:
+			ofile.write(f + '\n')
+			
 			for l in open(f, 'r'):
 				ofile.write(l)
 
