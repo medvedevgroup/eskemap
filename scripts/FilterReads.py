@@ -8,7 +8,7 @@ from Bio import SeqIO
 #Setting up the argument parser
 parser = args.ArgumentParser(description="This script filters a set of reads based on the number of mapping results found by ed" + \
 	"lib.")
-parser.add_argument('-e', metavar='EdlibRes', type=args.FileType('r'), required=True, nargs='+', help="Edlib result file")
+parser.add_argument('-e', metavar='EdlibRes', type=args.FileType('r'), required=True, help="Edlib result file")
 parser.add_argument('-r', metavar='Reads', type=args.FileType('r'), required=True, help="File containing the reads to filter")
 parser.add_argument('-m', metavar='MaxRes', type=int, required=True, help="Maximum number of edlib results to filter")
 parser.add_argument('-o', metavar='Output', type=args.FileType('w'), required=True, help="Name of output FASTA")
@@ -18,11 +18,11 @@ arguments = parser.parse_args()
 #Load Edlib results
 allEdlibRes = {}
 
-for f in arguments.e:
-    readId = int(f.name.split("_ri")[1].split(".er")[0])
-    allEdlibRes[readId] = []
-    
-    for l in f:
+for l in arguments.e:
+    if l.startswith("simulations"):
+        readId = int(l.split("_ri")[1].split(".er")[0])
+        allEdlibRes[readId] = []
+    else:
         allEdlibRes[readId].append(l.strip().split(' '))
 
 #Get a subset of all edlib results that is based on a maximum number of results per read
