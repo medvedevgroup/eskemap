@@ -113,16 +113,27 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 		lstRrsnbl -= (isRr ? 1 : 0);
 	}
 
+	//Testing
+	// cout << "Filled first column of xmin" << endl;
+
 	//Find final mappings in last column
 	for(i = 0; i < L.size(); ++i){
+		//Testing
+		// cout << "i: " << i << endl;
+
 		//Calculate linear score for current mapping
 		currScr = calcLinScore(xmin[i], skP.size(), L[i].second, L[j].second, uw);
+
+		//Testing
+		// cout << "lstRrsnbl: " << lstRrsnbl << endl;
+		// cout << "currScr: " << currScr << endl;
+		// cout << "maxThres: " << maxThres << endl;
 
 		//Check if mapping is final
 		if(currScr > maxThres && lstRrsnbl <= i){
 			//A candidate mapping consisting of only one k-mer is always left reasonable; otherwise check if not left 
 			//reasonable and continue
-			if(i < L.size() - 1 && xmin[i] == xmin[i - 1]) continue;
+			if(i < L.size() - 1 && xmin[i] != xmin[i + 1] + 1) continue;
 
 			//Add mapping to result list
 			res.push_back(make_tuple(L[i].second, L[j].second, currScr));
