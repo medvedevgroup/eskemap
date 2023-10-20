@@ -2,34 +2,50 @@
 #include "Index.h"
 
 //This function finds all t-homologies of a text with respect to some pattern using dynamic programming
-const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, 
-	const float& uw, const float& t, const bool& noNesting){
+void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, const float& uw, const float& t, const bool& noNesting, 
+	const bool& normalize){
+	//A flag indicating whether the current candidate mapping is right reasonable
+	bool isRr = true;
 	//Some counter variables
-	uint32_t i, j, k, occ, imin;//, maxI;
+	uint32_t i, occ, occPosJ;//, imin;
+	//Index determining the position in xmin belonging to the last right reasonable candidate mapping
+	uint32_t lstRrsnbl;
+	//Another counter variable which may become negative
+	int32_t j;
 	//The maximum threshold to compare against
 	float maxThres;
+	//Current score
+	float currScr;
+	//A vector of x_min values of candidate mappings ending with the same k-mer
+	vector<uint32_t> xmin;
+	//An iterator to iterate over xmin's elements
+	vector<uint32_t>::const_iterator vIt;
 	vector<Thomology> res;
-	vector<Thomology>::const_reverse_iterator ri;
-	//The score matrix
-	vector<vector<float>> scores;
+	
+	// vector<Thomology>::const_reverse_iterator ri;
+
 	//A sketch interator
 	Sketch::const_iterator fSkIt;
 	//Hash position array of all hashes and their positions in the text sketch which also appear inside the pattern
 	vector<pair<uint64_t, uint32_t>> L;
 	//An iterator to iterate over L
 	vector<pair<uint64_t, uint32_t>>::const_iterator fLit;
-	//An iterator to reversely iterate over L
-	vector<pair<uint64_t, uint32_t>>::const_reverse_iterator rLit;
-	//An iterator to iterate over lists in pos
-	vector<uint32_t>::const_iterator posIt;
-	//A list to store scores of maximum t-homologies along with their start position
+	//Iterators to reversely iterate over L
+	vector<pair<uint64_t, uint32_t>>::const_reverse_iterator lKmIt, fKmIt, jPosKmIt;
+	//A list to store scores of final candidate mappings along with their start position
 	list<pair<uint32_t, float>> maxScores;
 	//An iterator for the maximum scores list
 	list<pair<uint32_t, float>>::iterator li;
 	//Initialize occp
 	unordered_map<uint64_t, uint32_t> occp(skP.size());
-	//Initialize pos (again, we assume there are no duplicates in t)
-	unordered_map<uint64_t, vector<uint32_t>> pos(skP.size());
+	//Initialize hloc (again, we assume there are no duplicates in t)
+	unordered_map<uint64_t, uint32_t> hloc(skP.size());
+
+	//We do not support the exclusion of nested results currently
+	if(noNesting){
+		cerr << "ERROR: No nesting is currently not supported!" << endl;
+		exit(-1);
+	}
 
 	//Fill occp
 	for(fSkIt = skP.begin(); fSkIt != skP.end(); ++fSkIt){
@@ -42,162 +58,241 @@ const vector<Thomology> findThoms(const Sketch& skP, const mm_idx_t *tidx, const
 
 	//Generate L
 	L = genL(occp, tidx);
-	//Set position counter
-	j = 0;
+	//Reserve enough space for x_min vector
+	xmin.reserve(L.size());
 
 	//Testing
-	// cout << "L.size():" << L.size() << endl;
+	// cout << "findThoms: L.size(): " << L.size() << endl;
 
-	//Fill score matrix
-	for(fLit = L.begin(); fLit != L.end(); ++fLit){
-		//Add new column in score matrix...
-		scores.push_back(vector<float>());
-		//...and reserve enough space
-		scores.back().reserve(j + 1);
+	//Base case: Deal with candidate mappings ending with last k-mer in L//
 
-		//Check if current hash occurred already before//TODO: Can we speed this up by using the index?
-		if(pos.contains(fLit->first)){
-			//Add current position as occurrence for this hash
-			pos[fLit->first].push_back(j);
+	//Set j to index of last k-mer in L
+	j = L.size() - 1;
+	//The smallest candidate mapping starting at a certain position is always right reasonable
+	lstRrsnbl = j;
+	//Set the threshold that a maximal candidate mapping has to exceed (-1, because once we found the first maximal candidate 
+	//mapping, every other nested one needs to have a larger score)
+	maxThres = t - 1;
+	//Set iterator to iterate over last k-mer of each candidate mapping
+	lKmIt = L.rbegin();
+	//Add first count to hloc
+	hloc[lKmIt->first] = 1;
+	//x_min is 1 for the candidate mapping only containing the last k-mer of L by definition
+	xmin.push_back(1);
+
+	//Testing
+	// fKmIt = L.rbegin();
+	// ++fKmIt;
+	// cout << "findThoms: fKmIt->second (using rbegin() + ++): " << fKmIt->second << endl;
+	// uint32_t itCounter = 0;
+
+	//Iterate over start positions in reverse order
+	for(fKmIt = L.rbegin() + 1; fKmIt != L.rend(); ++fKmIt){//, ++itCounter
+		//Testing
+		// cout << "findThoms: fKmIt->second (using rbegin() + 1): " << fKmIt->second << endl;
+		// exit(0);
+
+		//Fill hloc once iterating over L for the first time
+		if(hloc.contains(fKmIt->first)){
+			++hloc[fKmIt->first];
 		} else{
-			pos[fLit->first] = {j};
+			hloc[fKmIt->first] = 1;
 		}
 
-		//We don't want to search k_min from the beginning again each time
-		k = 0;
-		posIt = pos[fLit->first].begin();
+		//Check if candidate mapping is left reasonable
+		if(occp[fKmIt->first] >= hloc[fKmIt->first]){
+			xmin.insert(xmin.begin(), xmin.front() + 1);
+		//Check if right reasonability no longer holds
+		} else{
+			xmin.insert(xmin.begin(), xmin.front());
 
-		//Iterate over start positions
-		for(i = 0; i <= j; ++i){
-			//Walk through vector at current position
-			while(posIt != pos[fLit->first].end()){
-				//Check if we have found k_min already
-				if(i <= *posIt){
-					//Calculate occ(t[j], t[i, j-1])
-					occ = pos[fLit->first].size() - k - 1;
-					break;
-				}
+			if(fKmIt->first == lKmIt->first) isRr = false;
+		} 
 
-				++k;
-				++posIt;
-			}
-
-			//Check if we are dealing with the base case
-			if(i == j){
-				scores.back().push_back(cw - uw * (skP.size() - 1));
-			} else if(occ < occp[fLit->first]){//Discriminate between cases
-				scores.back().push_back(scores[j - 1][i] + cw + uw - uw * (fLit->second - L[j - 1].second - 1));
-			} else{
-				scores.back().push_back(scores[j - 1][i] - uw * (fLit->second - L[j - 1].second));
-			}
-		}
-
-		++j;
+		//Decrease right reasonability index if necessary
+		lstRrsnbl -= (isRr ? 1 : 0);
 	}
 
-	//Get a reverse iterator to iterate over L
-	rLit = L.rbegin();
-	//Get a counter for the column that we are at
-	j = scores.size() - 1;
+	//Find final mappings in last column
+	for(i = 0; i < L.size(); ++i){
+		//Calculate linear score for current mapping
+		currScr = calcLinScore(xmin[i], skP.size(), L[i].second, L[j].second, uw);
 
-	// //Initialize last interesting row
-	// maxI = scores.size();
+		//Check if mapping is final
+		if(currScr > maxThres && lstRrsnbl <= i){
+			//A candidate mapping consisting of only one k-mer is always left reasonable; otherwise check if not left 
+			//reasonable and continue
+			if(i < L.size() - 1 && xmin[i] == xmin[i - 1]) continue;
 
-	//Find maximum t-homologies
-	for(vector<vector<float>>::const_reverse_iterator colRit = scores.rbegin(); colRit != scores.rend(); ++colRit){
-		//Reset row counter
-		i = 0;
-		//Start in the beginning of the list
-		li = maxScores.begin();
-		//Set the threshold that a maximum t-homology has to exceed
-		maxThres = t - 1;
-		//Get a forward iterator to iterate over L
-		fLit = L.begin();
+			//Add mapping to result list
+			res.push_back(make_tuple(L[i].second, L[j].second, currScr));
+			//Keep score for comparison to other scores of remaining candidate mappings starting with the same k-mer or later
+			maxScores.push_back(make_pair(i, currScr));
+			//Update score threshold 
+			maxThres = currScr;
+		}
+	}
 
-		//Walk through column from top to bottom
-		for(vector<float>::const_iterator rowIt = colRit->begin(); rowIt != colRit->end(); ++rowIt){
+	//Testing
+	// cout << "First column done" << endl;
+	// cout << "Number of iterations to iterate over it: " << itCounter << endl;
+	// cout << "res.size(): " << res.size() << endl;
+	// cout << "maxThres: " << maxThres << endl;
+	// cout << "xmin.size(): " << xmin.size() << endl;
+	// for(uint32_t k = 0; k < 10; ++k){
+	// 	cout << "xmin[" << k << "]: " << xmin[k] << endl;
+	// }
+	// // for(uint32_t k = 0; k < 10; ++k){
+	// // 	cout << "L[" << k << "]: " << L[k].first << " " << L[k].second << endl;
+	// // }
+	// cout << "xmin[L.size()-2]: " << xmin[L.size()-2] << endl;
+	// cout << "xmin[L.size()-1]: " << xmin[L.size()-1] << endl;
+	// cout << "L[L.size()-2]: " << L[L.size()-2].first << " " << L[L.size()-2].second << endl;
+	// cout << "L[L.size()-1]: " << L[L.size()-1].first << " " << L[L.size()-1].second << endl;
+	// exit(0);
+
+	//Iterate over all reasonable candidate mappings
+	for(--j, jPosKmIt = L.rbegin() + 1; jPosKmIt != L.rend(); ++lKmIt, --j, ++jPosKmIt){
+		//Initalize counter to count how many times the last k-mer of the previous candidate mapping has been seen while iterating 
+		//over L from the beginning
+		occ = 0;
+		//Initalize counter to count how many times the last k-mer of the current candidate mapping has been seen while iterating 
+		//over L from the beginning
+		occPosJ = 0;
+		//Reset flag
+		isRr = false;
+
+		//Testing
+		// int32_t xminDecCount = xmin[i];
+
+		//Iterate over start positions in non-reverse order
+		for(fLit = L.begin(), i = 0; i <= j; ++fLit, ++i){
 			//Testing
-			// cout << "i:" << i << "j:" << j << endl;
+			// if((i == 5749 || i == 5748) && j == 9222){
+			// 	cout << "i: " << i << endl;
+			// 	cout << "hloc[jPosKmIt->first]: " << hloc[jPosKmIt->first] << endl;
+			// 	cout << "occPosJ: " << occPosJ << endl;
+			// 	cout << "occp[jPosKmIt->first]: " << occp[jPosKmIt->first] << endl;
+			// }
 
-			//If the substring is a t-homology and its first and last hashes are identical this hash have lead to a positive contri-
-			//bution to the score, otherwise this homology is not "reasonable"
-			if(i != j && (scores[j - 1][i] > scores[j][i] - cw - uw + uw * (rLit->second - 
-							L[j - 1].second - 1) || scores[j][i + 1] > scores[j][i] - cw - uw + uw * (L[i + 1].second - fLit->second
-							 - 1))){
+			//Check right reasonability considering the previously last k-mer
+			if(hloc[lKmIt->first] - occ <= occp[lKmIt->first]){
+				//Decrement x_min
+				xmin[i] -= 1;
 
 				//Testing
-				// cout << "We should go here once" << endl;
-
-				++i;
-				++fLit;
-				continue;
+				// --xminDecCount;
 			}
 
-			// //We are not interested in any nested results
-			// if(noNesting){
+			//Check right reasonability considering the currently last k-mer
+			if(hloc[jPosKmIt->first] - occPosJ <= occp[jPosKmIt->first]){
+				//Save index in case this is the first right reasonable candidate mapping for the currently last k-mer we saw
+				lstRrsnbl = (isRr ? lstRrsnbl : i);
+				//Update flag
+				isRr = true;
+			}
+
+			//occ changes for the next iteration if the first and the previously last k-mer of the candidate mapping have an 
+			//identical sequence
+			occ += (fLit->first == lKmIt->first ? 1 : 0);
+			//occPosJ changes for the next iteration of the first and the currently last k-mer of the candidate mapping have an 
+			//identical sequence
+			occPosJ += (fLit->first == jPosKmIt->first ? 1 : 0);
+
 			//Testing
-			// cout << "findThoms: We are inside the no nesting branch" << endl;
+			// if(occ > hloc[lKmIt->first]){
+			// 	cout << "occ > hloc[lKmIt->first]; this should never happen!" << endl;
+			// 	cout << "occ: " << occ << endl;
+			// 	cout << "hloc[" << lKmIt->first << "]: " << hloc[lKmIt->first] << endl;
+			// 	cout << "i: " << i << endl;
+			// 	cout << "j: " << j << endl;
+			// 	// exit(0);
+			// }
+		}
 
-			// 	//There are no further interesting results in this column
-			// 	if(i >= maxI) continue;
+		//Testing
+		// if(xminDecCount < 0){
+		// 	cout << "We decreased xmin too much" << endl;
+		// 	cout << "i: " << i << " j: " << j << endl;
+		// 	exit(0);
+		// }
 
-			// 	//Since we have no nested results we must not update our threshold
-			// 	maxThres = t - 1;
-			// } else{
-
-			//Walk through the list to consider all relevant maximums seen so far
-			while(li != maxScores.end()){
-				//Maximums found in rows > i are irrelevant at this point
-				if(i < li->first) break;
-			
-				//Update maximum to compare with
-				maxThres = max(maxThres, li->second);
-				//Walk on
+		//Update hloc
+		--hloc[lKmIt->first];
+		
+		//Iterate over start positions again
+		for(fLit = L.begin(), i = 0, li = maxScores.begin(), maxThres = t - 1; i <= j; ++fLit, ++i){
+			//Update threshold in case we have seen a relevant final mapping already
+			if(li != maxScores.end() && li->first == i){
+				maxThres = max(li->second, maxThres);
+				//Move to next list element for coming iterations
 				++li;
 			}
 
+			//Calculate linear score
+			currScr = calcLinScore(xmin[i], skP.size(), L[i].second, L[j].second, uw);
+
+			//Testing
+			// if(L[i].first == 1463247 && L[j].first == 1466043){
+			// 	cout << "i: " << i << " j: " << j << endl;
+			// 	cout << "currScr: " << currScr << endl;
+			// 	cout << "maxThres: " << maxThres << endl;
+			// 	cout << "lstRrsnbl: " << lstRrsnbl << endl;
+			// 	cout << "xmin[i]: " << xmin[i] << endl;
+			// 	cout << "xmin[i+1]: " << xmin[i+1] << endl;
+			// 	// uint32_t lKmCnt = 0;
+			// 	// for(uint32_t k = 6171; k < 9223; ++k){
+			// 	// 	if(L[k].first == L[9222].first) ++lKmCnt;
+			// 	// }
+			// 	// cout << "Abundance of last k-mer in interval: " << lKmCnt << endl;
+			// 	// cout << "Abundance of last k-mer in pattern: " << occp[L[9222].first] << endl;
+			// 	// cout << "L[8189].first: " << L[8189].first << endl;
+			// 	// cout << "L[9222].first: " << L[9222].first << endl;
 			// }
-			
-			//Check if score is high enough
-			if(*rowIt > maxThres){
-				//Add t-homology to results
-				res.push_back(make_tuple(L[i].second, L[j].second, *rowIt));//make_tuple(i, j, *rowIt)
-				//Add score to list with maximum scores
-				maxScores.insert(li, make_pair(i, *rowIt));
-				//Update maximum to compare with (in case we want nested results)
-				maxThres = *rowIt;
 
+			//Check if candidate mapping is final
+			if(currScr > maxThres && i >= lstRrsnbl && (i == j || xmin[i] == xmin[i + 1] + 1)){
 				//Testing
-				// cout << "Max found" << endl;
-				
-				// //Update last interesting row (in case we do not want nested results)
-				// maxI = i;
-			}
+				// cout << "Final mapping found" << endl;
+				// cout << "currScr: " << currScr << endl;
+				// cout << "maxThres: " << maxThres << endl;
+				// cout << "findThoms: i: " << i << " j: " << j << endl;
+				// cout << "findThoms: xmin[i]: " << xmin[i] << endl;
+				// exit(0);
 
-			++i;
-			++fLit;
-		}
+				//Add mapping to result list
+				res.push_back(make_tuple(L[i].second, L[j].second, currScr));
 
-		++rLit;
-		--j;
-	}
+				//Keep score for comparison to other scores of remaining candidate mappings starting with the same k-mer or later
+				if(i == li->first){
+					//Override existing maximum for candidate mapping starting with current k-mer
+					*li = make_pair(i, currScr);
+				} else{
+					//Add a new entry
+					maxScores.insert(li, make_pair(i, currScr));
+				}
 
-	//Delete all results that are not "best fitting"
-	if(noNesting && !res.empty()){
-		imin = get<0>(res.back());
-		get<0>(res.back()) = L[imin].second;
-		get<1>(res.back()) = L[get<1>(res.back())].second;
-
-		for(vector<Thomology>::reverse_iterator ri = res.rbegin() + 1, re = res.rend(); ri != re; ++ri){
-			if(get<0>(*ri) <= imin){
-				res.erase(--(ri.base()));
-			} else{
-				imin = get<0>(*ri);
-				get<0>(*ri) = L[get<0>(*ri)].second;
-				get<1>(*ri) = L[get<1>(*ri)].second;
+				//Update score threshold 
+				maxThres = currScr;
 			}
 		}
+
+		//Report results if we have already found a certain number
+		if(res.size() > L.size()){
+			outputHoms(res, normalize, skP.size());
+			res.clear();
+		}
+
+		//Testing
+		// cout << "Processing of column " << j << " done" << endl;
 	}
 
-	return res;
+	//Testing
+	// cout << "Outputting results...res: " << endl;
+	// cout << "res.size(): " << res.size() << endl;
+
+	outputHoms(res, normalize, skP.size());
+
+	//Testing
+	// cout << "Read processed" << endl;
 }
