@@ -233,11 +233,16 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 		
 		//Iterate over start positions again
 		for(fLit = L.begin(), i = 0, li = maxScores.begin(), maxThres = t - 1; i <= j; ++fLit, ++i){
+			//Testing
+			// if(L[i].second == 3573864 && L[j].second == 3575170){
+			// 	cout << "maxThres: " << maxThres << endl;
+			// 	cout << "li->first: " << li->first << endl;
+			// }
+
 			//Update threshold in case we have seen a relevant final mapping already
 			if(li != maxScores.end() && li->first == i){
 				maxThres = max(li->second, maxThres);
-				//Move to next list element for coming iterations
-				++li;
+				//In memory of the "smooth iterator"
 			}
 
 			//Calculate linear score
@@ -270,6 +275,15 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 				// cout << "findThoms: i: " << i << " j: " << j << endl;
 				// cout << "findThoms: xmin[i]: " << xmin[i] << endl;
 				// exit(0);
+				// if(L[i].second == 3573864 && L[j].second == 3575170){
+				// 	cout << "currScr: " << currScr << endl;
+				// 	cout << "maxThres: " << maxThres << endl;
+				// 	cout << "L[i].first: " << L[i].first << endl;
+				// 	cout << "i: " << i << " j: " << j << endl;
+				// 	cout << "First hash in pattern sketch: " << skP.front() << endl;
+				// 	cout << "skP.size(): " << skP.size() << endl;
+				// 	exit(0);
+				// }
 
 				//Add mapping to result list
 				res.push_back(make_tuple(L[i].second, L[j].second, currScr));
@@ -279,13 +293,28 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 					//Override existing maximum for candidate mapping starting with current k-mer
 					*li = make_pair(i, currScr);
 				} else{
+					//Testing
+					// if(L[i].second == 3573864 && L[j].second == 3575171){
+					// 	cout << "If we were here, we did not update but inserted a new maxium" << endl;
+					// }
+
 					//Add a new entry
 					maxScores.insert(li, make_pair(i, currScr));
 				}
 
+				//Testing
+				// if(L[i].second == 3573864 && L[j].second == 3575171){
+				// 	cout << "Here we should have updated the score:" << endl;
+				// 	cout << "currScr: " << currScr << endl;
+				// 	cout << "li->second: " << li->second << endl;
+				// }
+
 				//Update score threshold 
 				maxThres = currScr;
 			}
+
+			//Move forward in maximum score list if needed
+			if(li != maxScores.end() && li->first == i) ++li;
 		}
 
 		//Report results if we have already found a certain number
