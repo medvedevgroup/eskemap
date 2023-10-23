@@ -130,6 +130,17 @@ rule saveFindThomsResult:
 	shell:
 		"mv {input} {output}"
 
+rule filterReads:
+	input:
+		e = "simulations/edlibMappings/{desc}_ri0-69400.er",
+		r = "simulations/reads/{desc}.fasta"
+	params:
+		"{rm}"
+	output:
+		"simulations/reads/{desc}_rm{rm}.fasta"
+	shell:
+		"python3 ../scripts/FilterReads.py -e {input.e} -r {input.r} -m {params} -o {output}"
+
 rule searchMinimapSketchReadHomologies:
 	input:
 		rds = "simulations/reads/{genome}_{desc}.fasta",
