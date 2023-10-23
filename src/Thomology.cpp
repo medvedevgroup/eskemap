@@ -63,6 +63,7 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 
 	//Testing
 	// cout << "findThoms: L.size(): " << L.size() << endl;
+	// return;
 
 	//Base case: Deal with candidate mappings ending with last k-mer in L//
 
@@ -90,6 +91,7 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 	for(fKmIt = L.rbegin() + 1; fKmIt != L.rend(); ++fKmIt){//, ++itCounter
 		//Testing
 		// cout << "findThoms: fKmIt->second (using rbegin() + 1): " << fKmIt->second << endl;
+		// if(fKmIt->first == 83349362) cout << "Found k-mer at position " << fKmIt->second << endl;
 		// exit(0);
 
 		//Fill hloc once iterating over L for the first time
@@ -172,14 +174,23 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 		occPosJ = 0;
 		//Reset flag
 		isRr = false;
+		//Update hloc
+		--hloc[lKmIt->first];
 
 		//Testing
 		// int32_t xminDecCount = xmin[i];
+		// if(L[j].second == 2503034){
+		// 	cout << "lstRrsnbl (beginning of this column): " << lstRrsnbl << endl;
+		// 	// cout << "hloc[jPosKmIt->first]: " << hloc[jPosKmIt->first] << endl;
+		// 	// cout << "occp[jPosKmIt->first]: " << occp[jPosKmIt->first] << endl;
+		// 	cout << "L[3484].first: " << L[3484].first << endl;
+		// 	cout << "L[3485].first: " << L[3485].first << endl;
+		// }
 
 		//Iterate over start positions in non-reverse order
 		for(fLit = L.begin(), i = 0; i <= j; ++fLit, ++i){
 			//Testing
-			// if((i == 5749 || i == 5748) && j == 9222){
+			// if(L[j].second == 2503034 && fLit->first == 83349362){
 			// 	cout << "i: " << i << endl;
 			// 	cout << "hloc[jPosKmIt->first]: " << hloc[jPosKmIt->first] << endl;
 			// 	cout << "occPosJ: " << occPosJ << endl;
@@ -187,7 +198,7 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 			// }
 
 			//Check right reasonability considering the previously last k-mer
-			if(hloc[lKmIt->first] - occ <= occp[lKmIt->first]){
+			if(hloc[lKmIt->first] + 1 - occ <= occp[lKmIt->first]){
 				//Decrement x_min
 				xmin[i] -= 1;
 
@@ -227,9 +238,6 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 		// 	cout << "i: " << i << " j: " << j << endl;
 		// 	exit(0);
 		// }
-
-		//Update hloc
-		--hloc[lKmIt->first];
 		
 		//Iterate over start positions again
 		for(fLit = L.begin(), i = 0, li = maxScores.begin(), maxThres = t - 1; i <= j; ++fLit, ++i){
@@ -249,7 +257,7 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 			currScr = calcLinScore(xmin[i], skP.size(), L[i].second, L[j].second, uw);
 
 			//Testing
-			// if(L[i].first == 1463247 && L[j].first == 1466043){
+			// if(L[i].second == 2501333 && L[j].second == 2503034){
 			// 	cout << "i: " << i << " j: " << j << endl;
 			// 	cout << "currScr: " << currScr << endl;
 			// 	cout << "maxThres: " << maxThres << endl;
@@ -262,8 +270,8 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 			// 	// }
 			// 	// cout << "Abundance of last k-mer in interval: " << lKmCnt << endl;
 			// 	// cout << "Abundance of last k-mer in pattern: " << occp[L[9222].first] << endl;
-			// 	// cout << "L[8189].first: " << L[8189].first << endl;
-			// 	// cout << "L[9222].first: " << L[9222].first << endl;
+			// 	// cout << "L[1848].first: " << L[1848].first << endl;
+			// 	// cout << "L[3483].first: " << L[3483].first << endl;
 			// }
 
 			//Check if candidate mapping is final
@@ -324,7 +332,10 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 		}
 
 		//Testing
-		// cout << "Processing of column " << j << " done" << endl;
+		// if(j == L.size()-1000){
+		// 	cout << "Processing of column " << j << " done" << endl;
+		// 	return;
+		// }
 	}
 
 	//Testing
