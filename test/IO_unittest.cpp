@@ -225,8 +225,8 @@ TEST_F(PrsArgsTest, dupOmes){
 	EXPECT_EQ(algnWoutOffs, m);
 }
 
-//Tests for function const bool prsArgs(int&, char**, string&, string&, uint32_t&, double&, string&, uint32_t&, uint32_t&, int32_t&,
-// bool&)//
+//Tests for function const bool prsArgs(int&, char**, string&, string&, uint32_t&, uint32_t&, double&, string&, uint32_t&, float&, 
+//float&, bool&, float&, float&, bool&)//
 //	1. Pattern sequence is (not) given DONE
 //	2. Text sequence is (not) given DONE
 //	3. K-mer length is (not) given DONE
