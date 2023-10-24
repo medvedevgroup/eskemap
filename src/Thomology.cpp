@@ -41,6 +41,10 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 	//Initialize hloc (again, we assume there are no duplicates in t)
 	unordered_map<uint64_t, uint32_t> hloc(skP.size());
 
+	//Testing
+	// cout << "maxScores.size(): " << maxScores.size() << endl;
+	// exit(0);
+
 	//We do not support the exclusion of nested results currently
 	if(noNesting){
 		cerr << "ERROR: No nesting is currently not supported!" << endl;
@@ -163,6 +167,8 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 	// cout << "L[L.size()-2]: " << L[L.size()-2].first << " " << L[L.size()-2].second << endl;
 	// cout << "L[L.size()-1]: " << L[L.size()-1].first << " " << L[L.size()-1].second << endl;
 	// exit(0);
+	// cout << "maxScores.size(): " << maxScores.size() << endl;
+	// exit(0);
 
 	//Iterate over all reasonable candidate mappings
 	for(--j, jPosKmIt = L.rbegin() + 1; jPosKmIt != L.rend(); ++lKmIt, --j, ++jPosKmIt){
@@ -235,20 +241,30 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 		//Testing
 		// if(xminDecCount < 0){
 		// 	cout << "We decreased xmin too much" << endl;
-		// 	cout << "i: " << i << " j: " << j << endl;
-		// 	exit(0);
+		// cout << "i: " << i << " j: " << j << endl;
+		// cout << "maxScores.size(): " << maxScores.size() << endl;
+		// exit(0);
 		// }
 		
 		//Iterate over start positions again
 		for(fLit = L.begin(), i = 0, li = maxScores.begin(), maxThres = t - 1; i <= j; ++fLit, ++i){
 			//Testing
-			// if(L[i].second == 3573864 && L[j].second == 3575170){
+			// if(L[i].second == 503756 && L[j].second == 504057){
+			// 	cout << "i: " << i << endl;
 			// 	cout << "maxThres: " << maxThres << endl;
 			// 	cout << "li->first: " << li->first << endl;
+			// 	cout << "maxScores.size(): " << maxScores.size() << endl;
+			// 	cout << "li != maxScores.end(): " << (li != maxScores.end() ? "True" : "False") << endl;
+			// 	li = maxScores.begin();
+			// 	cout << "li != maxScores.end(): " << (li != maxScores.end() ? "True" : "False") << endl;
+			// 	// exit(0);
 			// }
 
 			//Update threshold in case we have seen a relevant final mapping already
 			if(li != maxScores.end() && li->first == i){
+				//Testing
+				// if(L[i].second == 503756 && L[j].second == 504057) cout << "Update score" << endl;
+
 				maxThres = max(li->second, maxThres);
 				//In memory of the "smooth iterator"
 			}
@@ -257,13 +273,13 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 			currScr = calcLinScore(xmin[i], skP.size(), L[i].second, L[j].second, uw);
 
 			//Testing
-			// if(L[i].second == 2501333 && L[j].second == 2503034){
+			// if(L[i].second == 503756 && L[j].second == 504057){
 			// 	cout << "i: " << i << " j: " << j << endl;
-			// 	cout << "currScr: " << currScr << endl;
+			// 	// cout << "currScr: " << currScr << endl;
 			// 	cout << "maxThres: " << maxThres << endl;
-			// 	cout << "lstRrsnbl: " << lstRrsnbl << endl;
-			// 	cout << "xmin[i]: " << xmin[i] << endl;
-			// 	cout << "xmin[i+1]: " << xmin[i+1] << endl;
+			// 	// cout << "lstRrsnbl: " << lstRrsnbl << endl;
+			// 	// cout << "xmin[i]: " << xmin[i] << endl;
+			// 	// cout << "xmin[i+1]: " << xmin[i+1] << endl;
 			// 	// uint32_t lKmCnt = 0;
 			// 	// for(uint32_t k = 6171; k < 9223; ++k){
 			// 	// 	if(L[k].first == L[9222].first) ++lKmCnt;
@@ -297,17 +313,33 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 				res.push_back(make_tuple(L[i].second, L[j].second, currScr));
 
 				//Keep score for comparison to other scores of remaining candidate mappings starting with the same k-mer or later
-				if(i == li->first){
+				if(li != maxScores.end() && i == li->first){
+					//Testing
+					// if(L[i].second == 503756 && L[j].second == 504058){
+					// 	cout << "maxScores.size(): " << maxScores.size() << endl;
+					// 	cout << "Do we insert an element inside an empty list???" << endl;
+					// }
+
 					//Override existing maximum for candidate mapping starting with current k-mer
 					*li = make_pair(i, currScr);
+
+					//Testing
+					// if(L[i].second == 503756 && L[j].second == 504058){
+					// 	cout << "maxScores.size(): " << maxScores.size() << endl;
+					// }
 				} else{
 					//Testing
-					// if(L[i].second == 3573864 && L[j].second == 3575171){
-					// 	cout << "If we were here, we did not update but inserted a new maxium" << endl;
+					// if(L[i].second == 503756 && L[j].second == 504058){
+					// 	cout << "maxScores.size(): " << maxScores.size() << endl;
 					// }
 
 					//Add a new entry
 					maxScores.insert(li, make_pair(i, currScr));
+
+					//Testing
+					// if(L[i].second == 503756 && L[j].second == 504058){
+					// 	cout << "maxScores.size() (after insert): " << maxScores.size() << endl;
+					// }
 				}
 
 				//Testing
