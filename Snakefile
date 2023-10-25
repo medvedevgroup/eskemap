@@ -139,7 +139,7 @@ rule filterReads:
 	output:
 		"simulations/reads/{desc}_rm{rm}.fasta"
 	shell:
-		"python3 ../scripts/FilterReads.py -e {input.e} -r {input.r} -m {params} -o {output}"
+		"python3 scripts/FilterReads.py -e {input.e} -r {input.r} -m {params} -o {output}"
 
 rule searchMinimapSketchReadHomologies:
 	input:
