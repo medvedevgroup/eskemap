@@ -71,6 +71,9 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 	uint32_t& cw, float& uw, float& tThres, bool& norm, float& dec, float& inter, bool& noNesting){
 	int option_index = 0, a;
 
+	//Testing
+	// bool pGvn = false;
+
 	static struct option long_options[] = {
         {"pattern",            required_argument,  0, 'p'},
         {"text",               required_argument,  0, 's'},
@@ -94,6 +97,9 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 		//Assign parameter values
 		switch(a){
 			case 'p':
+				//Testing
+				// cout << "1 Option 1" << endl;
+
 				//Save input sequence
 				pFl = optarg;
 				break;
@@ -104,6 +110,9 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 			case 'k':
 				//A k-mer length should be positive
 				if(atoi(optarg) <= 0){
+					//Testing
+					// if(pFl.empty()) cout << "1 Option 2" << endl;
+
 					cerr << "ERROR: K-mer length not applicable" << endl;
 					return false;
 				}
@@ -113,6 +122,9 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 			case 'w':
 				//Window size should be positive
 				if(atoi(optarg) <= 0){
+					//Testing
+					// if(pFl.empty()) cout << "1 Option 2" << endl;
+
 					cerr << "ERROR: Window size not applicable" << endl;
 					return false;
 				}
@@ -122,6 +134,9 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 			case 'r':
 				//Check if given value is reasonable to represent a ratio
 				if(atof(optarg) <= 0 || atof(optarg) > MAX_RATIO){
+					//Testing
+					// if(pFl.empty()) cout << "1 Option 2" << endl;
+
 					cerr << "ERROR: Given hash ratio not applicable" << endl;
 
 					return false;
@@ -136,6 +151,9 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 			case 'c':
 				//Weights should be positive
 				if(atoi(optarg) <= 0){
+					//Testing
+					// if(pFl.empty()) cout << "1 Option 2" << endl;
+
 					cerr << "ERROR: Common hash weight not applicable" << endl;
 
 					return false;
@@ -146,6 +164,9 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 			case 'u':
 				//Weights should be positive
 				if(atof(optarg) <= 0){
+					//Testing
+					// if(pFl.empty()) cout << "1 Option 2" << endl;
+
 					cerr << "ERROR: Unique hash weight not applicable" << endl;
 
 					return false;
@@ -169,11 +190,17 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 				noNesting = false;
 				break;
 			case 'h':
+				//Testing
+				// if(pFl.empty()) cout << "1 Option 2" << endl;
+				
 				return false;
 			default:
 				break;
 		}
 	}
+
+	//Testing
+	if(pFl.empty()) cout << "1 Option 2" << endl;
 
 	return !pFl.empty() && !tFl.empty();
 }

@@ -102,6 +102,7 @@ int main(int argc, char **argv){
 
 	// Testing
 	// return 0;
+	// cout << "pFile.c_str(): " << pFile.c_str() << endl;
 
 	//Open index reader to read pattern
 	r = mm_idx_reader_open(pFile.c_str(), &iopt, INDEX_DEFAULT_DUMP_FILE);
@@ -188,7 +189,7 @@ int main(int argc, char **argv){
 			// cout << "main: noNesting flag is " << (noNesting ? "" : "not ") << "set" << endl; 
 
 			//Find t-homologies and output them
-			outputHoms(findThoms(get<2>(*p), tidx, comWght, uniWght, tThres, noNesting), normalize, get<2>(*p).size());//TODO: Tests for this function need to be adaptated!
+			findThoms(get<2>(*p), tidx, comWght, uniWght, tThres, noNesting, normalize);//TODO: Tests for this function need to be adaptated!
 		}
 
 		//Remove processed pattern sketches
