@@ -117,7 +117,7 @@ rule runApprxMppngMinimap2onRealGenomePacBioFASTA:
 	wildcard_constraints:
 		r = "[0-9]+"
 	shell:
-		"/usr/bin/time -v %s -k {params.k} {input.ref} {input.qry} 2> {output.bench} | gzip -3 > {output.res}" \
+		"/usr/bin/time -v %s {input.ref} {input.qry} -k {params.k} 2> {output.bench} | gzip -3 > {output.res}" \
 		%config['minimap2Bin']
 
 rule saveFindThomsResult:
