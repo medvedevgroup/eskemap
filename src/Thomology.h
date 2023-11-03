@@ -3,7 +3,7 @@
 
 #include <tuple>
 
-#include "../../software/minimap2/minimap.h"
+#include "../minimap2/minimap.h"
 
 #define T 0
 #define DEFAULT_WEIGHT 1

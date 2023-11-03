@@ -9,8 +9,8 @@
 #include <vector>
 #include <unordered_map>
 
-#include "../../software/minimap2/minimap.h"
-#include "../../software/minimap2/index.c"
+#include "../minimap2/minimap.h"
+#include "../minimap2/index.c"
 
 //The k-mer size
 #define K 9
