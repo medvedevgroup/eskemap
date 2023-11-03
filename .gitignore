@@ -1,9 +1,11 @@
 .ipynb_checkpoints
 .snakemake
+benchmarks
 createKmerBlacklist/*.idx
 createKmerBlacklist/CreateKmerBlacklist
 FindSimSeqs/CalcGlobEditDistance
 FindSimSeqs/FindSimSeqs
+indexDump.idx
 scripts/__pycache__
 simulations
 src/eskemap
