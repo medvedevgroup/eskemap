@@ -36,18 +36,75 @@ rule all:
 		%(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
 		"benchmarks/benchWinnowmap2ApprxMppng_%s_sr%.19f_dr%.19f_i%.19f_sd" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR) + \
 		"%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15_rep0.txt" %READ_SEED,
-		expand("simulations/blastRes/{bname}_e0.01.tsv", bname=[f.split("mappedAreas/")[1].split(".fasta")[0] for f in \
-				glob("simulations/mappedAreas/sub_s_*-s_*.fasta")])
+		"simulations/blastRes/subs_Edlib_%s_sr%.19f_dr%.19f_i%.19f_sd%d" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED) + \
+			"_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri0-69400_rm20_e0.01.tsv",
+		"simulations/blastRes/subs_ESKEMAP_%s_sr%.19f_dr%.19f_i%.19f_sd" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR) + \
+			"%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15_w10_c1_u1_de%.8f_in%.13f_e0.01.tsv" %(READ_SEED, config[\
+				'eskemapDecent'], config['eskemapIntercept']),
+		expand("simulations/blastRes/subs_{t}_%s_sr%.19f_dr%.19f_i%.19f_sd" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR) + \
+			"%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15_e0.01.tsv" %READ_SEED, t=config['compTools'])
 
 rule blastPairwiseMultFasta:
 	input:
-		"simulations/mappedAreas1/{desc}.fasta"
-	params:
-		"{eval}"
+		"simulations/mappedAreas/{desc}.fasta"
 	output:
-		"simulations/blastRes/{desc}_e{eval}.tsv"
+		"simulations/blastRes/{desc}_e10.tsv"
 	shell:
-		"python3 scripts/BlastPairwiseMultiFasta.py -f {input} -e{params} -o {output}"
+		"python3 scripts/BlastPairwiseMultiFasta.py -f {input} -o {output}"
+
+rule filterBlastRes:
+	input:
+		"simulations/blastRes/{desc}_e10.tsv"
+	params:
+		"{ev}"
+	output:
+		"simulations/blastRes/{desc}_e{ev}.tsv"
+	wildcard_constraints:
+		ev = "0\.[0-9]*"#"[0-9]?\.[0-9]*"
+	run:
+		ofile = open(output[0], 'w')
+
+		for l in open(input[0], 'r'):
+			if l.startswith("Results"):
+				ofile.write(l)
+			elif float(l.split('\t')[6]) <= float(params[0]):
+				ofile.write(l)
+
+		ofile.close()
+
+rule getCompResRefSubstrings:
+	input:
+		ref = "simulations/genomes/{genome}.fasta",
+		res = "simulations/{toolPrefix}map2Res/{genome}_sr{desc}.paf.gz"
+	output:
+		"simulations/mappedAreas/subs_{toolPrefix}map2_{genome}_sr{desc}.fasta"
+	shell:
+		"python3 scripts/getRefSubstringsFromPAFres.py -r {input.ref} -p {input.res} -o {output}"
+
+rule getESKEMAPresRefSubstrings:
+	input:
+		ref = "simulations/genomes/{genome}.fasta",
+		bl = "%s.txt" %config['kmerBlacklistName'],
+		res = "simulations/homologies/homologies_{genome}_sr{desc}_k{k}_w{w}_c{mdesc}.txt"
+	params:
+		k = "{k}",
+		w = "{w}"
+	output:
+		"simulations/mappedAreas/subs_ESKEMAP_{genome}_sr{desc}_k{k}_w{w}_c{mdesc}.fasta"
+	shell:
+		"python3 scripts/getRefSubstringsFromESKEMAPres.py -r {input.ref} -b {input.bl} -k {params.k} -w {params.w} -e " + \
+		"{input.res} -o {output}"
+
+rule getEdlibResRefSubstrings:
+	input:
+		ref = "simulations/genomes/{genome}.fasta",
+		res = "simulations/edlibMappings/{genome}_sr{desc}.er"
+	params:
+		"{thres}"
+	output:
+		"simulations/mappedAreas/subs_Edlib_{genome}_sr{desc}_rm{thres}.fasta"
+	shell:
+		"python3 scripts/getRefSubstringsFromEdlibRes.py -r {input.ref} -m {input.res} -t {params} -o {output}"
 
 rule saveWinnowmap2Result:
 	input:
@@ -193,6 +250,8 @@ rule divideReads:
 		"{rdId}"
 	output:
 		"simulations/reads/{rdFileName}_ri{rdId}.fasta"
+	wildcard_constraints:
+		rdId = "[0-9]+"
 	shell:
 		"python3 scripts/getSeq.py -s {input} -i {params} -o {output}"
 
