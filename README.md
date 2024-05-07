@@ -1,6 +1,10 @@
 # ESKEMAP - Exact SKEtch-based read MAPping
 
-This directory contains the source code of ESKEMAP and the documentation of experiments we performed in our paper.
+This directory contains the source code of ESKEMAP and the documentation of experiments we performed in our [paper](https://doi.org/10.1186/s13015-024-00261-7).
+
+## Publication
+
+Schulz, T., Medvedev, P.: [ESKEMAP: exact sketch-based read mapping](https://doi.org/10.1186/s13015-024-00261-7). Algorithms for Molecular Biology. (2024)
 
 ## Description
 
