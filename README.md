@@ -15,14 +15,14 @@ ESKEMAP is an algorithm for sketch-based, all-hits read mapping of genomic seque
 ESKEMAP can be used with the sketching approach implemented in [minimap2](https://github.com/lh3/minimap2). A modified version of its source code is located inside the subdirectory *minimap2*. It can be compiled using cmake.
 
 ```
-cd <corer_directory>/minimap2
+cd <eskemap_directory>/minimap2
 make
 ```
 
 Afterwards, ESKEMAP can be compiled from the directory *src*.
 
 ```
-cd <corer_directory>/src
+cd <eskemap_directory>/src
 make
 ```
 
