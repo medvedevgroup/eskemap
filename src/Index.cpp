@@ -1,4 +1,5 @@
 #include "Index.h"
+#include <algorithm>
 
 //Index constructor
 Index::Index(const Sketch& sk){

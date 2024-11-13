@@ -20,29 +20,40 @@ READ_SEED = randrange(maxsize)
 
 rule all:
 	input:
-		"simulations/edlibMappings/%s_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri0-69400.er" \
-		%(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
-		"simulations/homologies/homologies_%s_sr%.19f_dr%.19f_i%.19f_sd" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR) + \
-		"%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15_w10_c1_u1_de%.8f_in%.13f.txt" %(READ_SEED, config['eskemapDecent'], \
-			config['eskemapIntercept']),
-		"benchmarks/benchEskemap_%s_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_"  %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED) + \
-		"lmx1000000_lavg9000_ls7000_dp10_rm20_k15_w10_c1_u1_de%.8f_in%.13f_rep0.txt" %(config['eskemapDecent'], config\
-			['eskemapIntercept']),
-		"simulations/minimap2Res/%s_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15.paf.gz" \
-		%(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
-		"benchmarks/benchMinimap2ApprxMppng_%s_sr%.19f_dr%.19f_i%.19f_sd" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR) + \
-		"%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15_rep0.txt" %READ_SEED,
-		"simulations/Winnowmap2Res/%s_sr%.19f_dr%.19f_i%.19f_sd%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15.paf.gz" \
-		%(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED),
-		"benchmarks/benchWinnowmap2ApprxMppng_%s_sr%.19f_dr%.19f_i%.19f_sd" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR) + \
-		"%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15_rep0.txt" %READ_SEED,
-		"simulations/blastRes/subs_Edlib_%s_sr%.19f_dr%.19f_i%.19f_sd%d" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR, READ_SEED) + \
-			"_lmn100_lmx1000000_lavg9000_ls7000_dp10_ri0-69400_rm20_e0.01.tsv",
-		"simulations/blastRes/subs_ESKEMAP_%s_sr%.19f_dr%.19f_i%.19f_sd" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR) + \
-			"%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15_w10_c1_u1_de%.8f_in%.13f_e0.01.tsv" %(READ_SEED, config[\
-				'eskemapDecent'], config['eskemapIntercept']),
-		expand("simulations/blastRes/subs_{t}_%s_sr%.19f_dr%.19f_i%.19f_sd" %(config['ref'], SUB_ERR, DEL_ERR, INS_ERR) + \
-			"%d_lmn100_lmx1000000_lavg9000_ls7000_dp10_rm20_k15_e0.01.tsv" %READ_SEED, t=config['compTools'])
+		expand("benchmarks/benchEskemap_substrings/5246484061771936969/t2thumanChrYsubstring_sr0.0001_dr0.0010_i0.0009_sd5246484061771936969_lmn4500_lmx4500_lavg4500_ls1_dp1_ri0_p1_k15_w10_c1_u1_de{d}_in{i}_rep{r}.txt")
+		expand("simulations/genomes/substrings/blacklists/5246484061771936969/highAbundKmersMiniSubstringt2thumanChrYsubstring_" + \
+		"sr{sr:.4f}_dr{dr:.4f}_i{ir:.4f}_sd5246484061771936969_lmn4500_lmx4500_lavg4500_ls1_dp1_ri{ri}_p1K15w10Lrgr100BtStrnds." + \
+		"txt", sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, ri=range(13880)),
+		expand("simulations/genomes/substrings/blacklists/6683220218696881404/highAbundKmersMiniSubstringt2thumanChrYsubstring_" + \
+		"sr{sr:.4f}_dr{dr:.4f}_i{ir:.4f}_sd6683220218696881404_lmn9000_lmx9000_lavg9000_ls1_dp1_ri{ri}_p1K15w10Lrgr100BtStrnds." + \
+		"txt", sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, ri=range(6941)),
+		expand("simulations/genomes/substrings/blacklists/6720836764474351736/highAbundKmersMiniSubstringt2thumanChrYsubstring_" + \
+		"sr{sr:.4f}_dr{dr:.4f}_i{ir:.4f}_sd6720836764474351736_lmn18000_lmx18000_lavg18000_ls1_dp1_ri{ri}_p1K15w10Lrgr100BtStrn" + \
+		"ds.txt", sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, ri=range(3471))
+
+rule createSubstringBlacklist:
+	input:
+		"simulations/genomes/substrings/{sd}/{desc}.fasta"
+	params:
+		k = "{k}",
+		w = "{w}",
+		o = "{o}"
+	output:
+		"simulations/genomes/substrings/blacklists/{sd}/highAbundKmersMiniSubstring{desc}K{k}w{w}Lrgr{o}BtStrnds.txt"
+	shell:
+		"mkdir -p blacklists; python3 scripts/computeBlacklist.py -s {input} -k {params.k} -w {params.w} -o {params.o} > {output}"
+
+rule createReferenceSubstrings:
+	input:
+		reads = "simulations/reads/{genome}_{oInfos}_sd{sd}_{mInfos}.fasta",
+		reference = "simulations/genomes/{genome}.fasta"
+	params:
+		"{padding}"
+	output:
+		"simulations/genomes/substrings/{sd}/{genome}substring_{oInfos}_sd{sd}_{mInfos}_p{padding}.fasta"
+	shell:
+		"mkdir -p simulations/genomes/substrings/{wildcards.sd};" + \
+		"python3 scripts/getRefSubstringsFromSimReads.py -r {input.reference} -d {input.reads} -p {params} -o {output}"
 
 rule blastPairwiseMultFasta:
 	input:
@@ -249,7 +260,7 @@ rule divideReads:
 	params:
 		"{rdId}"
 	output:
-		"simulations/reads/{rdFileName}_ri{rdId}.fasta"
+		temp("simulations/reads/{rdFileName}_ri{rdId}.fasta")
 	wildcard_constraints:
 		rdId = "[0-9]+"
 	shell:

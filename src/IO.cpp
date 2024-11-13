@@ -200,7 +200,7 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 	}
 
 	//Testing
-	if(pFl.empty()) cout << "1 Option 2" << endl;
+	// if(pFl.empty()) cout << "1 Option 2" << endl;
 
 	return !pFl.empty() && !tFl.empty();
 }
