@@ -226,7 +226,7 @@ TEST_F(PrsArgsTest, dupOmes){
 }
 
 //Tests for function const bool prsArgs(int&, char**, string&, string&, uint32_t&, uint32_t&, double&, string&, uint32_t&, float&, 
-//float&, bool&, float&, float&, bool&)//
+//float&, bool&, float&, float&, bool&, bool&)//
 //	1. Pattern sequence is (not) given DONE
 //	2. Text sequence is (not) given DONE
 //	3. K-mer length is (not) given DONE
@@ -242,6 +242,10 @@ TEST_F(PrsArgsTest, dupOmes){
 //	13. Normalization flag is (not) given DONE
 //	14. Help flag is (not) given DONE
 //	15. Blacklist is (not) given DONE
+//	16. The requested score function is (not) weighted Jaccard 0/1
+//	17. A decent is (not) given for dynamic threshold calculation 0/0
+//	18. An intercept is (not) given for dynamic threshold calculation 0/0
+//	19. Nested results are (not) requested 1/0
 
 //Tests the function prsArgs under the following conditions
 //	1. Pattern sequence is given
@@ -259,6 +263,7 @@ TEST_F(PrsArgsTest, dupOmes){
 //	13. Normalization flag is given
 //	14. Help flag is not given
 //	15. Blacklist is not given
+//	16. The requested score function is not weighted Jaccard
 TEST_F(PrsArgs1Test, pttnGvn){
 	nbArgs = 57;
 	argv = (char**) malloc(nbArgs * sizeof(char*));
@@ -279,7 +284,7 @@ TEST_F(PrsArgs1Test, pttnGvn){
 	argv[55] = strdup("-k");
 	argv[56] = strdup("2147483647");
 
-	EXPECT_TRUE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
+	EXPECT_TRUE(prsArgs(nbArgs, argv, p, s, k, w, h, b, c, u, t, n, d, i, nn, j));
 	EXPECT_EQ(nbArgs, 57);
 	EXPECT_EQ(p, "A");
 	EXPECT_EQ(s, "ACGT");
@@ -310,7 +315,7 @@ TEST_F(PrsArgs1Test, noPttn){
 	argv[57] = strdup("-s");
 	argv[58] = strdup("A");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, w, h, b, c, u, t, n, d, i, nn, j));
 	EXPECT_EQ(nbArgs, 59);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "A");
@@ -341,7 +346,7 @@ TEST_F(PrsArgs1Test, noTxt){
 	argv[59] = strdup("-p");
 	argv[60] = strdup("A");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, w, h, b, c, u, t, n, d, i, nn, j));
 	EXPECT_EQ(nbArgs, 61);
 	EXPECT_EQ(p, "A");
 	EXPECT_EQ(s, "");
@@ -370,7 +375,7 @@ TEST_F(PrsArgs1Test, noSeqs){
 	argv = (char**) malloc(nbArgs * sizeof(char*));
 	argv[60] = strdup("FindThoms");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, w, h, b, c, u, t, n, d, i, nn, j));
 	EXPECT_EQ(nbArgs, 61);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");
@@ -402,7 +407,7 @@ TEST_F(PrsArgs1Test, negK){
 	argv[61] = strdup("-k");
 	argv[62] = strdup("-1");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, w, h, b, c, u, t, n, d, i, nn, j));
 	EXPECT_EQ(nbArgs, 63);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");
@@ -435,7 +440,7 @@ TEST_F(PrsArgs1Test, negR){
 	argv[63] = strdup("-r");
 	argv[64] = strdup("-1");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, w, h, b, c, u, t, n, d, i, nn, j));
 	EXPECT_EQ(nbArgs, 65);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");
@@ -468,7 +473,7 @@ TEST_F(PrsArgs1Test, lrgR){
 	argv[65] = strdup("-r");
 	argv[66] = strdup("1.1");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, w, h, b, c, u, t, n, d, i, nn, j));
 	EXPECT_EQ(nbArgs, 67);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");
@@ -500,7 +505,7 @@ TEST_F(PrsArgs1Test, negC){
 	argv[67] = strdup("-c");
 	argv[68] = strdup("-1");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, w, h, b, c, u, t, n, d, i, nn, j));
 	EXPECT_EQ(nbArgs, 69);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");
@@ -532,7 +537,7 @@ TEST_F(PrsArgs1Test, negU){
 	argv[69] = strdup("-u");
 	argv[70] = strdup("-1");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, w, h, b, c, u, t, n, d, i, nn, j));
 	EXPECT_EQ(nbArgs, 71);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");
@@ -562,7 +567,7 @@ TEST_F(PrsArgs1Test, help){
 	argv[70] = strdup("FindThoms");
 	argv[71] = strdup("-h");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, w, h, b, c, u, t, n, d, i, nn, j));
 	EXPECT_EQ(nbArgs, 72);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");
@@ -593,7 +598,7 @@ TEST_F(PrsArgs1Test, blGvn){
 	argv[72] = strdup("-b");
 	argv[73] = strdup("testBlacklist.txt");
 
-	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, h, b, c, u, t, n));
+	EXPECT_FALSE(prsArgs(nbArgs, argv, p, s, k, w, h, b, c, u, t, n, d, i, nn, j));
 	EXPECT_EQ(nbArgs, 74);
 	EXPECT_EQ(p, "");
 	EXPECT_EQ(s, "");

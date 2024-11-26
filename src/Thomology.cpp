@@ -1,9 +1,11 @@
+#include <limits>
+
 #include "Thomology.h"
 #include "Index.h"
 
 //This function finds all t-homologies of a text with respect to some pattern using dynamic programming
 void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, const float& uw, const float& t, const bool& noNesting, 
-	const bool& normalize){
+	const bool& normalize, const bool& isLinScr){
 	//A flag indicating whether the current candidate mapping is right reasonable
 	bool isRr = true;
 	//Some counter variables
@@ -69,7 +71,11 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 	lstRrsnbl = j;
 	//Set the threshold that a maximal candidate mapping has to exceed (-1, because once we found the first maximal candidate 
 	//mapping, every other nested one needs to have a larger score)
-	maxThres = t - 1;
+	maxThres = t - numeric_limits<float>::min();
+
+	//Testing
+	// cout << "findThoms: maxThres: " << maxThres << endl;
+
 	//Set iterator to iterate over last k-mer of each candidate mapping
 	lKmIt = L.rbegin();
 	//Add first count to hloc
@@ -158,15 +164,24 @@ void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, cons
 		}
 		
 		//Iterate over start positions again
-		for(fLit = L.begin(), i = 0, li = maxScores.begin(), maxThres = t - 1; i <= j; ++fLit, ++i){
+		for(fLit = L.begin(), i = 0, li = maxScores.begin(), maxThres = t - numeric_limits<float>::min(); i <= j; ++fLit, ++i){
 			//Update threshold in case we have seen a relevant final mapping already
 			if(li != maxScores.end() && li->first == i){
 				maxThres = max(li->second, maxThres);
 				//In memory of the "smooth iterator"
 			}
 
-			//Calculate linear score
-			currScr = calcLinScore(xmin[i], skP.size(), L[i].second, L[j].second, uw);
+			//Check which score function to use
+			if(isLinScr){
+				//Calculate linear score
+				currScr = calcLinScore(xmin[i], skP.size(), L[i].second, L[j].second, uw);
+			} else{
+				//Calculate weighted Jaccard
+				currScr = calcWjac(xmin[i], skP.size(), L[i].second, L[j].second);//TODO: This function still needs to be tested!
+			}
+
+			//Testing
+			// cout << "findThoms: currScr: " << currScr << endl;
 
 			//Check if candidate mapping is final
 			if(currScr > maxThres && i >= lstRrsnbl && (i == j || xmin[i] == xmin[i + 1] + 1)){

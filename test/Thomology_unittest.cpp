@@ -35,8 +35,7 @@ TEST_F(FindThomsTest, uniH){
 	rd = mm_idx_reader_open("testText1.fasta", &iopt, INDEX_DEFAULT_DUMP_FILE);
 	//Read index
 	idx = mm_idx_reader_read(rd, 1);
-
-	r = findThoms({61700, 258224, 61700}, idx, 1, 1, -1);
+	r = findThoms({61700, 258224, 61700}, idx, 1, 1, -1, NESTING_FLAG_DEFAULT, NORM_FLAG_DEFAULT, SIM_SCORE_DEFAULT);
 
 	ASSERT_EQ(r.size(), 4);
 	EXPECT_EQ(get<0>(r.front()), 12);
@@ -75,7 +74,7 @@ TEST_F(FindThomsTest, irrMax){
 	//Read index
 	idx = mm_idx_reader_read(rd, 1);
 
-	r = findThoms({257361, 253134, 258699, 259473}, idx, 1, 1, -1);
+	r = findThoms({257361, 253134, 258699, 259473}, idx, 1, 1, -1, NESTING_FLAG_DEFAULT, NORM_FLAG_DEFAULT, SIM_SCORE_DEFAULT);
 
 	ASSERT_EQ(r.size(), 2);
 	EXPECT_EQ(get<0>(r.front()), 0);
@@ -105,7 +104,7 @@ TEST_F(FindThomsTest, msInc){
 	//Read index
 	idx = mm_idx_reader_read(rd, 1);
 
-	r = findThoms({258126, 256887}, idx, 1, 1, 0);
+	r = findThoms({258126, 256887}, idx, 1, 1, 0, NESTING_FLAG_DEFAULT, NORM_FLAG_DEFAULT, SIM_SCORE_DEFAULT);
 
 	ASSERT_EQ(r.size(), 2);
 	EXPECT_EQ(get<0>(r.front()), 1);
@@ -135,7 +134,7 @@ TEST_F(FindThomsTest, complCs){
 	//Read index
 	idx = mm_idx_reader_read(rd, 1);
 
-	r = findThoms({61700, 258224}, idx, 1, 1, 0);
+	r = findThoms({61700, 258224}, idx, 1, 1, 0, NESTING_FLAG_DEFAULT, NORM_FLAG_DEFAULT, SIM_SCORE_DEFAULT);
 
 	ASSERT_EQ(r.size(), 2);
 	EXPECT_EQ(get<0>(r.front()), 0);

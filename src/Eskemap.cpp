@@ -9,9 +9,11 @@ unordered_map<uint64_t, char> bLstmers;
 
 int main(int argc, char **argv){
 	//Flag to save that scores are to be normalized
-	bool normalize = NORM_FLAG_DEFAULT;
+	bool norm = NORM_FLAG_DEFAULT;
 	//Flag to state if we are interested in nested results
-	bool noNesting = NESTING_FLAG_DEFAULT;
+	bool nN = NESTING_FLAG_DEFAULT;
+	//Flag to state if the linear score shall be used for similarity estimation
+	bool calcLscr = SIM_SCORE_DEFAULT;
 	//The k-mer length
 	uint32_t kmerLen = K;
 	//The window size
@@ -50,7 +52,7 @@ int main(int argc, char **argv){
 	vector<tuple<string, uint32_t, Sketch>>::const_iterator p;
 
 	//Parse arguments
-	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, w, hFrac, bLstFl, comWght, uniWght, tThres, normalize, dec, inter, noNesting)){//TODO: Tests for this function need to be adapted!
+	if(!prsArgs(argc, argv, pFile, tFile, kmerLen, w, hFrac, bLstFl, comWght, uniWght, tThres, norm, dec, inter, nN, calcLscr)){//TODO: Tests for this function need to be adapted!
 		//Display help message
 		dsHlp();
 		return 1;
@@ -58,6 +60,7 @@ int main(int argc, char **argv){
 
 	//Testing
 	// cout << "w: " << w << " bLstFl: " << bLstFl << endl;
+	// cout << "main: tThres: " << tThres << endl;
 	// return 0;
 
 	//Set index options to default
@@ -186,10 +189,10 @@ int main(int argc, char **argv){
 			//Testing
 			// cout << "main: pattern length: " << get<1>(*p) << endl;
 			// cout << "main: tThres: " << tThres << endl;
-			// cout << "main: noNesting flag is " << (noNesting ? "" : "not ") << "set" << endl; 
+			// cout << "main: nN flag is " << (nN ? "" : "not ") << "set" << endl; 
 
 			//Find t-homologies and output them
-			findThoms(get<2>(*p), tidx, comWght, uniWght, tThres, noNesting, normalize);//TODO: Tests for this function need to be adaptated!
+			findThoms(get<2>(*p), tidx, comWght, uniWght, tThres, nN, norm, calcLscr);//TODO: Tests for this function need to be adaptated!
 		}
 
 		//Remove processed pattern sketches

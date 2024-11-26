@@ -8,10 +8,10 @@
 #define T 0
 #define DEFAULT_WEIGHT 1
 
-using Thomology = tuple<uint32_t, uint32_t, int32_t>;
+using Thomology = tuple<uint32_t, uint32_t, float>;
 
 //This function finds all t-homologies of a text with respect to some pattern using dynamic programming
 void findThoms(const Sketch& skP, const mm_idx_t *tidx, const uint32_t& cw, const float& uw, const float& t, const bool& noNesting, 
-	const bool& normalize);
+	const bool& normalize, const bool& isLinScr);
 
 #endif

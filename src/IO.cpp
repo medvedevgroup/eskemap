@@ -68,11 +68,8 @@ const bool prsArgs(int& nArgs, char** argList, string& seqa, string& seqb, Measu
 
 //This function parses the program parameters. Returns false if given arguments are not valid
 const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, uint32_t& w, double& hFrac, string& blFl, 
-	uint32_t& cw, float& uw, float& tThres, bool& norm, float& dec, float& inter, bool& noNesting){
+	uint32_t& cw, float& uw, float& tThres, bool& norm, float& dec, float& inter, bool& noNesting, bool& calcLscr){
 	int option_index = 0, a;
-
-	//Testing
-	// bool pGvn = false;
 
 	static struct option long_options[] = {
         {"pattern",            required_argument,  0, 'p'},
@@ -88,9 +85,13 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
         {"intercept",          required_argument,  0, 'i'},
         {"normalize",          no_argument,        0, 'n'},
         {"nesting",            no_argument,        0, 'N'},
+        {"jaccard",            no_argument,        0, 'j'},
         {"help",               no_argument,        0, 'h'},
         {0,                    0,                  0,  0 }
     };
+
+    //Testing
+    // bool kGvn = false, rGvn = false, cGvn = false, uGvn = false, tGvn = false, dGvn = false, iGvn = false;
 
     //Parse all parameters given
 	while ((a = getopt_long(nArgs, argList, T_HOM_OPTIONS, long_options, &option_index)) != -1){
@@ -104,18 +105,40 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 				pFl = optarg;
 				break;
 			case 's':
+				//Testing
+				// cout << "2 Option 1" << endl;
+
 				//Save input sequence
 				tFl = optarg;
 				break;
 			case 'k':
+				//Testing
+				// kGvn = true;
+
 				//A k-mer length should be positive
 				if(atoi(optarg) <= 0){
 					//Testing
 					// if(pFl.empty()) cout << "1 Option 2" << endl;
+					// if(tFl.empty()) cout << "2 Option 2" << endl;
+					// cout << "3 Option " << (kGvn ? "1" : "2") << endl;
+					// cout << "4 Option 2" << endl;
+					// cout << "5 Option " << (rGvn ? "1" : "2") << endl;
+					// cout << "8 Option " << (cGvn ? "1" : "2") << endl;
+					// cout << "10 Option " << (uGvn ? "1" : "2") << endl;
+					// cout << "12 Option " << (tGvn ? "1" : "2") << endl;
+					// cout << "13 Option " << (norm ? "1" : "2") << endl;
+					// cout << "15 Option " << (blFl.empty() ? "2" : "1") << endl;
+					// cout << "16 Option " << (calcLscr ? "2" << "1") << endl;
+					// cout << "17 Option " << (dGvn ? "1" : "2") << endl;
+					// cout << "18 Option " << (iGvn ? "1" : "2") << endl;
+					// cout << "19 Option " << (noNesting ? "2" : "1") << endl;
 
 					cerr << "ERROR: K-mer length not applicable" << endl;
 					return false;
 				}
+
+				//Testing
+				// cout << "4 Option 1" << endl;
 
 				k = atoi(optarg);
 				break;
@@ -132,15 +155,36 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 				w = atoi(optarg);
 				break;
 			case 'r':
+				//Testing
+				// rGvn = true;
+
 				//Check if given value is reasonable to represent a ratio
 				if(atof(optarg) <= 0 || atof(optarg) > MAX_RATIO){
 					//Testing
 					// if(pFl.empty()) cout << "1 Option 2" << endl;
+					// if(tFl.empty()) cout << "2 Option 2" << endl;
+					// cout << "3 Option " << (kGvn ? "1" : "2") << endl;
+					// cout << "5 Option " << (rGvn ? "1" : "2") << endl;
+					// cout << "6 Option " << (atof(optarg) <= 0 ? "2" : "1") << endl;
+					// cout << "7 Option " << (atof(optarg) > MAX_RATIO ? "1" : "2") << endl;
+					// cout << "8 Option " << (cGvn ? "1" : "2") << endl;
+					// cout << "10 Option " << (uGvn ? "1" : "2") << endl;
+					// cout << "12 Option " << (tGvn ? "1" : "2") << endl;
+					// cout << "13 Option " << (norm ? "1" : "2") << endl;
+					// cout << "15 Option " << (blFl.empty() ? "2" : "1") << endl;
+					// cout << "16 Option " << (calcLscr ? "2" << "1") << endl;
+					// cout << "17 Option " << (dGvn ? "1" : "2") << endl;
+					// cout << "18 Option " << (iGvn ? "1" : "2") << endl;
+					// cout << "19 Option " << (noNesting ? "2" : "1") << endl;
 
 					cerr << "ERROR: Given hash ratio not applicable" << endl;
 
 					return false;
 				}
+
+				//Testing
+				// cout << "6 Option 1" << endl;
+				// cout << "7 Option 2" << endl;
 
 				hFrac = atof(optarg);
 				break;
@@ -149,38 +193,89 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 				blFl = optarg;
 				break;
 			case 'c':
+				//Testing
+				// cGvn = true;
+
 				//Weights should be positive
 				if(atoi(optarg) <= 0){
 					//Testing
 					// if(pFl.empty()) cout << "1 Option 2" << endl;
+					// if(tFl.empty()) cout << "2 Option 2" << endl;
+					// cout << "3 Option " << (kGvn ? "1" : "2") << endl;
+					// cout << "5 Option " << (rGvn ? "1" : "2") << endl;
+					// cout << "6 Option " << (atof(optarg) <= 0 ? "2" : "1") << endl;
+					// cout << "7 Option " << (atof(optarg) > MAX_RATIO ? "1" : "2") << endl;
+					// cout << "8 Option " << (cGvn ? "1" : "2") << endl;
+					// cout << "9 Option 2" << endl;
+					// cout << "10 Option " << (uGvn ? "1" : "2") << endl;
+					// cout << "12 Option " << (tGvn ? "1" : "2") << endl;
+					// cout << "13 Option " << (norm ? "1" : "2") << endl;
+					// cout << "15 Option " << (blFl.empty() ? "2" : "1") << endl;
+					// cout << "16 Option " << (calcLscr ? "2" << "1") << endl;
+					// cout << "17 Option " << (dGvn ? "1" : "2") << endl;
+					// cout << "18 Option " << (iGvn ? "1" : "2") << endl;
+					// cout << "19 Option " << (noNesting ? "2" : "1") << endl;
 
 					cerr << "ERROR: Common hash weight not applicable" << endl;
 
 					return false;
 				}
 
+				//Testing
+				// cout << "9 Option 1" << endl;
+
 				cw = atoi(optarg);
 				break;
 			case 'u':
+				//Testing
+				// uGvn = true;
+
 				//Weights should be positive
 				if(atof(optarg) <= 0){
 					//Testing
 					// if(pFl.empty()) cout << "1 Option 2" << endl;
+					// if(tFl.empty()) cout << "2 Option 2" << endl;
+					// cout << "3 Option " << (kGvn ? "1" : "2") << endl;
+					// cout << "5 Option " << (rGvn ? "1" : "2") << endl;
+					// cout << "6 Option " << (atof(optarg) <= 0 ? "2" : "1") << endl;
+					// cout << "7 Option " << (atof(optarg) > MAX_RATIO ? "1" : "2") << endl;
+					// cout << "8 Option " << (cGvn ? "1" : "2") << endl;
+					// cout << "10 Option " << (uGvn ? "1" : "2") << endl;
+					// cout << "11 Option 2" << endl;
+					// cout << "12 Option " << (tGvn ? "1" : "2") << endl;
+					// cout << "13 Option " << (norm ? "1" : "2") << endl;
+					// cout << "15 Option " << (blFl.empty() ? "2" : "1") << endl;
+					// cout << "16 Option " << (calcLscr ? "2" << "1") << endl;
+					// cout << "17 Option " << (dGvn ? "1" : "2") << endl;
+					// cout << "18 Option " << (iGvn ? "1" : "2") << endl;
+					// cout << "19 Option " << (noNesting ? "2" : "1") << endl;
 
 					cerr << "ERROR: Unique hash weight not applicable" << endl;
 
 					return false;
 				}
 
+				//Testing
+				// cout << "11 Option 1" << endl;
+
 				uw = atof(optarg);
 				break;
 			case 't':
+				//Testing
+				// tGvn = true;
+
 				tThres = atof(optarg);
 				break;
 			case 'd':
+				//Testing
+				// dGvn = true;
+
 				dec = atof(optarg);
 				break;
 			case 'i':
+				//Testing
+				// iGvn = true;
+
 				inter = atof(optarg);
 				break;
 			case 'n':
@@ -189,9 +284,28 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 			case 'N':
 				noNesting = false;
 				break;
+			case 'j':
+				calcLscr = false;
+				break;
 			case 'h':
 				//Testing
 				// if(pFl.empty()) cout << "1 Option 2" << endl;
+				// if(tFl.empty()) cout << "2 Option 2" << endl;
+				// cout << "3 Option " << (kGvn ? "1" : "2") << endl;
+				// cout << "5 Option " << (rGvn ? "1" : "2") << endl;
+				// cout << "6 Option " << (atof(optarg) <= 0 ? "2" : "1") << endl;
+				// cout << "7 Option " << (atof(optarg) > MAX_RATIO ? "1" : "2") << endl;
+				// cout << "8 Option " << (cGvn ? "1" : "2") << endl;
+				// cout << "10 Option " << (uGvn ? "1" : "2") << endl;
+				// cout << "11 Option 2" << endl;
+				// cout << "12 Option " << (tGvn ? "1" : "2") << endl;
+				// cout << "13 Option " << (norm ? "1" : "2") << endl;
+				// cout << "14 Option 1" << endl;
+				// cout << "15 Option " << (blFl.empty() ? "2" : "1") << endl;
+				// cout << "16 Option " << (calcLscr ? "2" << "1") << endl;
+				// cout << "17 Option " << (dGvn ? "1" : "2") << endl;
+				// cout << "18 Option " << (iGvn ? "1" : "2") << endl;
+				// cout << "19 Option " << (noNesting ? "2" : "1") << endl;
 				
 				return false;
 			default:
@@ -201,6 +315,19 @@ const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_
 
 	//Testing
 	// if(pFl.empty()) cout << "1 Option 2" << endl;
+	// if(tFl.empty()) cout << "2 Option 2" << endl;
+	// cout << "3 Option " << (kGvn ? "1" : "2") << endl;
+	// cout << "5 Option " << (rGvn ? "1" : "2") << endl;
+	// cout << "8 Option " << (cGvn ? "1" : "2") << endl;
+	// cout << "10 Option " << (uGvn ? "1" : "2") << endl;
+	// cout << "12 Option " << (tGvn ? "1" : "2") << endl;
+	// cout << "13 Option " << (norm ? "1" : "2") << endl;
+	// cout << "14 Option 2" << endl;
+	// cout << "15 Option " << (blFl.empty() ? "2" : "1") << endl;
+	// cout << "16 Option " << (calcLscr ? "2" << "1") << endl;
+	// cout << "17 Option " << (dGvn ? "1" : "2") << endl;
+	// cout << "18 Option " << (iGvn ? "1" : "2") << endl;
+	// cout << "19 Option " << (noNesting ? "2" : "1") << endl;
 
 	return !pFl.empty() && !tFl.empty();
 }

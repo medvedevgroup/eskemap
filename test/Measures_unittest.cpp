@@ -44,3 +44,12 @@ TEST(CalcAlgnHshsScore, SmplTst){
 
 	EXPECT_EQ(calcAlgnHshsScore(a, b, false), 2);
 }
+
+//Tests for function inline const float calcWjac(const int32_t&, const int32_t&, const int32_t&, const int32_t&)//
+//	1. Simple test
+
+//Tests the function calcWjac under the following conditions
+//	1. Simple test
+TEST(CalcWjacTest, SmplTst){
+	EXPECT_EQ(calcWjac(2, 4, 1, 4), 1.0/3.0);
+}

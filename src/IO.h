@@ -5,13 +5,14 @@
 #include "Thomology.h"
 
 #define OPTIONS "a:b:ilh"
-#define T_HOM_OPTIONS "p:s:k:w:r:b:c:u:t:d:i:nNh"
+#define T_HOM_OPTIONS "p:s:k:w:r:b:c:u:t:d:i:nNjh"
 #define MIN_PARAM_NB 6
 #define MAX_RATIO 1.0
 #define NORM_FLAG_DEFAULT false
 #define NESTING_FLAG_DEFAULT true
 #define PATTERN_BATCH_SIZE 250000
 #define STRING_BUFFER_SIZE_DEFAULT 50
+#define SIM_SCORE_DEFAULT true
 
 //This function prints usage infos
 inline void dspHlp(){
@@ -29,8 +30,8 @@ inline void dspHlp(){
 
 //This function prints usage infos
 inline void dsHlp(){
-	cerr << "eskemap [-hn] [-p PATTERN_FILE] [-s TEXT_FILE] [-k KMER_LEN] [-r HASH_RATIO] [-b BLACKLIST] [-c COM_HASH_WGHT] [-u UNI\
-	_HASH_WGHT] [-t HOM_THRES] [-d DECENT] [-i INTERCEPT] [-N NESTING]" << endl << endl;
+	cerr << "eskemap [-hnNj] [-p PATTERN_FILE] [-s TEXT_FILE] [-k KMER_LEN] [-r HASH_RATIO] [-b BLACKLIST] [-c COM_HASH_WGHT] [-u U\
+	NI_HASH_WGHT] [-t HOM_THRES] [-d DECENT] [-i INTERCEPT]" << endl << endl;
 	cerr << "Find sketch-based pattern similarity in text." << endl << endl;
 	cerr << "Required parameters:" << endl;
 	cerr << "   -p   --pattern  Pattern sequences file (FASTA format)" << endl;
@@ -48,6 +49,7 @@ inline void dsHlp(){
 	cerr << "Optional parameters without argument:" << endl;
 	cerr << "   -n   --normalize  Normalize scores by length" << endl;
 	cerr << "   -N   --nesting    Output nested homologies" << endl;
+	cerr << "   -j   --jaccard    Use weighted Jaccard as similarity measure instead of linear score" << endl;
 	cerr << "   -h   --help       Display this help message" << endl;
 }
 
@@ -70,7 +72,7 @@ const bool prsArgs(int& nArgs, char** argList, string& seqa, string& seqb, Measu
 
 //This function parses the program parameters. Returns false if given arguments are not valid
 const bool prsArgs(int& nArgs, char** argList, string& pFl, string& tFl, uint32_t& k, uint32_t& w, double& hFrac, string& blFl, 
-	uint32_t& cw, float& uw, float& tThres, bool& norm, float& dec, float& inter, bool& noNesting);
+	uint32_t& cw, float& uw, float& tThres, bool& norm, float& dec, float& inter, bool& noNesting, bool& calcLscr);
 
 //This function reads a file in FASTA format and returns true on success
 const bool readFASTA(const string& filePath, string& seq);

@@ -16,4 +16,12 @@ inline const float calcLinScore(const int32_t& xmin, const int32_t& pLen, const 
 	return xmin - w * ((pLen + (j - i + 1)) - 2 * xmin);
 }
 
+//This function calculates the weighted Jaccard
+inline const float calcWjac(const int32_t& xmin, const int32_t& pLen, const int32_t& i, const int32_t& j){
+	//Testing
+	// cout << "calcWjac: xmin: " << xmin << " pLen: " << pLen << " i: " << i << " j: " << j << endl;
+
+	return xmin / (float) ((pLen + (j - i + 1)) - xmin);
+}
+
 #endif

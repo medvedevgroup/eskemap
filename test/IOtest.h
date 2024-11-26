@@ -33,20 +33,31 @@ class PrsArgs1Test : public ::testing::Test {
 
 	protected:
 
-		PrsArgs1Test(): nbArgs(0), k(K), h(HASH_RATIO), c(DEFAULT_WEIGHT), u(DEFAULT_WEIGHT), t(T), n(NORM_FLAG_DEFAULT) {}
+		PrsArgs1Test(): nbArgs(0), k(K), w(W), h(HASH_RATIO), c(DEFAULT_WEIGHT), u(DEFAULT_WEIGHT), t(T), n(NORM_FLAG_DEFAULT), \
+		d(0), i(0), nn(NESTING_FLAG_DEFAULT), j(SIM_SCORE_DEFAULT) {}
 
 		//Normalization flag
 		bool n;
+		//No nesting flag
+		bool nn;
+		//Weighted Jaccard score flag
+		bool j;
 		//k-mer length
 		uint32_t k;
 		//Common hash weight
 		uint32_t c;
 		//Unique hash weight
 		uint32_t u;
+		//Window size
+		uint32_t w;
 		//Number of command line arguments
 		int nbArgs;
 		//t-homology threshold
 		int32_t t;
+		//Decent
+		float d;
+		//Intercept
+		float i;
 		//Hash ratio
 		double h;
 		//Array with command line arguments
