@@ -20,16 +20,12 @@ READ_SEED = randrange(maxsize)
 
 rule all:
 	input:
-		expand("benchmarks/benchEskemap_substrings/5246484061771936969/t2thumanChrYsubstring_sr0.0001_dr0.0010_i0.0009_sd5246484061771936969_lmn4500_lmx4500_lavg4500_ls1_dp1_ri0_p1_k15_w10_c1_u1_de{d}_in{i}_rep{r}.txt")
-		expand("simulations/genomes/substrings/blacklists/5246484061771936969/highAbundKmersMiniSubstringt2thumanChrYsubstring_" + \
-		"sr{sr:.4f}_dr{dr:.4f}_i{ir:.4f}_sd5246484061771936969_lmn4500_lmx4500_lavg4500_ls1_dp1_ri{ri}_p1K15w10Lrgr100BtStrnds." + \
-		"txt", sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, ri=range(13880)),
-		expand("simulations/genomes/substrings/blacklists/6683220218696881404/highAbundKmersMiniSubstringt2thumanChrYsubstring_" + \
-		"sr{sr:.4f}_dr{dr:.4f}_i{ir:.4f}_sd6683220218696881404_lmn9000_lmx9000_lavg9000_ls1_dp1_ri{ri}_p1K15w10Lrgr100BtStrnds." + \
-		"txt", sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, ri=range(6941)),
-		expand("simulations/genomes/substrings/blacklists/6720836764474351736/highAbundKmersMiniSubstringt2thumanChrYsubstring_" + \
-		"sr{sr:.4f}_dr{dr:.4f}_i{ir:.4f}_sd6720836764474351736_lmn18000_lmx18000_lavg18000_ls1_dp1_ri{ri}_p1K15w10Lrgr100BtStrn" + \
-		"ds.txt", sr=SUB_ERR, dr=DEL_ERR, ir=INS_ERR, ri=range(3471))
+		expand("benchmarks/substrings/5246484061771936969/benchEskemap_t2thumanChrYsubstring_sr0.0001_dr0.0010_i0.0009_sd524648" + \
+		"4061771936969_lmn4500_lmx4500_lavg4500_ls1_dp1_ri{i}_p1_k15_w10_t0.1_rep{r}.txt", i=range(13880), r=range(1)),
+		expand("benchmarks/substrings/6683220218696881404/benchEskemap_t2thumanChrYsubstring_sr0.0001_dr0.0010_i0.0009_sd668322" + \
+		"0218696881404_lmn9000_lmx9000_lavg9000_ls1_dp1_ri{i}_p1_k15_w10_t0.1_rep{r}.txt", i=range(6941), r=range(1)),
+		expand("benchmarks/substrings/6720836764474351736/benchEskemap_t2thumanChrYsubstring_sr0.0001_dr0.0010_i0.0009_sd672083" + \
+		"6764474351736_lmn18000_lmx18000_lavg18000_ls1_dp1_ri{i}_p1_k15_w10_t0.1_rep{r}.txt", i=range(3471), r=range(1))
 
 rule createSubstringBlacklist:
 	input:
@@ -208,6 +204,25 @@ rule filterReads:
 		"simulations/reads/{desc}_rm{rm}.fasta"
 	shell:
 		"python3 scripts/FilterReads.py -e {input.e} -r {input.r} -m {params} -o {output}"
+
+#TODO Blacklists are not considered yet
+#TODO Dynamic threshold setting is not yet supported
+#TODO Snakemake supports generation of benchmarks on the fly, too
+rule searchMinimapSketchReadHomologiesWtJacOnRefSubstr:
+	input:
+		rds = "simulations/reads/{refName}_{rdesc}.fasta",
+		ref = "simulations/genomes/{substrPth}/{refName}substring_{rdesc}_p{p}.fasta"
+	params:
+		k = "{k}",
+		w = "{w}",
+		t = "{t}",
+		r = "{r}"
+	output:
+		homs = temp("simulations/homologies/{substrPth}/homologies_{refName}_{rdesc}_p{p}_k{k}_w{w}_t{t}_rep{r}.txt"),
+		bench = "benchmarks/{substrPth}/benchEskemap_{refName}substring_{rdesc}_p{p}_k{k}_w{w}_t{t}_rep{r}.txt"
+	shell:
+		"/usr/bin/time -v src/eskemap -p {input.rds} -s {input.ref} -k {params.k} -w {params.w} -t {params.t} -N -j > " + \
+		"{output.homs} 2> {output.bench}"
 
 rule searchMinimapSketchReadHomologies:
 	input:

@@ -27,7 +27,7 @@ int main(int argc, char **argv){
 	float dec = 0;
 	float inter = 0;
 	//Input file names
-	string pFile, tFile, bLstFl = "highAbundKmersMiniK15w10Lrgr100BtStrnds.txt";
+	string pFile, tFile, bLstFl;// = "highAbundKmersMiniK15w10Lrgr100BtStrnds.txt";
 	//An input sequence
 	string seq;
 	//A file stream
